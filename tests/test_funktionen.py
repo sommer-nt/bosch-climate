@@ -6,7 +6,8 @@ import anthropic
 from splitklima.bericht import pdf_bericht
 from splitklima.bewertung import wende_validierungsfall_an
 from splitklima.export import produktdaten, projektstand, pruefdaten_text, validierungs_snapshot
-from splitklima.ki_plan import KiPlanAnalyse, analysiere, in_raeume
+from splitklima.ki_plan import KiPlanAnalyse, analysiere, baualter_aus_baujahr, in_raeume
+from splitklima.anlagenvorschlag import anlagenkonzepte
 from splitklima.modell import Projekt, Raum
 from splitklima.produkte import standard
 from splitklima.standort import finde_ort, klimaregion
@@ -71,7 +72,9 @@ KI_ANTWORT = {
          "unter_dach": True, "dachform": "saddle_south", "dachfenster_m2": 0.9, "ueber_unbeheizt": "nein",
          "unter_unbeheiztem_dachraum": False},
     ],
+    "baujahr": 1972,
     "nordrichtung": "Nordpfeil",
+    "aufstellorte_aussengeraet": [{"ort": "Garten Süd", "begruendung": "kurzer Leitungsweg"}],
     "hinweise": ["Fensterhöhen angenommen."],
 }
 
@@ -79,7 +82,7 @@ KI_ANTWORT = {
 def test_ki_in_raeume():
     raeume = in_raeume(KiPlanAnalyse.model_validate(KI_ANTWORT))
     wohnen, schlafen = raeume
-    assert wohnen.name == "EG Wohnen" and wohnen.lage == "corner" and wohnen.vertikal == "ground"
+    assert wohnen.name == "Wohnen" and wohnen.geschoss == "EG" and wohnen.lage == "corner" and wohnen.vertikal == "ground"
     assert schlafen.lage == "attic" and schlafen.dach and schlafen.dachform == "saddle_south"
     assert schlafen.fenstergruppen[0].dachfenster and schlafen.fenstergruppen[0].flaeche == 0.9
 
@@ -104,3 +107,41 @@ def test_ki_anfrage_aufbau():
     assert "server-side-fallback-2026-07-01" in gesehen["beta"]
     assert [b["type"] for b in body["messages"][0]["content"]] == ["document", "text"]
     assert "Oben ist Norden" in body["messages"][0]["content"][1]["text"]
+
+
+def test_baualter_aus_baujahr():
+    assert baualter_aus_baujahr(None) == ""
+    assert baualter_aus_baujahr(1957) == "bis1957"
+    assert baualter_aus_baujahr(1972) == "1969-1978"
+    assert baualter_aus_baujahr(1994) == "1984-2001"
+    assert baualter_aus_baujahr(2015) == "2002-heute"
+
+
+def test_anlagenkonzepte_beispielhaus():
+    from pathlib import Path
+    pfad = Path(__file__).parent.parent / "splitklima" / "daten" / "beispiel_planerkennung.json"
+    p = Projekt()
+    p.raeume = in_raeume(KiPlanAnalyse.model_validate_json(pfad.read_text("utf-8")))
+    konzepte = {k.key: k for k in anlagenkonzepte(p, standard())}
+    assert set(konzepte) == {"multi_gesamt", "multi_geschoss", "single"}
+    # je Geschoss ein Teilsystem, jeder Raum genau einmal
+    assert [t.bezeichnung for t in konzepte["multi_geschoss"].teilsysteme] == ["EG", "OG", "DG"]
+    for k in konzepte.values():
+        assert sorted(r.name for t in k.teilsysteme for r in t.raeume) == sorted(r.name for r in p.raeume)
+    assert len(konzepte["single"].teilsysteme) == len(p.raeume)
+    assert sum(k.empfohlen for k in konzepte.values()) == 1
+    empf = next(k for k in konzepte.values() if k.empfohlen)
+    assert empf.gedeckt and empf.aussengeraete == min(k.aussengeraete for k in konzepte.values() if k.gedeckt)
+    # das Originalprojekt bleibt unverändert
+    assert p.einstellungen.systemart == "auto" and p.gewaehltes_system is None
+
+
+def test_anlagenkonzepte_zu_grosser_raum_single_nicht_gedeckt():
+    from splitklima.modell import Wand
+
+    halle = Raum(name="Wintergarten", flaeche=45, lage="outside", waende=[Wand(ausrichtung="W", laenge=9, fenster=18)])
+    p = Projekt(raeume=[halle, Raum(name="Büro", raumart="Büro", flaeche=15)])
+    konzepte = {k.key: k for k in anlagenkonzepte(p, standard())}
+    assert konzepte["single"].teilsysteme[0].last_kuehlen > 5.3  # größer als jedes Single-Split-Gerät
+    assert not konzepte["single"].gedeckt
+    assert konzepte["multi_gesamt"].gedeckt

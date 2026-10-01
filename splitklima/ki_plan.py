@@ -46,9 +46,17 @@ class KiRaum(BaseModel):
     unter_unbeheiztem_dachraum: bool = Field(description="True, wenn darüber ein unbeheizter Dachboden liegt")
 
 
+class KiAufstellort(BaseModel):
+    ort: str = Field(description="z. B. 'Terrasse Südseite', 'Flachdach Garage', 'Balkon OG West'")
+    begruendung: str = Field(description="Warum geeignet (Zugänglichkeit, Leitungsweg, Abstand zu Nachbarn)")
+
+
 class KiPlanAnalyse(BaseModel):
     raeume: list[KiRaum]
+    baujahr: int | None = Field(description="Baujahr bzw. Planungsjahr laut Plankopf, sonst null")
     nordrichtung: str = Field(description="Wie die Nordrichtung bestimmt wurde")
+    aufstellorte_aussengeraet: list[KiAufstellort] = Field(
+        description="Bis zu 3 im Plan erkennbare, geeignete Aufstellorte für Außengeräte")
     hinweise: list[str] = Field(description="Annahmen und Unsicherheiten, die der Nutzer prüfen sollte")
 
 
@@ -65,6 +73,10 @@ Flure, Abstellräume, Technik und Treppenhäuser lässt du weg.
 Ausrichtungen sind absolute Himmelsrichtungen der Fassade.
 - Je Außenwand: Länge im Raum und Summe der Fensterflächen. Fensterhöhe aus \
 Ansicht/Schnitt; ohne Angabe 1,35 m (Fenster) bzw. 2,10 m (Fenstertür).
+- Baujahr: aus dem Plankopf (Bauantrag, Planungsdatum), sonst null.
+- Aufstellorte für Außengeräte: nur Orte, die im Plan erkennbar sind (Terrasse, \
+Balkon, Garten, Flachdach, Fassade); kurze Leitungswege zu den Räumen und \
+Abstand zu Schlafräumen/Nachbargrenze bevorzugen.
 - Jede Annahme mit spürbarem Einfluss gehört als kurzer Satz in 'hinweise'.
 """
 
@@ -143,10 +155,21 @@ def in_raeume(analyse: KiPlanAnalyse) -> list[Raum]:
         if k.unter_dach:
             vertikal = "above_heated"
         raeume.append(Raum(
-            name=f"{k.geschoss} {k.name}".strip(), raumart=k.raumart, flaeche=round(k.flaeche_m2, 1),
+            name=k.name.strip(), geschoss=k.geschoss.strip().upper(), raumart=k.raumart, flaeche=round(k.flaeche_m2, 1),
             hoehe=round(k.raumhoehe_m or 2.5, 2), lage=lage, waende=waende, dach=k.unter_dach,
             dachform=k.dachform, dachflaeche=0.0, vertikal=vertikal,
             fenstergruppen=([Fenstergruppe(ausrichtung="S", flaeche=round(k.dachfenster_m2, 2), dachfenster=True)]
                             if k.dachfenster_m2 > 0 else []),
         ))
     return raeume
+
+
+def baualter_aus_baujahr(baujahr: int | None) -> str:
+    """Ordnet ein Baujahr der Baualtersklasse (F-011) zu; "" wenn unbekannt."""
+    if not baujahr:
+        return ""
+    for grenze, klasse in ((1957, "bis1957"), (1968, "1958-1968"), (1978, "1969-1978"),
+                           (1983, "1979-1983"), (2001, "1984-2001")):
+        if baujahr <= grenze:
+            return klasse
+    return "2002-heute"
