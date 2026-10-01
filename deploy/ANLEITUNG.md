@@ -1,5 +1,52 @@
 # Betrieb auf eigenem Server: klima.sommer-nt.de
 
+Zwei Varianten:
+
+- **A) Vorhandener nginx** (Server mit nginx und weiteren Apps) → Abschnitt „Variante nginx“
+- **B) Frischer Server** → Caddy als Webserver, holt das HTTPS-Zertifikat automatisch
+
+---
+
+## Variante nginx (vorhandener Server)
+
+Die App läuft im Container und ist nur lokal auf **127.0.0.1:8502** erreichbar
+(8501 bleibt für andere Apps frei). nginx leitet `klima.sommer-nt.de` dorthin.
+
+**1. DNS:** A-Record `klima` → IP des Servers (siehe unten, Schritt 1).
+
+**2. App starten**
+```bash
+git clone -b claude/stoic-allen-jg56ti https://github.com/sommer-nt/bosch-climate.git
+cd bosch-climate/deploy
+cp .env.beispiel .env && nano .env        # API-Schlüssel, Passwort; APP_PORT=8502
+docker compose -f docker-compose.nginx.yml up -d --build
+curl http://127.0.0.1:8502/_stcore/health  # → ok
+```
+
+**3. nginx einrichten**
+```bash
+sudo cp nginx-klima.sommer-nt.de.conf /etc/nginx/sites-available/klima.sommer-nt.de
+sudo ln -s /etc/nginx/sites-available/klima.sommer-nt.de /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+```
+(Ohne `sites-available`: Datei nach `/etc/nginx/conf.d/klima.sommer-nt.de.conf` kopieren.)
+
+**4. HTTPS-Zertifikat**
+```bash
+sudo certbot --nginx -d klima.sommer-nt.de
+```
+
+Fertig: **https://klima.sommer-nt.de**
+
+Wichtig in der nginx-Konfiguration sind die WebSocket-Zeilen (`Upgrade`/`Connection`) –
+ohne sie bleibt die Seite weiß – sowie `client_max_body_size 50M` für große Pläne.
+
+Neue Version: `git pull && docker compose -f docker-compose.nginx.yml up -d --build`
+
+---
+
+## Variante Caddy (frischer Server)
+
 Die App läuft als Docker-Container, davor **Caddy** als Webserver. Caddy holt das
 HTTPS-Zertifikat (Let's Encrypt) automatisch und erneuert es selbst.
 
