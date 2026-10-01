@@ -1,0 +1,6 @@
+streamlit>=1.50
+pandas>=2.0
+pydantic>=2.7
+fpdf2>=2.8
+anthropic>=1.11   # nur für die KI-Planerkennung
+pytest>=8.0
