@@ -121,3 +121,6 @@ class Projekt(BaseModel):
     raeume: list[Raum] = Field(default_factory=lambda: [Raum()])
     gewaehltes_system: str | None = None
     validierungsfall: str = ""
+    # Assistent
+    systemwunsch: Literal["auto", "single", "multi"] = "auto"
+    baujahr: int | None = None

@@ -28,7 +28,8 @@ from splitklima.export import (
 from splitklima.modell import Einstellungen, Fenstergruppe, Projekt, Raum, Wand, neue_config_id
 from splitklima.produkte import standard
 from splitklima.standort import DEFAULT_ORT, ORTE, finde_ort, klimaregion
-from ui_plaene import seite_plaene
+from splitklima.preise import standard as preise_standard
+from ui_assistent import assistent
 
 st.set_page_config(page_title="BOSCH Climate Split-Klima Konfigurator", page_icon="❄️", layout="wide")
 st.markdown(
@@ -73,6 +74,7 @@ if _passwort and not st.session_state.get("angemeldet"):
     st.stop()
 
 PD = standard()
+PREISE = preise_standard()
 STATUSFARBE = {"ok": "🟢", "warn": "🟡", "orange": "🟠", "bad": "🔴", "err": "🔴"}
 
 
@@ -106,118 +108,119 @@ def auswahl(label, optionen: dict, wert, key, **kw):
 kopf_l, kopf_r = st.columns([3, 2])
 kopf_l.markdown('<div class="bosch"><b>BOSCH</b> <span>Climate</span> · Split-Klima Konfigurator '
                 f'{P.TOOL_VERSION}</div>', unsafe_allow_html=True)
-kopf_r.caption("Entwickelt von Daniel Sommer · HC/SDE3-PSD · Python-Version")
+ASSISTENT, EXPERTE = "Assistent", "Expertenansicht"
+if "goto_ansicht" in st.session_state:
+    st.session_state.ansicht = st.session_state.pop("goto_ansicht")
+st.session_state.setdefault("ansicht", ASSISTENT)
+with kopf_r:
+    ansicht = st.segmented_control("Ansicht", [ASSISTENT, EXPERTE], key="ansicht",
+                                   label_visibility="collapsed") or ASSISTENT
 
 # ---------------------------------------------------------------- Seitenleiste
-with st.sidebar:
-    st.header("Projekt")
-    p.name = st.text_input("Projektname", p.name, key=k("name"))
-    ort_neu = st.text_input("Standort / PLZ oder Ort", p.ort, key=k("ort"),
-                            help="Bekannte Orte: " + ", ".join(f"{z} {n}" for z, n in ORTE))
-    p.expertenmodus = st.checkbox("Expertenmodus (Temperaturen manuell)", p.expertenmodus, key=k("expert"))
-    treffer = finde_ort(ort_neu)
-    if ort_neu != p.ort:
-        p.ort = f"{treffer[0]} {treffer[1]}" if treffer else ort_neu
+if ansicht == EXPERTE:
+    with st.sidebar:
+        st.header("Projekt")
+        p.name = st.text_input("Projektname", p.name, key=k("name"))
+        ort_neu = st.text_input("Standort / PLZ oder Ort", p.ort, key=k("ort"),
+                                help="Bekannte Orte: " + ", ".join(f"{z} {n}" for z, n in ORTE))
+        p.expertenmodus = st.checkbox("Expertenmodus (Temperaturen manuell)", p.expertenmodus, key=k("expert"))
+        treffer = finde_ort(ort_neu)
+        if ort_neu != p.ort:
+            p.ort = f"{treffer[0]} {treffer[1]}" if treffer else ort_neu
+            if treffer:
+                p.plz = treffer[0]
+                if not p.expertenmodus:
+                    kr = klimaregion(p.plz)
+                    e.norm_aussen, e.sommer = kr.norm_aussen, kr.sommer
+                    st.session_state.rev += 1
+                    st.rerun()
         if treffer:
-            p.plz = treffer[0]
-            if not p.expertenmodus:
-                kr = klimaregion(p.plz)
-                e.norm_aussen, e.sommer = kr.norm_aussen, kr.sommer
-                st.session_state.rev += 1
-                st.rerun()
-    if treffer:
-        kr = klimaregion(treffer[0])
-        st.caption(f"PLZ {treffer[0]} · **{treffer[1]}** · Klimaregion {kr.name} · "
-                   f"Norm-Außentemperatur {kr.norm_aussen:g} °C · Sommer {kr.sommer:g} °C"
-                   + (" · Expertenmodus: Temperaturen manuell" if p.expertenmodus else ""))
-    else:
-        st.caption("Ort nicht in der Liste – Norm-Außentemperatur und Sommer-Auslegung bitte manuell prüfen.")
-    c1, c2 = st.columns(2)
-    p.bearbeiter = c1.text_input("Bearbeiter", p.bearbeiter, key=k("bearbeiter"))
-    p.datum = c2.date_input("Datum", p.datum, key=k("datum"), format="DD.MM.YYYY")
-    st.caption(f"Konfigurations-ID: `{p.config_id}`")
-    if st.button("Auf Standard zurücksetzen", width="stretch"):
-        # Auslegungsparameter, Expertenmodus und Standort auf Standard; Räume bleiben erhalten
-        neu = Projekt(name=p.name, bearbeiter=p.bearbeiter, datum=p.datum, raeume=p.raeume,
-                      config_id=p.config_id, ort=f"{DEFAULT_ORT[0]} {DEFAULT_ORT[1]}", plz=DEFAULT_ORT[0])
-        kr = klimaregion(DEFAULT_ORT[0])
-        neu.einstellungen.norm_aussen, neu.einstellungen.sommer = kr.norm_aussen, kr.sommer
-        neu_laden(neu)
-        st.rerun()
-
-    st.header("System und Betriebsart")
-    alt_system = e.systemart
-    e.systemart = auswahl("Systemart", {"auto": "Automatisch", "single": "Single-Split", "multi": "Multi-Split"},
-                          e.systemart, "systemart")
-    e.betriebsart = auswahl("Betriebsart", {"both": "Heizen und Kühlen", "cool": "Nur Kühlen", "heat": "Nur Heizen"},
-                            e.betriebsart, "betriebsart")
-    if e.systemart != alt_system:  # applySystemRules
-        if e.systemart == "single" and len(p.raeume) > 1:
-            p.raeume = p.raeume[:1]
-            st.session_state.aktiv = 0
-        if e.systemart == "multi" and len(p.raeume) < 2:
-            p.raeume.append(Raum(name=f"Raum {len(p.raeume) + 1}"))
-        st.session_state.rev += 1
-        st.rerun()
-
-    st.header("Gebäude & Klima")
-    e.daemmstandard = auswahl("Bau-/Dämmstandard", P.USTD_LABEL, e.daemmstandard, "daemm")
-    e.verglasung = auswahl("Verglasung", P.GLAS_LABEL, e.verglasung, "glas")
-    e.sonnenschutz = auswahl("Sonnenschutz", P.SONNENSCHUTZ_LABEL, e.sonnenschutz, "shade")
-    c1, c2 = st.columns(2)
-    e.norm_aussen = c1.number_input("Norm-Außentemp. (°C)", value=float(e.norm_aussen), step=1.0, key=k("heatOut"))
-    e.sommer = c2.number_input("Sommer-Auslegung (°C)", value=float(e.sommer), step=1.0, key=k("summer"))
-    e.kuehlbetrieb_h = auswahl("Tägliche Kühlbetriebsdauer · Speichereffekt", P.KUEHLBETRIEB_LABEL,
-                               e.kuehlbetrieb_h, "coolHours")
-    e.gleichzeitigkeit = auswahl("Gleichzeitigkeitsfaktor (P-004) · bedarfsseitig",
-                                 {1.0: "100 % (Norm-Default)", 0.95: "95 %", 0.9: "90 %", 0.85: "85 %"},
-                                 e.gleichzeitigkeit, "sim")
-    e.waermebruecken = auswahl("Wärmebrückenzuschlag Heizlast (12831-1)",
-                               {"none": "ohne Zuschlag", "standard": "pauschal ΔU 0,05", "high": "erhöht ΔU 0,10"},
-                               e.waermebruecken, "wb")
-    e.aufheizreserve = auswahl("Aufheizreserve Heizlast (12831-1)",
-                               {"none": "keine Reserve", "standard": "+15 %", "high": "+30 %"},
-                               e.aufheizreserve, "reheat")
-    with st.expander("Erweiterte Annahmen (F-015)"):
-        c1, c2 = st.columns(2)
-        e.soll_kuehlen = c1.number_input("Kühl-Soll (°C)", 18.0, 28.0, float(e.soll_kuehlen), 0.5, key=k("coolSet"))
-        e.soll_heizen = c2.number_input("Heiz-Soll (°C)", 16.0, 26.0, float(e.soll_heizen), 0.5, key=k("heatSet"))
-
-    st.header(f"Validierung {P.TOOL_VERSION}")
-    faelle = {"": "manuelle Eingabe"} | {key: f"{t['id']} {t['name']}" for key, t in VALIDIERUNGSFAELLE.items()}
-    fall = st.selectbox("Referenzfall", list(faelle), index=list(faelle).index(p.validierungsfall),
-                        format_func=faelle.get, key=k("fall"))
-    if fall != p.validierungsfall:
-        if fall:
-            wende_validierungsfall_an(p, fall)
+            kr = klimaregion(treffer[0])
+            st.caption(f"PLZ {treffer[0]} · **{treffer[1]}** · Klimaregion {kr.name} · "
+                       f"Norm-Außentemperatur {kr.norm_aussen:g} °C · Sommer {kr.sommer:g} °C"
+                       + (" · Expertenmodus: Temperaturen manuell" if p.expertenmodus else ""))
         else:
-            p.validierungsfall = ""
-        neu_laden(p)
-        st.rerun()
-    with st.expander("Prüfdaten"):
-        st.code(pruefdaten_text(p, PD), language=None)
+            st.caption("Ort nicht in der Liste – Norm-Außentemperatur und Sommer-Auslegung bitte manuell prüfen.")
+        c1, c2 = st.columns(2)
+        p.bearbeiter = c1.text_input("Bearbeiter", p.bearbeiter, key=k("bearbeiter"))
+        p.datum = c2.date_input("Datum", p.datum, key=k("datum"), format="DD.MM.YYYY")
+        st.caption(f"Konfigurations-ID: `{p.config_id}`")
+        if st.button("Auf Standard zurücksetzen", width="stretch"):
+            # Auslegungsparameter, Expertenmodus und Standort auf Standard; Räume bleiben erhalten
+            neu = Projekt(name=p.name, bearbeiter=p.bearbeiter, datum=p.datum, raeume=p.raeume,
+                          config_id=p.config_id, ort=f"{DEFAULT_ORT[0]} {DEFAULT_ORT[1]}", plz=DEFAULT_ORT[0])
+            kr = klimaregion(DEFAULT_ORT[0])
+            neu.einstellungen.norm_aussen, neu.einstellungen.sommer = kr.norm_aussen, kr.sommer
+            neu_laden(neu)
+            st.rerun()
 
-# ---------------------------------------------------------------- Seiten
-SEITE_PLAENE, SEITE_KONFIG = "① Pläne & Anlagenvorschlag", "② Konfiguration"
-if "goto" in st.session_state:
-    st.session_state.seite = st.session_state.pop("goto")
-st.session_state.setdefault("seite", SEITE_PLAENE)
+        st.header("System und Betriebsart")
+        alt_system = e.systemart
+        e.systemart = auswahl("Systemart", {"auto": "Automatisch", "single": "Single-Split", "multi": "Multi-Split"},
+                              e.systemart, "systemart")
+        e.betriebsart = auswahl("Betriebsart", {"both": "Heizen und Kühlen", "cool": "Nur Kühlen", "heat": "Nur Heizen"},
+                                e.betriebsart, "betriebsart")
+        if e.systemart != alt_system:  # applySystemRules
+            if e.systemart == "single" and len(p.raeume) > 1:
+                p.raeume = p.raeume[:1]
+                st.session_state.aktiv = 0
+            if e.systemart == "multi" and len(p.raeume) < 2:
+                p.raeume.append(Raum(name=f"Raum {len(p.raeume) + 1}"))
+            st.session_state.rev += 1
+            st.rerun()
 
+        st.header("Gebäude & Klima")
+        e.daemmstandard = auswahl("Bau-/Dämmstandard", P.USTD_LABEL, e.daemmstandard, "daemm")
+        e.verglasung = auswahl("Verglasung", P.GLAS_LABEL, e.verglasung, "glas")
+        e.sonnenschutz = auswahl("Sonnenschutz", P.SONNENSCHUTZ_LABEL, e.sonnenschutz, "shade")
+        c1, c2 = st.columns(2)
+        e.norm_aussen = c1.number_input("Norm-Außentemp. (°C)", value=float(e.norm_aussen), step=1.0, key=k("heatOut"))
+        e.sommer = c2.number_input("Sommer-Auslegung (°C)", value=float(e.sommer), step=1.0, key=k("summer"))
+        e.kuehlbetrieb_h = auswahl("Tägliche Kühlbetriebsdauer · Speichereffekt", P.KUEHLBETRIEB_LABEL,
+                                   e.kuehlbetrieb_h, "coolHours")
+        e.gleichzeitigkeit = auswahl("Gleichzeitigkeitsfaktor (P-004) · bedarfsseitig",
+                                     {1.0: "100 % (Norm-Default)", 0.95: "95 %", 0.9: "90 %", 0.85: "85 %"},
+                                     e.gleichzeitigkeit, "sim")
+        e.waermebruecken = auswahl("Wärmebrückenzuschlag Heizlast (12831-1)",
+                                   {"none": "ohne Zuschlag", "standard": "pauschal ΔU 0,05", "high": "erhöht ΔU 0,10"},
+                                   e.waermebruecken, "wb")
+        e.aufheizreserve = auswahl("Aufheizreserve Heizlast (12831-1)",
+                                   {"none": "keine Reserve", "standard": "+15 %", "high": "+30 %"},
+                                   e.aufheizreserve, "reheat")
+        with st.expander("Erweiterte Annahmen (F-015)"):
+            c1, c2 = st.columns(2)
+            e.soll_kuehlen = c1.number_input("Kühl-Soll (°C)", 18.0, 28.0, float(e.soll_kuehlen), 0.5, key=k("coolSet"))
+            e.soll_heizen = c2.number_input("Heiz-Soll (°C)", 16.0, 26.0, float(e.soll_heizen), 0.5, key=k("heatSet"))
 
-def uebernehmen(raeume: list[Raum], systemart: str) -> None:
-    """Übernimmt Räume aus der Planerkennung in den Konfigurator."""
-    p.raeume = [r.model_copy(deep=True) for r in raeume]
-    p.einstellungen.systemart = systemart
-    p.validierungsfall = ""
-    neu_laden(p)
-    st.session_state.goto = SEITE_KONFIG
+        st.header(f"Validierung {P.TOOL_VERSION}")
+        faelle = {"": "manuelle Eingabe"} | {key: f"{t['id']} {t['name']}" for key, t in VALIDIERUNGSFAELLE.items()}
+        fall = st.selectbox("Referenzfall", list(faelle), index=list(faelle).index(p.validierungsfall),
+                            format_func=faelle.get, key=k("fall"))
+        if fall != p.validierungsfall:
+            if fall:
+                wende_validierungsfall_an(p, fall)
+            else:
+                p.validierungsfall = ""
+            neu_laden(p)
+            st.rerun()
+        with st.expander("Prüfdaten"):
+            st.code(pruefdaten_text(p, PD), language=None)
+
+# ---------------------------------------------------------------- Ansichten
+def zur_expertenansicht() -> None:
+    st.session_state.goto_ansicht = EXPERTE
     st.rerun()
 
 
-seite = st.segmented_control("Ansicht", [SEITE_PLAENE, SEITE_KONFIG], key="seite",
-                             label_visibility="collapsed") or SEITE_PLAENE
-if seite == SEITE_PLAENE:
-    seite_plaene(p, PD, uebernehmen)
+def neu_starten() -> None:
+    for key in ("schritt", "ki_info", "konzept_wahl", "baujahr_manuell"):
+        st.session_state.pop(key, None)
+    neu_laden(Projekt(config_id=neue_config_id()))
+    st.rerun()
+
+
+if ansicht == ASSISTENT:
+    assistent(p, PD, PREISE, k, neu_laden, zur_expertenansicht, neu_starten)
 else:
     # ---------------------------------------------------------------- Berechnung
     erg = auswerten(p, PD)
@@ -515,7 +518,6 @@ else:
             st.download_button("PDF erzeugen (A4 Querformat)", pdf_bericht(p, PD, st.session_state[k("ack_zeit")]),
                                f"Split_Klima_Bericht_{stempel}.pdf", "application/pdf", type="primary")
 
-if st.sidebar.button("Neues Projekt", width="stretch"):
-    neu_laden(Projekt(config_id=neue_config_id()))
-    st.rerun()
+if ansicht == EXPERTE and st.sidebar.button("Neues Projekt", width="stretch"):
+    neu_starten()
 st.caption(f"Entwickelt von Daniel Sommer · HC/SDE3-PSD · SplitConfigCore {P.TOOL_VERSION} (Python)")
