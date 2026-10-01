@@ -94,12 +94,33 @@ class PlanFehler(RuntimeError):
     pass
 
 
+KEIN_SCHLUESSEL = (
+    "Kein API-Schlüssel gefunden. In Streamlit Cloud unter ⋮ → Settings → Secrets eintragen:  "
+    'ANTHROPIC_API_KEY = "sk-ant-..."  (lokal: Datei .streamlit/secrets.toml). '
+    "Nach dem Speichern ca. 1 Minute warten und die App neu laden."
+)
+
+
+def schluessel_vorhanden() -> bool:
+    import anthropic
+
+    try:
+        c = anthropic.Anthropic()
+    except Exception:
+        return False
+    return bool(c.api_key or c.auth_token or c.credentials)
+
+
 def analysiere(dateien: list[tuple[bytes, str]], zusatz: str = "", client=None) -> KiPlanAnalyse:
     import anthropic
 
     if not dateien:
         raise ValueError("Mindestens ein Plan erforderlich.")
-    client = client or anthropic.Anthropic()
+    if client is None:
+        client = anthropic.Anthropic()
+        # API-Key, Token oder angemeldetes ``ant``-Profil – sonst klare Meldung statt Absturz
+        if not (client.api_key or client.auth_token or client.credentials):
+            raise PlanFehler(KEIN_SCHLUESSEL)
     inhalt = [_block(d, mt) for d, mt in dateien]
     text = "Erfasse die Räume aus den beigefügten Plänen."
     if zusatz.strip():

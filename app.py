@@ -39,15 +39,25 @@ st.markdown(
 
 
 def _secret(name: str) -> str | None:
-    """Liest einen Wert aus den Streamlit-Secrets (falls vorhanden)."""
+    """Liest einen Wert aus den Streamlit-Secrets – unabhängig von Groß-/Kleinschreibung
+    und auch aus Abschnitten wie ``[general]``."""
     try:
-        return st.secrets.get(name)
-    except Exception:  # keine secrets.toml vorhanden
+        eintraege = st.secrets.to_dict()
+    except Exception:  # keine Secrets vorhanden
         return None
+    stapel = [eintraege]
+    while stapel:
+        d = stapel.pop()
+        for key, wert in d.items():
+            if isinstance(wert, dict):
+                stapel.append(wert)
+            elif key.strip().upper() == name and str(wert).strip():
+                return str(wert).strip().strip('"').strip("“”„")
+    return None
 
 
 # API-Schlüssel aus Streamlit-Secrets für das Anthropic-SDK bereitstellen
-if not os.environ.get("ANTHROPIC_API_KEY") and _secret("ANTHROPIC_API_KEY"):
+if not os.environ.get("ANTHROPIC_API_KEY", "").strip() and _secret("ANTHROPIC_API_KEY"):
     os.environ["ANTHROPIC_API_KEY"] = _secret("ANTHROPIC_API_KEY")
 
 # Optionaler Zugangsschutz: Secret APP_PASSWORT setzen
