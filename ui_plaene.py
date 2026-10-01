@@ -12,7 +12,10 @@ from splitklima import parameter as P
 from splitklima.anlagenvorschlag import anlagenkonzepte
 from splitklima.auswahl import ig_gewaehlt, ig_status
 from splitklima.berechnung import raum_last
-from splitklima.ki_plan import KiPlanAnalyse, PlanFehler, analysiere, baualter_aus_baujahr, in_raeume
+from splitklima.ki_plan import (
+    KEIN_SCHLUESSEL, KiPlanAnalyse, PlanFehler, analysiere, baualter_aus_baujahr, in_raeume,
+    schluessel_vorhanden,
+)
 from splitklima.modell import Projekt, Raum
 from splitklima.produkte import Produktdaten
 
@@ -58,8 +61,10 @@ def seite_plaene(p: Projekt, prod: Produktdaten, uebernehmen: Callable[[list[Rau
         if st.button("Beispielergebnis laden (ohne KI)", width="stretch",
                      help="Zeigt den Ablauf mit einem Beispiel-Einfamilienhaus, ohne API-Schlüssel."):
             _neues_ergebnis(KiPlanAnalyse.model_validate_json(BEISPIEL.read_text("utf-8")))
-        st.caption("Für die Analyse wird `ANTHROPIC_API_KEY` benötigt. Pläne werden zur Auswertung an die "
-                   "Claude API übertragen.")
+        if schluessel_vorhanden():
+            st.caption("✅ API-Schlüssel gefunden. Pläne werden zur Auswertung an die Claude API übertragen.")
+        else:
+            st.warning(KEIN_SCHLUESSEL, icon="🔑")
     bilder = [f for f in dateien or [] if not f.name.lower().endswith(".pdf")]
     if bilder:
         with st.expander("Vorschau"):
