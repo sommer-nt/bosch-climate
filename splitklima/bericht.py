@@ -215,3 +215,51 @@ def _balken(pdf: _Bericht, name: str, pct: float, info: str) -> None:
     pdf.cell(0, hoehe, pdf.t(f"{pct:.0f} % · {info}"))
     pdf.set_fill_color(255, 255, 255)
     pdf.set_y(y + hoehe + 2)
+
+
+def pdf_angebot(projekt: Projekt, konzept, pd: Produktdaten, preise, bestaetigt_am: str = "") -> bytes:
+    """Kompakte Angebotsübersicht für den Assistenten: Lösung, Preis, Räume, Stückliste."""
+    from .preise import fmt_eur
+
+    pdf = _Bericht(projekt.config_id)
+    pdf.add_page()
+    e = projekt.einstellungen
+    pdf.text(f"Projekt: {projekt.name} · Standort: {projekt.ort} · Datum: {projekt.datum.strftime('%d.%m.%Y')} · "
+             f"Baujahr: {projekt.baujahr or '-'} · Konfigurations-ID: {projekt.config_id}")
+
+    pdf.abschnitt(f"Empfohlene Lösung: {konzept.name}")
+    preis = konzept.preis(pd, preise)
+    pdf.text(f"{konzept.geraete_text}\nGerätepreis: {fmt_eur(preis)}  ({preise.preisbasis})"
+             + ("" if preise.freigegeben else "\nHinweis: Richtpreis aus Platzhalter-Preisliste, nicht freigegeben."))
+    pdf.tabelle(["System", "Räume", "Außengerät(e)", "Bedarf Kühlen", "Leistung Kühlen", "Bedarf Heizen",
+                 "Leistung Heizen"],
+                [[t.bezeichnung, ", ".join(r.name for r in t.raeume), t.kombination.label if t.kombination else "-",
+                  f"{t.last_kuehlen:.2f} kW", f"{t.kombination.t.cool:.1f} kW" if t.kombination else "-",
+                  f"{t.last_heizen:.2f} kW", f"{t.kombination.t.heat:.1f} kW" if t.kombination else "-"]
+                 for t in konzept.teilsysteme], [30, 75, 60, 27, 27, 27, 27])
+
+    pdf.abschnitt("Räume und Inneneinheiten")
+    zeilen = []
+    for t in konzept.teilsysteme:
+        for r in (t.projekt.raeume if t.projekt else t.raeume):
+            l = raum_last(r, e)
+            u = ig_gewaehlt(r, t.projekt or projekt, pd)
+            zeilen.append([f"{r.geschoss} {r.name}".strip(), r.raumart, f"{r.flaeche:g} m²", f"{l.cool:.2f} kW",
+                           f"{l.heat:.2f} kW", u.name if u else "keine passende Einheit"])
+    pdf.tabelle(["Raum", "Nutzung", "Fläche", "Kühllast", "Heizlast", "Inneneinheit"], zeilen,
+                [60, 35, 25, 28, 28, 97])
+
+    pdf.abschnitt("Stückliste")
+    liste = konzept.stueckliste(pd, preise)
+    pdf.tabelle(["Artikel", "Art.-Nr.", "Menge", "Einzelpreis", "Summe"],
+                [[x.name, x.artikel, x.menge, fmt_eur(x.einzelpreis), fmt_eur(x.summe)] for x in liste]
+                + [["Summe", "", "", "", fmt_eur(preis)]], [110, 45, 20, 49, 49])
+
+    pdf.abschnitt("Auslegungsgrundlagen")
+    pdf.text(f"{P.USTD_LABEL[e.daemmstandard]} · {P.GLAS_LABEL[e.verglasung]}verglasung · Sonnenschutz: "
+             f"{P.SONNENSCHUTZ_LABEL[e.sonnenschutz]} · Auslegung Sommer {e.sommer:g} °C / Winter {e.norm_aussen:g} °C · "
+             f"Soll {e.soll_kuehlen_wirksam:g} / {e.soll_heizen_wirksam:g} °C. Kühllast in Anlehnung an VDI 2078, "
+             "Heizlast in Anlehnung an DIN EN 12831-1 (Rechenkern CALC-0.4).", 8)
+    pdf.abschnitt("Hinweise")
+    pdf.text(P.HAFTUNG_LANGTEXT + (f" Hinweise bestätigt am {bestaetigt_am}." if bestaetigt_am else ""), 8)
+    return bytes(pdf.output())

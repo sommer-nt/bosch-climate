@@ -22,29 +22,32 @@ jetzt als Python-Paket mit Streamlit-Oberfläche.
   Validierungs-Snapshot, Berechnungsparameter; **PDF-Bericht A4 quer** nach Bestätigung
   der Haftungshinweise
 - **Neu:** Projekt speichern/laden (`.skk.json`)
-- **Neu: Pläne & Anlagenvorschlag (KI)** – siehe unten
+- **Neu: Assistent mit KI-Planerkennung, wirtschaftlichem Vorschlag und Preis** – siehe unten
 
-## Pläne & Anlagenvorschlag (KI)
+## Assistent (Startseite)
 
-Erste Seite der App („① Pläne & Anlagenvorschlag“):
+Geführter Ablauf in drei Schritten – der Rechenkern bleibt unverändert:
 
-1. **Pläne hochladen** – Grundrisse aller Geschosse, Schnitte, Ansichten, Lageplan
-   (PDF, PNG, JPG; zusammen max. 30 MB). Optional Zusatzangaben wie
-   „Plan-Oben zeigt nach Nordost“.
-2. **KI-Analyse (Claude)** – erkennt je Raum Geschoss, Bezeichnung, Raumart, Fläche,
-   Raumhöhe, Außenwände mit Himmelsrichtung, Länge und Fensterfläche, Dachlage,
-   Dachfenster und was darunter/darüber liegt; dazu Baujahr aus dem Plankopf und
-   geeignete Aufstellorte für Außengeräte. Unsicherheiten werden als Hinweise angezeigt.
-3. **Prüfen** – erkannte Räume in einer Tabelle korrigieren oder abwählen,
-   Baujahr → Baualtersklasse übernehmen.
-4. **Infrage kommende Anlagen** – mit dem Rechenkern werden drei Konzepte verglichen:
-   *ein Multi-Split-System*, *Multi-Split je Geschoss*, *Single-Split je Raum* – jeweils mit
-   Außen- und Inneneinheiten, Deckung, Anschlüssen und Schall. Das Konzept mit
-   vollständiger Deckung und den wenigsten Außengeräten wird als Empfehlung markiert.
-5. **Übernehmen** – alle Räume oder ein Teilsystem (z. B. nur das DG) in den
-   Konfigurator übernehmen und dort im Detail ausarbeiten inkl. PDF-Bericht.
+1. **Projekt** – Ort (Klimadaten automatisch), kühlen/heizen, gewünschtes System
+   (*Beste Lösung finden*, Multi-Split oder Single-Split), Baujahr, Fenster, Sonnenschutz.
+2. **Räume** – Grundrisse hochladen (PDF, PNG, JPG): die KI (Claude) erkennt Räume, Flächen,
+   Außenwände, Fenster, Dachlage und Baujahr. Oder Räume manuell anlegen. Jeder Raum ist eine
+   kompakte, aufklappbare Zeile mit Kühlbedarf; Hinweise der Erkennung liegen eingeklappt
+   hinter einem Info-Knopf.
+3. **Ergebnis** – eine Empfehlung mit **Gerätepreis**, Anzahl Außen-/Innengeräte und
+   Kühlleistung. Empfohlen wird das **wirtschaftlichste** Konzept, das alle Räume abdeckt
+   (Vergleich: ein Multi-Split, Multi-Split je Geschoss, Single-Split je Raum). Alternativen
+   mit Preisdifferenz, Stückliste, Räume/Geräte und Aufstellorte eingeklappt darunter.
+   **Angebotsübersicht als PDF** nach Bestätigung der Hinweise.
 
-Ohne API-Schlüssel lässt sich der Ablauf mit „Beispielergebnis laden“ ausprobieren.
+Die bisherige Detailansicht (alle Parameter, Validierung, Exporte, PDF-Bericht) ist über
+**„Expertenansicht“** oben rechts erreichbar.
+
+### Preise
+
+Preise stehen in `splitklima/daten/preise.json` (je Artikel-ID). **Die mitgelieferten Werte
+sind Platzhalter.** Gültige Listenpreise eintragen und `"freigegeben": true` setzen – bis
+dahin kennzeichnet die App den Preis als „Richtpreis aus Platzhalter-Preisliste“.
 
 ## Start
 
@@ -96,9 +99,11 @@ Für die KI-Planerkennung `.streamlit/secrets.toml` nach Vorlage
 | `splitklima/standort.py` | Orte und Klimaregionen |
 | `splitklima/export.py` | JSON-Exporte und Prüfdaten |
 | `splitklima/bericht.py` | PDF-Bericht |
-| `ui_plaene.py` | Seite „Pläne & Anlagenvorschlag“ |
+| `ui_assistent.py` | Assistent: Projekt → Räume → Ergebnis |
 | `splitklima/ki_plan.py` | KI-Planerkennung (Claude) |
-| `splitklima/anlagenvorschlag.py` | Vergleich der Anlagenkonzepte und Empfehlung |
+| `splitklima/anlagenvorschlag.py` | Vergleich der Anlagenkonzepte, wirtschaftliche Empfehlung |
+| `splitklima/preise.py` | Preisliste, Stückliste, Gesamtpreis |
+| `splitklima/daten/preise.json` | Preise je Artikel (Platzhalter – bitte pflegen) |
 | `splitklima/daten/produkte.json` | Produktdaten Außen-/Inneneinheiten (aus v6.9.1 übernommen) |
 
 Die Produktdaten liegen jetzt als JSON vor (in v6.9.1 als „spätere JSON-Auslagerung“

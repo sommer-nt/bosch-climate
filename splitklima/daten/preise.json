@@ -1,0 +1,36 @@
+{
+  "_hinweis": "PLATZHALTER – keine echten Bosch-Preise. Mit gültigen Listenpreisen (netto, EUR) ersetzen und dann 'freigegeben' auf true setzen.",
+  "freigegeben": false,
+  "waehrung": "EUR",
+  "preisbasis": "Listenpreis netto, zzgl. MwSt., Montage, Kältemittelleitungen und Inbetriebnahme",
+  "aussengeraete": {
+    "cl7000i-20": 1150,
+    "cl3200i-26": 990,
+    "cl6000ip-26": 1390,
+    "cl3200i-35": 1190,
+    "cl6000ip-35": 1590,
+    "cl7000i-35": 1490,
+    "cl3200i-53": 1790,
+    "cl5000m-53-2": 1990,
+    "cl7000m-53-2": 2290,
+    "cl5000m-79-3": 2690,
+    "cl7000m-79-3": 3090,
+    "cl5000m-105-4": 3390,
+    "cl5000m-125-5": 3990
+  },
+  "innengeraete": {
+    "w20": 490,
+    "w26": 540,
+    "w35": 620,
+    "w53": 890,
+    "cn35": 990,
+    "cc53": 1490,
+    "d70": 1690
+  },
+  "zubehoer": {
+    "g10-clc": 129,
+    "g10-3": 99,
+    "adapter-38-14": 39,
+    "adapter-14-38": 39
+  }
+}

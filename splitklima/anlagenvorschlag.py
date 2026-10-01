@@ -4,7 +4,8 @@ Vergleicht drei Anlagenkonzepte mit dem unveränderten Rechenkern:
   1. Ein Multi-Split-System für alle Räume (bei Bedarf mehrere Außengeräte)
   2. Multi-Split je Geschoss (Geschoss mit nur einem Raum → Single-Split)
   3. Single-Split je Raum
-und empfiehlt das Konzept mit vollständiger Deckung und den wenigsten Außengeräten.
+und empfiehlt das wirtschaftlichste Konzept mit vollständiger Deckung (niedrigster Preis;
+ohne Preise: wenigste Außengeräte).
 """
 
 from __future__ import annotations
@@ -13,7 +14,9 @@ from dataclasses import dataclass, field
 
 from .auswahl import Kombination, ig_gewaehlt, ig_status, kombinationen
 from .berechnung import gebaeude_last
+from .bewertung import zubehoer
 from .modell import Projekt, Raum
+from .preise import Position, Preisliste, gesamtpreis, stueckliste_zusammenfassen
 from .produkte import Produktdaten
 
 
@@ -25,10 +28,29 @@ class Teilsystem:
     alternativen: list[Kombination]
     last_kuehlen: float
     last_heizen: float
+    projekt: Projekt | None = None  # Teilprojekt mit diesen Räumen (für Inneneinheiten/Zubehör)
 
     @property
     def gedeckt(self) -> bool:
         return self.kombination is not None
+
+    def positionen(self, pd: Produktdaten, preise: Preisliste) -> list[Position]:
+        """Außengeräte, Inneneinheiten je Raum und Pflichtzubehör."""
+        pos: list[Position] = []
+        if self.kombination:
+            for d in self.kombination.items:
+                pos.append(Position("aussen", d.id, d.name, d.article or "-", 1, preise.preis("aussen", d.id)))
+        if self.projekt is not None:
+            for r in self.projekt.raeume:
+                u = ig_gewaehlt(r, self.projekt, pd)
+                if u:
+                    pos.append(Position("innen", u.id, u.name, "-", 1, preise.preis("innen", u.id)))
+            for z in zubehoer(self.projekt, self.kombination, pd)["pflicht"]:
+                pos.append(Position("zubehoer", z.id, z.name, z.article, z.qty, preise.preis("zubehoer", z.id)))
+        return pos
+
+    def alle_raeume_versorgt(self, pd: Produktdaten) -> bool:
+        return self.projekt is not None and all(ig_gewaehlt(r, self.projekt, pd) for r in self.projekt.raeume)
 
     @property
     def aussengeraete(self) -> int:
@@ -77,6 +99,16 @@ class Konzept:
     def geraete_text(self) -> str:
         return " + ".join(t.kombination.label for t in self.teilsysteme if t.kombination) or "–"
 
+    def stueckliste(self, pd: Produktdaten, preise: Preisliste) -> list[Position]:
+        return stueckliste_zusammenfassen([p for t in self.teilsysteme for p in t.positionen(pd, preise)])
+
+    def preis(self, pd: Produktdaten, preise: Preisliste) -> float | None:
+        return gesamtpreis(self.stueckliste(pd, preise))
+
+    def vollstaendig(self, pd: Produktdaten) -> bool:
+        """Außengeräte decken die Last und jeder Raum hat eine passende Inneneinheit."""
+        return self.gedeckt and all(t.alle_raeume_versorgt(pd) for t in self.teilsysteme)
+
 
 def _teilsystem(projekt: Projekt, bezeichnung: str, raeume: list[Raum], systemart: str,
                 pd: Produktdaten) -> Teilsystem:
@@ -86,7 +118,7 @@ def _teilsystem(projekt: Projekt, bezeichnung: str, raeume: list[Raum], systemar
     teil.gewaehltes_system = None
     last = gebaeude_last(teil)
     combos = kombinationen(teil, last, pd)
-    return Teilsystem(bezeichnung, raeume, combos[0] if combos else None, combos, last.cool, last.heat)
+    return Teilsystem(bezeichnung, raeume, combos[0] if combos else None, combos, last.cool, last.heat, teil)
 
 
 def geschosse(raeume: list[Raum]) -> dict[str, list[Raum]]:
@@ -96,13 +128,16 @@ def geschosse(raeume: list[Raum]) -> dict[str, list[Raum]]:
     return gruppen
 
 
-def anlagenkonzepte(projekt: Projekt, pd: Produktdaten) -> list[Konzept]:
+def anlagenkonzepte(projekt: Projekt, pd: Produktdaten, preise: Preisliste | None = None,
+                    wunsch: str = "auto") -> list[Konzept]:
+    """Infrage kommende Konzepte. ``wunsch``: "auto" (alle), "single" oder "multi"."""
     raeume = projekt.raeume
     if not raeume:
         return []
     konzepte: list[Konzept] = []
+    multi_moeglich = len(raeume) > 1
 
-    if len(raeume) > 1:
+    if multi_moeglich and wunsch in ("auto", "multi"):
         k = Konzept("multi_gesamt", "Ein Multi-Split-System",
                     "Alle Räume an einem Multi-Split-System. Wenige Außengeräte, aber längere Kältemittelleitungen "
                     "über Geschosse hinweg.")
@@ -110,7 +145,8 @@ def anlagenkonzepte(projekt: Projekt, pd: Produktdaten) -> list[Konzept]:
         konzepte.append(k)
 
     gruppen = geschosse(raeume)
-    if len(gruppen) > 1 and any(len(g) > 1 for g in gruppen.values()):
+    if multi_moeglich and wunsch in ("auto", "multi") and len(gruppen) > 1 \
+            and any(len(g) > 1 for g in gruppen.values()):
         k = Konzept("multi_geschoss", "Multi-Split je Geschoss",
                     "Je Geschoss ein eigenes System. Kurze Leitungswege je Etage; Geschosse mit nur einem Raum "
                     "erhalten ein Single-Split-Gerät.")
@@ -118,17 +154,31 @@ def anlagenkonzepte(projekt: Projekt, pd: Produktdaten) -> list[Konzept]:
             k.teilsysteme.append(_teilsystem(projekt, g, liste, "auto", pd))
         konzepte.append(k)
 
-    k = Konzept("single", "Single-Split je Raum",
-                "Jeder Raum erhält ein eigenes Außengerät. Höchste Effizienz und Unabhängigkeit, aber viele "
-                "Außengeräte an der Fassade.")
-    for r in raeume:
-        k.teilsysteme.append(_teilsystem(projekt, r.name, [r], "single", pd))
-    konzepte.append(k)
+    if wunsch in ("auto", "single") or not multi_moeglich:
+        k = Konzept("single", "Single-Split je Raum",
+                    "Jeder Raum erhält ein eigenes Außengerät. Höchste Effizienz und Unabhängigkeit, aber mehr "
+                    "Außengeräte an der Fassade.")
+        for r in raeume:
+            k.teilsysteme.append(_teilsystem(projekt, r.name, [r], "single", pd))
+        konzepte.append(k)
 
-    gedeckt = [k for k in konzepte if k.gedeckt]
-    if gedeckt:
-        min(gedeckt, key=lambda k: (k.aussengeraete, k.reserve_kuehlen)).empfohlen = True
+    empfehlung_setzen(konzepte, pd, preise)
     return konzepte
+
+
+def empfehlung_setzen(konzepte: list[Konzept], pd: Produktdaten, preise: Preisliste | None) -> None:
+    """Wirtschaftlichstes vollständiges Konzept: niedrigster Preis, dann wenigste Außengeräte."""
+    for k in konzepte:
+        k.empfohlen = False
+    kandidaten = [k for k in konzepte if k.vollstaendig(pd)] or [k for k in konzepte if k.gedeckt]
+    if not kandidaten:
+        return
+
+    def schluessel(k: Konzept):
+        preis = k.preis(pd, preise) if preise else None
+        return (preis if preis is not None else float("inf"), k.aussengeraete, k.reserve_kuehlen)
+
+    min(kandidaten, key=schluessel).empfohlen = True
 
 
 def inneneinheiten_uebersicht(projekt: Projekt, pd: Produktdaten) -> list[dict]:
