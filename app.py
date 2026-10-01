@@ -5,7 +5,9 @@ Start:  streamlit run app.py
 
 from __future__ import annotations
 
+import hmac
 import json
+import os
 from datetime import datetime
 
 import pandas as pd
@@ -34,6 +36,32 @@ st.markdown(
     ".ok{color:#2e7d32}.warn{color:#b26a00}.bad,.err,.orange{color:#c0161d}</style>",
     unsafe_allow_html=True,
 )
+
+
+def _secret(name: str) -> str | None:
+    """Liest einen Wert aus den Streamlit-Secrets (falls vorhanden)."""
+    try:
+        return st.secrets.get(name)
+    except Exception:  # keine secrets.toml vorhanden
+        return None
+
+
+# API-Schlüssel aus Streamlit-Secrets für das Anthropic-SDK bereitstellen
+if not os.environ.get("ANTHROPIC_API_KEY") and _secret("ANTHROPIC_API_KEY"):
+    os.environ["ANTHROPIC_API_KEY"] = _secret("ANTHROPIC_API_KEY")
+
+# Optionaler Zugangsschutz: Secret APP_PASSWORT setzen
+_passwort = _secret("APP_PASSWORT")
+if _passwort and not st.session_state.get("angemeldet"):
+    st.markdown("### 🔒 BOSCH Climate Split-Klima Konfigurator")
+    eingabe = st.text_input("Passwort", type="password")
+    if eingabe:
+        if hmac.compare_digest(eingabe, str(_passwort)):
+            st.session_state.angemeldet = True
+            st.rerun()
+        st.error("Passwort falsch.")
+    st.stop()
+
 PD = standard()
 STATUSFARBE = {"ok": "🟢", "warn": "🟡", "orange": "🟠", "bad": "🔴", "err": "🔴"}
 

@@ -61,6 +61,19 @@ export ANTHROPIC_API_KEY=sk-ant-...      # Windows: set ANTHROPIC_API_KEY=sk-ant
 
 Alles andere funktioniert ohne Schlüssel und offline.
 
+## Deployment auf Streamlit Community Cloud
+
+1. <https://share.streamlit.io> → **Create app** → „Deploy a public app from GitHub“
+2. Repository `sommer-nt/bosch-climate`, Branch (z. B. `main`), Main file `app.py`
+3. **Advanced settings** → Python 3.12 und unter **Secrets** eintragen
+   (Vorlage: `.streamlit/secrets.toml.beispiel`):
+   ```toml
+   ANTHROPIC_API_KEY = "sk-ant-..."
+   APP_PASSWORT = "..."      # optional, schützt die App mit einem Passwort
+   ```
+4. **Deploy**. `requirements.txt` und `packages.txt` (Schrift für den PDF-Bericht)
+   werden automatisch installiert.
+
 ## Aufbau
 
 | Datei | Inhalt |

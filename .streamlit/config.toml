@@ -1,0 +1,5 @@
+[server]
+maxUploadSize = 50   # MB je Datei (Claude-API-Grenze: 32 MB je Anfrage)
+
+[theme]
+primaryColor = "#005691"
