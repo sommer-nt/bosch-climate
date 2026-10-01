@@ -38,6 +38,7 @@ class Fenstergruppe(BaseModel):
 
 class Raum(BaseModel):
     name: str = "Wohnzimmer"
+    geschoss: str = ""  # z. B. EG, OG, DG – nur für Anlagenvorschlag/Anzeige
     raumart: Raumart = "Wohnzimmer"
     flaeche: float = 22.0
     hoehe: float = 2.5

@@ -1,0 +1,47 @@
+{
+  "raeume": [
+    {"name": "Wohnen/Essen", "geschoss": "EG", "raumart": "Wohnzimmer", "flaeche_m2": 38.4, "raumhoehe_m": 2.6,
+     "aussenwaende": [{"ausrichtung": "S", "laenge_m": 7.2, "fensterflaeche_m2": 7.6},
+                      {"ausrichtung": "W", "laenge_m": 5.3, "fensterflaeche_m2": 2.8}],
+     "unter_dach": false, "dachform": "flat", "dachfenster_m2": 0, "ueber_unbeheizt": "erdreich",
+     "unter_unbeheiztem_dachraum": false},
+    {"name": "Küche", "geschoss": "EG", "raumart": "Küche", "flaeche_m2": 12.1, "raumhoehe_m": 2.6,
+     "aussenwaende": [{"ausrichtung": "O", "laenge_m": 3.6, "fensterflaeche_m2": 1.7}],
+     "unter_dach": false, "dachform": "flat", "dachfenster_m2": 0, "ueber_unbeheizt": "erdreich",
+     "unter_unbeheiztem_dachraum": false},
+    {"name": "Arbeiten", "geschoss": "EG", "raumart": "Büro", "flaeche_m2": 10.9, "raumhoehe_m": 2.6,
+     "aussenwaende": [{"ausrichtung": "N", "laenge_m": 3.3, "fensterflaeche_m2": 1.4},
+                      {"ausrichtung": "O", "laenge_m": 3.3, "fensterflaeche_m2": 0}],
+     "unter_dach": false, "dachform": "flat", "dachfenster_m2": 0, "ueber_unbeheizt": "erdreich",
+     "unter_unbeheiztem_dachraum": false},
+    {"name": "Schlafen", "geschoss": "OG", "raumart": "Schlafzimmer", "flaeche_m2": 16.2, "raumhoehe_m": 2.5,
+     "aussenwaende": [{"ausrichtung": "S", "laenge_m": 4.2, "fensterflaeche_m2": 1.7},
+                      {"ausrichtung": "W", "laenge_m": 3.9, "fensterflaeche_m2": 1.4}],
+     "unter_dach": false, "dachform": "flat", "dachfenster_m2": 0, "ueber_unbeheizt": "nein",
+     "unter_unbeheiztem_dachraum": false},
+    {"name": "Kind 1", "geschoss": "OG", "raumart": "Kinderzimmer", "flaeche_m2": 13.4, "raumhoehe_m": 2.5,
+     "aussenwaende": [{"ausrichtung": "S", "laenge_m": 3.6, "fensterflaeche_m2": 1.7},
+                      {"ausrichtung": "O", "laenge_m": 3.7, "fensterflaeche_m2": 0}],
+     "unter_dach": false, "dachform": "flat", "dachfenster_m2": 0, "ueber_unbeheizt": "nein",
+     "unter_unbeheiztem_dachraum": false},
+    {"name": "Kind 2", "geschoss": "OG", "raumart": "Kinderzimmer", "flaeche_m2": 12.6, "raumhoehe_m": 2.5,
+     "aussenwaende": [{"ausrichtung": "N", "laenge_m": 3.5, "fensterflaeche_m2": 1.4},
+                      {"ausrichtung": "O", "laenge_m": 3.6, "fensterflaeche_m2": 0}],
+     "unter_dach": false, "dachform": "flat", "dachfenster_m2": 0, "ueber_unbeheizt": "nein",
+     "unter_unbeheiztem_dachraum": false},
+    {"name": "Studio", "geschoss": "DG", "raumart": "Büro", "flaeche_m2": 27.5, "raumhoehe_m": 2.4,
+     "aussenwaende": [{"ausrichtung": "W", "laenge_m": 4.5, "fensterflaeche_m2": 2.2}],
+     "unter_dach": true, "dachform": "saddle_south", "dachfenster_m2": 2.3, "ueber_unbeheizt": "nein",
+     "unter_unbeheiztem_dachraum": false}
+  ],
+  "baujahr": 1994,
+  "nordrichtung": "Beispieldaten – Nordpfeil im Lageplan (Plan-Oben = Norden)",
+  "aufstellorte_aussengeraet": [
+    {"ort": "Terrasse Westseite (EG)", "begruendung": "Direkt am Wohnzimmer, kurzer Leitungsweg, gut zugänglich."},
+    {"ort": "Fassade Ostseite neben Küche", "begruendung": "Abseits der Schlafräume, kurze Leitung zu Küche und Arbeiten."}
+  ],
+  "hinweise": [
+    "Beispielergebnis zum Ausprobieren – keine echte Planerkennung.",
+    "Fensterhöhen im OG mit 1,35 m angenommen (keine Ansicht vorhanden)."
+  ]
+}
