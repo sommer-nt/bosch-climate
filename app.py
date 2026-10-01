@@ -40,8 +40,10 @@ st.markdown(
 
 
 def _secret(name: str) -> str | None:
-    """Liest einen Wert aus den Streamlit-Secrets – unabhängig von Groß-/Kleinschreibung
-    und auch aus Abschnitten wie ``[general]``."""
+    """Liest einen Wert aus Umgebungsvariablen (z. B. Docker) oder den Streamlit-Secrets –
+    dort unabhängig von Groß-/Kleinschreibung und auch aus Abschnitten wie ``[general]``."""
+    if os.environ.get(name, "").strip():
+        return os.environ[name].strip()
     try:
         eintraege = st.secrets.to_dict()
     except Exception:  # keine Secrets vorhanden

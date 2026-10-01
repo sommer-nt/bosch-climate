@@ -73,6 +73,16 @@ Alles andere funktioniert ohne Schlüssel und offline.
 Für die KI-Planerkennung `.streamlit/secrets.toml` nach Vorlage
 `.streamlit/secrets.toml.beispiel` anlegen.
 
+## Eigener Server mit Docker (HTTPS)
+
+`Dockerfile` + `deploy/docker-compose.yml` (App + Caddy mit automatischem HTTPS).
+Schritt-für-Schritt: **[deploy/ANLEITUNG.md](deploy/ANLEITUNG.md)** – Kurzform:
+
+```bash
+cd deploy && cp .env.beispiel .env   # Domain, API-Schlüssel, Passwort eintragen
+docker compose up -d --build
+```
+
 ## Deployment auf Streamlit Community Cloud
 
 1. <https://share.streamlit.io> → **Create app** → „Deploy a public app from GitHub“
