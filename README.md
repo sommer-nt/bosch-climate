@@ -61,6 +61,15 @@ export ANTHROPIC_API_KEY=sk-ant-...      # Windows: set ANTHROPIC_API_KEY=sk-ant
 
 Alles andere funktioniert ohne Schlüssel und offline.
 
+## Lokal starten per Doppelklick
+
+- **Windows:** Repo als ZIP herunterladen (GitHub → Code → Download ZIP), entpacken,
+  `start_windows.bat` doppelklicken. Voraussetzung: Python 3.11+ von python.org.
+- **macOS/Linux:** `./start_mac_linux.sh`
+
+Für die KI-Planerkennung `.streamlit/secrets.toml` nach Vorlage
+`.streamlit/secrets.toml.beispiel` anlegen.
+
 ## Deployment auf Streamlit Community Cloud
 
 1. <https://share.streamlit.io> → **Create app** → „Deploy a public app from GitHub“
