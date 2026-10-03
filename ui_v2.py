@@ -66,9 +66,10 @@ div[class*="st-key-karte-"] {{position:relative; transition:border-color .15s, b
                               border-radius:.6rem}}
 div[class*="st-key-karte-"]:hover {{border-color:#7fa9cc !important; box-shadow:0 2px 10px rgba(0,86,145,.12)}}
 div[class*="st-key-karte-"]:has(.karte.an) {{border:2px solid {BLAU} !important; background:#f2f7fb}}
-div[class*="st-key-kbtn-"] {{position:absolute !important; inset:0; z-index:3; margin:0 !important}}
-div[class*="st-key-kbtn-"] div, div[class*="st-key-kbtn-"] button {{width:100%; height:100%}}
-div[class*="st-key-kbtn-"] button {{opacity:0; min-height:100%}}
+div[class*="st-key-kbtn-"] {{position:absolute !important; inset:0 !important; width:100% !important;
+                             height:100% !important; z-index:3; margin:0 !important}}
+div[class*="st-key-kbtn-"] * {{width:100% !important; height:100% !important; max-width:none !important}}
+div[class*="st-key-kbtn-"] button {{opacity:0; cursor:pointer}}
 .karte {{text-align:center; color:{BLAU}; padding:.2rem 0}}
 .karte .titel {{color:#1d2834; font-weight:600; margin-top:.25rem}}
 .karte .sub {{color:#5c6773; font-size:.8rem; line-height:1.25; margin-top:.15rem}}
@@ -146,7 +147,7 @@ def karten(key: str, optionen: list[tuple], wert, setzen, spalten: int = 3, klei
                 f'<div class="karte{" klein" if klein else ""}{" an" if an else ""}">'
                 f'{"<span class=haken>✓</span>" if an else ""}<div>{ikon}</div><div class="titel">{titel}</div>'
                 f'{f"<div class=sub>{sub}</div>" if sub else ""}</div>', unsafe_allow_html=True)
-            if st.button(titel.replace("&shy;", ""), key=f"kbtn-{_k(key)}-{i}", help=sub or None):
+            if st.button(titel.replace("&shy;", ""), key=f"kbtn-{_k(key)}-{i}"):
                 geklickt = v
     if geklickt is not None and geklickt != wert:
         setzen(geklickt)
