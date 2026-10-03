@@ -110,8 +110,8 @@ def pdf_angebot_v2(projekt: Projekt, konzept: Konzept, kat: Katalog, bestaetigt_
 
     pdf.abschnitt("Auslegungsgrundlagen")
     pdf.text(f"{P.USTD_LABEL[e.daemmstandard]} · {P.GLAS_LABEL[e.verglasung]}verglasung · Sonnenschutz: "
-             f"{P.SONNENSCHUTZ_LABEL[e.sonnenschutz]} · Auslegung Sommer {e.sommer:g} °C / Winter "
-             f"{e.norm_aussen:g} °C · Soll {e.soll_kuehlen_wirksam:g} / {e.soll_heizen_wirksam:g} °C. "
+             f"{P.SONNENSCHUTZ_LABEL[e.sonnenschutz]} · Auslegung Sommer {e.sommer:g} °C · "
+             f"Norm-Außentemperatur {e.norm_aussen:g} °C ({projekt.klima_quelle or 'Standardwert'}) · Soll {e.soll_kuehlen_wirksam:g} / {e.soll_heizen_wirksam:g} °C. "
              "Kühllast in Anlehnung an VDI 2078, Heizlast in Anlehnung an DIN EN 12831-1 (Rechenkern CALC-0.4). "
              "Geräteauswahl nach den zulässigen Kombinationen des Bosch-Katalogs.", 8)
     pdf.abschnitt("Hinweise")

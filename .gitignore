@@ -5,3 +5,6 @@ __pycache__/
 .streamlit/secrets.toml
 deploy/.env
 .env
+
+# Offizielle PLZ-Tabelle DIN/TS 12831-1 (urheberrechtlich geschützt) – nur einchecken, wenn das Repository privat ist
+splitklima/daten/normaussentemperatur_plz.csv

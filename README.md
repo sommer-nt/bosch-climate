@@ -69,6 +69,30 @@ Rechenkern und derselben KI-Planerkennung:
 streamlit run app_v2.py
 ```
 
+### Norm-Außentemperatur über die PLZ (Version 2)
+
+Auf der Seite „Gebäude“ genügt die PLZ oder der Ort. Die App prüft die Eingabe gegen das
+**PLZ-Verzeichnis für ganz Deutschland** (8.308 PLZ, `splitklima/daten/plz_verzeichnis.csv`,
+Quelle [GeoNames](https://www.geonames.org), Lizenz CC BY 4.0) und ermittelt die
+Norm-Außentemperatur θe nach **DIN/TS 12831-1**:
+
+1. PLZ in der offiziellen Tabelle → Wert 1:1 (inkl. Jahresmitteltemperatur θm,e)
+2. PLZ fehlt in der Tabelle → Wert der nächstgelegenen PLZ (höchstens 15 km), mit Angabe
+3. ohne Tabelle → Richtwert der Klimaregion aus v6.9.1, deutlich als „bitte prüfen“ gekennzeichnet
+
+Der Wert lässt sich jederzeit manuell anpassen; Herkunft und Wert stehen im Angebots-PDF.
+
+Die **offizielle PLZ-Tabelle der DIN/TS 12831-1** (8.199 PLZ-Bereiche) ist urheberrechtlich
+geschützt und deshalb nicht enthalten. Liegt sie vor (Excel oder CSV mit den Spalten PLZ,
+Norm-Außentemperatur und optional Jahresmitteltemperatur):
+
+```bash
+python tools/normtemperatur_import.py Klimadaten_DIN_TS_12831-1.xlsx
+```
+
+Der Import prüft PLZ (führende Nullen aus Excel werden ergänzt), Wertebereiche, Doppel-Einträge
+und die Abdeckung und schreibt nur bei fehlerfreier Datei `splitklima/daten/normaussentemperatur_plz.csv`.
+
 Katalog aktualisieren (neue Excel nach `splitklima/daten/quellen/` legen):
 
 ```bash
@@ -144,6 +168,8 @@ docker compose up -d --build
 | `splitklima/daten/produkte.json` | Produktdaten Außen-/Inneneinheiten (aus v6.9.1 übernommen) |
 | `app_v2.py`, `ui_v2.py` | Version 2: Oberfläche mit Auswahlkarten, Navigation, Live-Zusammenfassung |
 | `splitklima/v2/` | Version 2: Katalog, Geräteauswahl nach Katalogregeln, Bilder, Piktogramme, Angebots-PDF |
+| `splitklima/klima_plz.py` | PLZ-Prüfung, Ortssuche, Norm-Außentemperatur nach DIN/TS 12831-1 |
+| `splitklima/daten/plz_verzeichnis.csv` | Alle deutschen PLZ mit Ort, Bundesland, Koordinaten (GeoNames, CC BY 4.0) |
 | `splitklima/daten/katalog.json` | Gesamtsortiment mit Preisen (erzeugt aus der Produktdaten-Excel) |
 
 Die Produktdaten liegen jetzt als JSON vor (in v6.9.1 als „spätere JSON-Auslagerung“

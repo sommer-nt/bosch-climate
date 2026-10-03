@@ -125,3 +125,6 @@ class Projekt(BaseModel):
     # Assistent
     systemwunsch: Literal["auto", "single", "multi"] = "auto"
     baujahr: int | None = None
+    # Version 2: Herkunft der Norm-Außentemperatur (DIN/TS 12831-1, Nachbar-PLZ, Richtwert, manuell)
+    klima_quelle: str = ""
+    norm_aussen_manuell: bool = False
