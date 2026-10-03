@@ -1,0 +1,385 @@
+"""Geräteauswahl Version 2: echte Bosch-Sets, Kombinationsregeln und Preise aus dem Katalog.
+
+Die Heiz- und Kühllasten kommen unverändert aus dem Rechenkern (``berechnung.py``).
+Hier wird nur entschieden, welche Geräte die Lasten wirtschaftlich decken:
+
+* Single-Split: je Raum das günstigste Set, das die Raumlast deckt.
+* Multi-Split: Außeneinheit + Inneneinheiten nach der Positivliste der zulässigen
+  Kombinationen (Leistungsklassen) aus dem Katalog; die Außeneinheit muss die Gebäudelast
+  der Gruppe (mit Gleichzeitigkeit) decken.
+"""
+
+from __future__ import annotations
+
+import math
+from dataclasses import dataclass, field
+from itertools import permutations
+
+from ..berechnung import gebaeude_last, raum_last
+from ..modell import Projekt, Raum
+from ..preise import Position, gesamtpreis, stueckliste_zusammenfassen
+from .katalog import Artikel, Katalog
+
+# Bauart-Werte aus v1 auf v2 abbilden
+BAUART_ALIAS = {"Kassettengerät": "Deckenkassette", "Truhengerät": "Konsole", "auto": "", "": ""}
+NR_INBETRIEBNAHME_AE = "8737804256"
+NR_INBETRIEBNAHME_IE = "8737804260"
+NR_AUFTRAGSPAUSCHALE = "7739607426"
+NR_MSG1 = "7733702555"
+
+
+def bauart_wunsch(raum: Raum) -> str:
+    return BAUART_ALIAS.get(raum.ig_bauart, raum.ig_bauart)
+
+
+@dataclass
+class Bedarf:
+    raum: Raum
+    kuehl: float
+    heiz: float
+
+
+def bedarfe(projekt: Projekt) -> list[Bedarf]:
+    e = projekt.einstellungen
+    out = []
+    for r in projekt.raeume:
+        l = raum_last(r, e)
+        out.append(Bedarf(r, l.cool, l.heat))
+    return out
+
+
+def _relevant(projekt: Projekt) -> tuple[bool, bool]:
+    ba = projekt.einstellungen.betriebsart
+    return ba in ("both", "cool"), ba in ("both", "heat")
+
+
+@dataclass
+class Teilsystem:
+    bezeichnung: str
+    art: str  # "single" | "multi"
+    raeume: list[Raum]
+    last_kuehl: float
+    last_heiz: float
+    set: Artikel | None = None
+    aussen: Artikel | None = None
+    innen: list[tuple[Raum, Artikel]] = field(default_factory=list)
+    hinweise: list[str] = field(default_factory=list)
+
+    @property
+    def gedeckt(self) -> bool:
+        return self.set is not None or (self.aussen is not None and len(self.innen) == len(self.raeume))
+
+    @property
+    def leistung_kuehl(self) -> float:
+        g = self.set or self.aussen
+        return (g.kuehl or 0.0) if g else 0.0
+
+    @property
+    def leistung_heiz(self) -> float:
+        g = self.set or self.aussen
+        return (g.heiz or 0.0) if g else 0.0
+
+    @property
+    def geraete_text(self) -> str:
+        if self.set:
+            return self.set.typ
+        if self.aussen:
+            return f"{self.aussen.typ} + " + ", ".join(u.typ for _, u in self.innen)
+        return "keine passende Lösung"
+
+    @property
+    def schall_aussen(self) -> float | None:
+        g = self.set or self.aussen
+        return g.schall_aussen if g else None
+
+    def positionen(self) -> list[Position]:
+        if self.set:
+            return [Position("set", self.set.bestellnr, self.set.typ, self.set.bestellnr, 1, self.set.preis)]
+        pos = []
+        if self.aussen:
+            pos.append(Position("aussen", self.aussen.bestellnr, self.aussen.typ, self.aussen.bestellnr, 1,
+                                self.aussen.preis))
+        for _, u in self.innen:
+            pos.append(Position("innen", u.bestellnr, u.typ, u.bestellnr, 1, u.preis))
+        return pos
+
+    def artikel(self) -> list[Artikel]:
+        if self.set:
+            return [self.set]
+        return ([self.aussen] if self.aussen else []) + [u for _, u in self.innen]
+
+
+# ---------------------------------------------------------------- Single-Split
+def single_set(b: Bedarf, kat: Katalog, projekt: Projekt) -> tuple[Artikel | None, list[str]]:
+    """Günstigstes Set für einen Raum (nur wandhängende Inneneinheiten)."""
+    kuehl_rel, heiz_rel = _relevant(projekt)
+    wunsch = bauart_wunsch(b.raum)
+    if wunsch and wunsch != "Wandgerät":
+        return None, [f"{b.raum.name}: Single-Split gibt es nur mit wandhängender Inneneinheit."]
+
+    def deckt(s: Artikel) -> bool:
+        if kuehl_rel and (s.kuehl is None or s.kuehl < b.kuehl):
+            return False
+        if heiz_rel and (s.heiz is None or s.heiz < b.heiz):
+            return False
+        return True
+
+    kandidaten = [s for s in kat.sets if deckt(s)]
+    farbe = b.raum.farbe
+    stufen = [
+        ([s for s in kandidaten if s.verfuegbar and (not farbe or s.farbe == farbe)], None),
+        ([s for s in kandidaten if s.verfuegbar], f"{b.raum.name}: Farbe „{farbe}“ in passender Größe nicht "
+                                                  "verfügbar – Standardfarbe gewählt."),
+        (kandidaten, f"{b.raum.name}: Nur mit noch nicht lieferbarem Gerät lösbar."),
+    ]
+    for liste, hinweis in stufen:
+        if liste:
+            best = min(liste, key=lambda s: (s.preis or math.inf, s.kuehl or 0))
+            notizen = [hinweis] if hinweis and (farbe or "lieferbar" in hinweis) else []
+            return best, notizen
+    return None, [f"{b.raum.name}: Kein Single-Split-Set deckt {b.kuehl:.2f} kW Kühl-/"
+                  f"{b.heiz:.2f} kW Heizlast."]
+
+
+def single_system(b: Bedarf, kat: Katalog, projekt: Projekt, bezeichnung: str | None = None) -> Teilsystem:
+    wunsch = bauart_wunsch(b.raum)
+    if wunsch and wunsch != "Wandgerät":
+        # Sets gibt es nur als Wandgerät – Kassette/Konsole als 1:1-System mit Multi-Außeneinheit
+        return multi_system([b], kat, projekt, bezeichnung or b.raum.name)
+    s, notizen = single_set(b, kat, projekt)
+    return Teilsystem(bezeichnung or b.raum.name, "single", [b.raum], b.kuehl, b.heiz, set=s, hinweise=notizen)
+
+
+# ---------------------------------------------------------------- Multi-Split
+def _innen_optionen(b: Bedarf, ae: Artikel, kat: Katalog, projekt: Projekt, nur_verfuegbar: bool,
+                    farbe_streng: bool) -> list[Artikel]:
+    _, heiz_rel = _relevant(projekt)
+    nur_heizen = projekt.einstellungen.betriebsart == "heat"
+    wunsch = bauart_wunsch(b.raum)
+    out = []
+    for u in kat.innen:
+        if ae.typ not in u.aussen_kompatibel:
+            continue
+        if nur_verfuegbar and not u.verfuegbar:
+            continue
+        if wunsch and u.bauart != wunsch:
+            continue
+        if farbe_streng and b.raum.farbe and u.farbe != b.raum.farbe:
+            continue
+        # Inneneinheit nach Kühllast (bzw. Heizlast bei „nur Heizen“) – wie in v6.9.1
+        wert, bedarf = (u.heiz, b.heiz) if nur_heizen else (u.kuehl, b.kuehl)
+        if wert is None or wert < bedarf:
+            continue
+        if heiz_rel and u.heiz is None:
+            continue
+        out.append(u)
+    return out
+
+
+def _gruppenlast(raeume: list[Raum], projekt: Projekt) -> tuple[float, float]:
+    teil = projekt.model_copy(deep=True)
+    teil.raeume = [r.model_copy(deep=True) for r in raeume]
+    last = gebaeude_last(teil)
+    return last.cool, last.heat
+
+
+def multi_system(gruppe: list[Bedarf], kat: Katalog, projekt: Projekt, bezeichnung: str) -> Teilsystem:
+    """Günstigste zulässige Kombination aus Außeneinheit und Inneneinheiten für eine Raumgruppe."""
+    kuehl_rel, heiz_rel = _relevant(projekt)
+    n = len(gruppe)
+    last_k, last_h = _gruppenlast([b.raum for b in gruppe], projekt)
+    ts = Teilsystem(bezeichnung, "multi", [b.raum for b in gruppe], last_k, last_h)
+
+    for nur_verfuegbar in (True, False):
+        bestes = None
+        for ae in kat.aussen:
+            if nur_verfuegbar and not ae.verfuegbar:
+                continue
+            if not (ae.min_ie <= n <= (ae.anschluesse or 0)):
+                continue
+            if kuehl_rel and (ae.kuehl or 0) < last_k:
+                continue
+            if heiz_rel and (ae.heiz or 0) < last_h:
+                continue
+            optionen = []
+            farbe_gelockert = []
+            for b in gruppe:
+                opt = _innen_optionen(b, ae, kat, projekt, nur_verfuegbar, farbe_streng=True)
+                if not opt and b.raum.farbe:
+                    opt = _innen_optionen(b, ae, kat, projekt, nur_verfuegbar, farbe_streng=False)
+                    farbe_gelockert.append(b.raum.name)
+                optionen.append(opt)
+            if any(not o for o in optionen):
+                continue
+            for kombi in kat.kombinationen.get(ae.typ, ()):
+                if len(kombi) != n:
+                    continue
+                for perm in set(permutations(kombi)):
+                    wahl = []
+                    for opt, klasse in zip(optionen, perm):
+                        passend = [u for u in opt if u.klasse == klasse]
+                        if not passend:
+                            break
+                        wahl.append(min(passend, key=lambda u: u.preis or math.inf))
+                    else:
+                        preis = (ae.preis or 0) + sum(u.preis or 0 for u in wahl)
+                        schluessel = (len(farbe_gelockert), preis, ae.kuehl or 0)
+                        if bestes is None or schluessel < bestes[0]:
+                            bestes = (schluessel, ae, wahl, list(farbe_gelockert))
+        if bestes:
+            _, ae, wahl, gelockert = bestes
+            ts.aussen = ae
+            ts.innen = [(b.raum, u) for b, u in zip(gruppe, wahl)]
+            ts.hinweise += [f"{name}: Wunschfarbe nicht verfügbar – Standardfarbe gewählt." for name in gelockert]
+            if not nur_verfuegbar:
+                ts.hinweise.append("Enthält noch nicht lieferbare Geräte.")
+            return ts
+    ts.hinweise.append(f"Keine zulässige Multi-Split-Kombination für {n} Räume "
+                       f"({last_k:.2f} kW Kühl-/{last_h:.2f} kW Heizlast).")
+    return ts
+
+
+def gruppen(bed: list[Bedarf], max_groesse: int = 5) -> list[list[Bedarf]]:
+    """Teilt Räume (nach Geschoss geordnet) in möglichst gleich große Gruppen ≤ max_groesse."""
+    if len(bed) <= max_groesse:
+        return [bed]
+    geordnet = sorted(bed, key=lambda b: b.raum.geschoss)
+    k = math.ceil(len(geordnet) / max_groesse)
+    groesse = math.ceil(len(geordnet) / k)
+    return [geordnet[i:i + groesse] for i in range(0, len(geordnet), groesse)]
+
+
+# ---------------------------------------------------------------- Konzepte
+@dataclass
+class Konzept:
+    key: str
+    name: str
+    beschreibung: str
+    teilsysteme: list[Teilsystem] = field(default_factory=list)
+    empfohlen: bool = False
+
+    @property
+    def gedeckt(self) -> bool:
+        return bool(self.teilsysteme) and all(t.gedeckt for t in self.teilsysteme)
+
+    @property
+    def aussengeraete(self) -> int:
+        return sum(1 for t in self.teilsysteme if t.gedeckt)
+
+    @property
+    def innengeraete(self) -> int:
+        return sum(len(t.raeume) for t in self.teilsysteme if t.gedeckt)
+
+    def stueckliste(self) -> list[Position]:
+        return stueckliste_zusammenfassen([p for t in self.teilsysteme for p in t.positionen()])
+
+    @property
+    def preis(self) -> float | None:
+        return gesamtpreis(self.stueckliste()) if self.gedeckt else None
+
+    @property
+    def leistung_kuehl(self) -> float:
+        return sum(t.leistung_kuehl for t in self.teilsysteme)
+
+    @property
+    def schall_max(self) -> float | None:
+        werte = [t.schall_aussen for t in self.teilsysteme if t.schall_aussen]
+        return max(werte) if werte else None
+
+    @property
+    def hinweise(self) -> list[str]:
+        return [h for t in self.teilsysteme for h in t.hinweise]
+
+    @property
+    def lieferhinweise(self) -> list[str]:
+        return sorted({f"{a.typ}: {a.lieferhinweis}" for t in self.teilsysteme for a in t.artikel()
+                       if a.lieferhinweis})
+
+    @property
+    def geraete_text(self) -> str:
+        sets = [t.set.typ for t in self.teilsysteme if t.set]
+        aes = [t.aussen.typ for t in self.teilsysteme if t.aussen]
+        teile = []
+        if aes:
+            teile.append(" + ".join(aes))
+        if sets:
+            zaehl: dict[str, int] = {}
+            for s in sets:
+                zaehl[s] = zaehl.get(s, 0) + 1
+            teile.append(" + ".join(f"{n}× {s}" if n > 1 else s for s, n in zaehl.items()))
+        return " + ".join(teile) or "–"
+
+
+def _geschosse(bed: list[Bedarf]) -> dict[str, list[Bedarf]]:
+    g: dict[str, list[Bedarf]] = {}
+    for b in bed:
+        g.setdefault(b.raum.geschoss or "Gebäude", []).append(b)
+    return g
+
+
+def konzepte(projekt: Projekt, kat: Katalog, wunsch: str = "auto") -> list[Konzept]:
+    bed = bedarfe(projekt)
+    if not bed:
+        return []
+    out: list[Konzept] = []
+    multi_moeglich = len(bed) > 1
+
+    if multi_moeglich and wunsch in ("auto", "multi"):
+        k = Konzept("multi_gesamt", "Ein Multi-Split-System",
+                    "Alle Räume an möglichst wenigen Außeneinheiten. Wenige Geräte an der Fassade, "
+                    "längere Kältemittelleitungen.")
+        gs = gruppen(bed)
+        for i, g in enumerate(gs, 1):
+            name = "Gebäude" if len(gs) == 1 else f"System {i}"
+            k.teilsysteme.append(single_system(g[0], kat, projekt, name) if len(g) == 1
+                                 else multi_system(g, kat, projekt, name))
+        out.append(k)
+
+        etagen = _geschosse(bed)
+        if len(etagen) > 1 and any(len(g) > 1 for g in etagen.values()):
+            k = Konzept("multi_geschoss", "Multi-Split je Geschoss",
+                        "Je Geschoss ein eigenes System mit kurzen Leitungswegen; ein einzelner Raum auf einer "
+                        "Etage erhält ein Single-Split-Set.")
+            for name, liste in etagen.items():
+                for j, g in enumerate(gruppen(liste), 1):
+                    bez = name if len(liste) <= 5 else f"{name} ({j})"
+                    k.teilsysteme.append(single_system(g[0], kat, projekt, bez) if len(g) == 1
+                                         else multi_system(g, kat, projekt, bez))
+            out.append(k)
+
+    if wunsch in ("auto", "single") or not multi_moeglich:
+        k = Konzept("single", "Single-Split je Raum",
+                    "Jeder Raum erhält ein eigenes Set aus Außen- und Inneneinheit – unabhängig und effizient, "
+                    "aber mehr Außengeräte.")
+        k.teilsysteme = [single_system(b, kat, projekt) for b in bed]
+        out.append(k)
+
+    empfehlung_setzen(out)
+    return out
+
+
+def empfehlung_setzen(liste: list[Konzept]) -> None:
+    """Wirtschaftlichstes vollständiges Konzept; bei Gleichstand weniger Außengeräte."""
+    for k in liste:
+        k.empfohlen = False
+    kandidaten = [k for k in liste if k.gedeckt]
+    if kandidaten:
+        min(kandidaten, key=lambda k: (k.preis if k.preis is not None else math.inf, k.aussengeraete)).empfohlen = True
+
+
+# ---------------------------------------------------------------- Optionale Leistungen
+def optionale_leistungen(konzept: Konzept, kat: Katalog) -> list[Position]:
+    """Inbetriebnahme durch den Bosch-Kundendienst und Förder-Zubehör – nicht im Gerätepreis enthalten."""
+    pos: list[Position] = []
+
+    def add(nr: str, menge: int, art: str = "leistung"):
+        z = kat.zubehoer_nr(nr)
+        if z and menge:
+            pos.append(Position(art, z.bestellnr, z.name, z.bestellnr, menge, z.preis))
+
+    add(NR_AUFTRAGSPAUSCHALE, 1)
+    add(NR_INBETRIEBNAHME_AE, konzept.aussengeraete)
+    add(NR_INBETRIEBNAHME_IE, konzept.innengeraete)
+    sets_7000i = sum(1 for t in konzept.teilsysteme if t.set and t.set.linie == "Climate 7000i")
+    add(NR_MSG1, sets_7000i, "zubehoer")
+    return pos

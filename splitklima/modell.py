@@ -58,6 +58,7 @@ class Raum(BaseModel):
     ig_bauart: str = "auto"
     ig_id: str | None = None
     ig_manuell: bool = False
+    farbe: str = ""  # Version 2: Farbwunsch Inneneinheit ("" = keine Präferenz)
 
     def setze_lage(self, lage: Lage) -> None:
         """Wie ``setMode`` in v6.9.1: passt Dach, vertikale Lage und Wandanzahl an."""
