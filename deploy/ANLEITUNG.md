@@ -45,6 +45,37 @@ Neue Version: `git pull && docker compose -f docker-compose.nginx.yml up -d --bu
 
 ---
 
+## Version 2 parallel: climate.sommer-nt.de
+
+Version 2 (Gesamtsortiment, Auswahlkarten, Produktbilder, Katalogpreise) läuft als **zweiter
+Container** neben Version 1 – gleiches Repository, gleiche `.env`, eigener Port **8503** und
+eigenes Compose-Projekt `climate`. Version 1 auf klima.sommer-nt.de bleibt unverändert.
+
+**1. DNS:** CNAME `climate` → `danisox.ddns.net` (bzw. derselbe Eintrag wie bei `klima`).
+Prüfen: `dig +short climate.sommer-nt.de` zeigt die Server-IP.
+
+**2. Code holen und Version 2 starten**
+```bash
+cd ~/bosch-climate && git pull
+cd deploy
+docker compose -p climate -f docker-compose.v2.yml up -d --build
+curl http://127.0.0.1:8503/_stcore/health   # → ok
+```
+
+**3. nginx und HTTPS**
+```bash
+sudo cp nginx-climate.sommer-nt.de.conf /etc/nginx/sites-available/climate.sommer-nt.de
+sudo ln -s /etc/nginx/sites-available/climate.sommer-nt.de /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+sudo certbot --nginx -d climate.sommer-nt.de
+```
+
+Fertig: **https://climate.sommer-nt.de** (gleiches Passwort wie Version 1).
+
+Neue Version 2: `cd ~/bosch-climate/deploy && git pull && docker compose -p climate -f docker-compose.v2.yml up -d --build`
+
+---
+
 ## Variante Caddy (frischer Server)
 
 Die App läuft als Docker-Container, davor **Caddy** als Webserver. Caddy holt das
