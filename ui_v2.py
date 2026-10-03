@@ -12,6 +12,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pandas as pdx
+from PIL import Image
 import streamlit as st
 
 from splitklima import parameter as P
@@ -32,6 +33,7 @@ BEISPIEL = Path(__file__).parent / "splitklima" / "daten" / "beispiel_planerkenn
 MIME = {".pdf": "application/pdf", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
         ".webp": "image/webp"}
 MAX_MB = 30
+BILD_MAX = 300  # px – Katalogbilder nicht stärker vergrößern (Quelle nur ~150 px breit)
 BLAU = "#005691"
 
 SCHRITTE = [("system", "System", ":material/hub:"), ("gebaeude", "Gebäude", ":material/home:"),
@@ -58,6 +60,11 @@ FARBCODE = {"weiß": "#f4f5f6", "silber": "#c3c8cd", "schwarz": "#1d1f22", "anth
 CSS = f"""
 <style>
 .block-container {{padding-top: 3.2rem; max-width: 1500px}}
+/* kein blinkender Textcursor in normalem Text (nur in Eingabefeldern) */
+body, .stApp {{caret-color: transparent}}
+input, textarea, [contenteditable="true"] {{caret-color: auto !important}}
+.stApp img {{image-rendering: auto}}
+div[class*="st-key-zusammenfassung"], div[class*="st-key-ergebnis-karte"] {{overflow:hidden}}
 .marke {{font-weight:700; font-size:1.45rem}} .marke b {{color:#e20015}} .marke span {{color:{BLAU}}}
 .v2-badge {{display:inline-block; margin-left:.6rem; padding:.1rem .55rem; border-radius:1rem;
            background:#e8f1f8; color:{BLAU}; font-size:.75rem; font-weight:600; vertical-align:middle}}
@@ -201,6 +208,19 @@ def _gewaehlt(liste: list[A.Konzept]) -> A.Konzept | None:
         return None
     empf = next((k for k in moeglich if k.empfohlen), moeglich[0])
     return next((k for k in moeglich if k.key == _ss().get("v2_konzept")), empf)
+
+
+def _bild_mittig(pfad: Path, max_breite: int) -> None:
+    """Produktbild zentriert und höchstens etwa doppelt so groß wie die Vorlage."""
+    breite = min(max_breite, Image.open(pfad).width)
+    st.markdown(f'<div style="text-align:center"><img src="data:image/png;base64,{_b64(pfad)}" '
+                f'style="width:{breite}px;max-width:100%"></div>', unsafe_allow_html=True)
+
+
+@st.cache_data(show_spinner=False)
+def _b64(pfad: Path) -> str:
+    import base64
+    return base64.b64encode(Path(pfad).read_bytes()).decode()
 
 
 def _konzept_bilder(k: A.Konzept, max_anzahl: int = 3) -> list[Path]:
@@ -448,7 +468,7 @@ def _teilsystem_karte(t: A.Teilsystem, p: Projekt) -> None:
         c1, c2 = st.columns([1, 2], vertical_alignment="center")
         haupt = t.set or t.aussen
         if (pf := bild(haupt)) is not None:
-            c1.image(str(pf), width="stretch")
+            c1.image(str(pf), width=min(BILD_MAX, Image.open(pf).width))
         with c2:
             st.markdown(f"**{t.bezeichnung}** · {'Single-Split-Set' if t.set else 'Multi-Split'}")
             st.caption(f"{haupt.typ if haupt else '–'} · Kühlen {de(t.leistung_kuehl, 1)} kW · "
@@ -494,7 +514,7 @@ def seite_ergebnis(p: Projekt, kat: Katalog) -> None:
                 st.caption(f"Empfohlen wäre: {empfohlen.name} ({fmt_eur(empfohlen.preis)})")
         if bilder:
             for sp, pf in zip(st.columns(len(bilder) + 1), bilder):
-                sp.image(str(pf), width="stretch")
+                sp.image(str(pf), width=min(BILD_MAX, Image.open(pf).width))
         m = st.columns(4)
         m[0].metric("Außengeräte", gewaehlt.aussengeraete)
         m[1].metric("Innengeräte", gewaehlt.innengeraete)
@@ -629,7 +649,7 @@ def zusammenfassung(p: Projekt, kat: Katalog) -> None:
         if gewaehlt:
             bilder = _konzept_bilder(gewaehlt, 2)
             if bilder:
-                st.image(str(bilder[0]), width="stretch")
+                _bild_mittig(bilder[0], 260)
             st.markdown(f"**{gewaehlt.name}**")
             st.caption(gewaehlt.geraete_text)
             st.markdown(f'<div class="preis">{fmt_eur(gewaehlt.preis)}</div>', unsafe_allow_html=True)
@@ -648,7 +668,8 @@ def zusammenfassung(p: Projekt, kat: Katalog) -> None:
             last = gebaeude_last(p)
             zeilen += [("Räume", f"{len(p.raeume)} · {de(sum(r.flaeche for r in p.raeume))} m²"),
                        ("Kühllast", f"{de(last.cool, 2)} kW"), ("Heizlast", f"{de(last.heat, 2)} kW")]
-        st.markdown("".join(f'<div class="zs-zeile"><span>{a}</span><span>{b}</span></div>' for a, b in zeilen),
+        st.markdown("".join(f'<div class="zs-zeile"><span>{a}</span><span>{b}</span></div>' for a, b in zeilen)
+                    + '<div style="height:.6rem"></div>',
                     unsafe_allow_html=True)
 
         if _ss().v2_seite == "raum" and p.raeume:
@@ -665,7 +686,7 @@ def zusammenfassung(p: Projekt, kat: Katalog) -> None:
                         if rr is r and u is not None:
                             pf = bild_innen_set(u) if t.set else bild(u)
                             if pf:
-                                st.image(str(pf), width="stretch")
+                                _bild_mittig(pf, 220)
                             st.caption(f"Vorschlag: {u.typ}")
 
 

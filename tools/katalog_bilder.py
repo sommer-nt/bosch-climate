@@ -15,7 +15,7 @@ import tempfile
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 ZIEL = Path(__file__).resolve().parent.parent / "splitklima" / "daten" / "bilder"
 DPI, BASIS = 400, 200
@@ -94,7 +94,9 @@ def main(pdf: str) -> None:
                                 "-singlefile", pdf, str(stamm)], check=True)
                 seiten[seite] = Image.open(f"{stamm}.png").convert("RGB")
             teil = seiten[seite].crop(tuple(int(v * f) for v in box))
-            zuschneiden(teil).save(ZIEL / f"{name}.png", optimize=True)
+            # Die Bilder im Katalog-PDF sind nur ~150 px breit eingebettet – leicht nachschärfen
+            bild = zuschneiden(teil).filter(ImageFilter.UnsharpMask(radius=2.2, percent=130, threshold=2))
+            bild.save(ZIEL / f"{name}.png", optimize=True)
             print(name)
 
 
