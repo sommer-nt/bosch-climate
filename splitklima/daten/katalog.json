@@ -1,0 +1,5247 @@
+{
+ "quelle": "Bosch Gesamtkatalog Deutschland März 2026, Kapitel 3 Split-Klimageräte",
+ "excel": "Produktdaten_Split-Klima_Katalog_2026-03.xlsx",
+ "preise_freigegeben": true,
+ "preisbasis": "Unverbindliche Preisempfehlung netto, zzgl. MwSt., Montage und Material",
+ "sets": [
+  {
+   "typ": "CLC8001i-Set 25 E",
+   "bestellnr": "7733701688",
+   "linie": "Climate Class 8000i",
+   "beschreibung": "Single-Split 2,5 kW, weiße Inneneinheit",
+   "effizienz": "A+++ / A+++",
+   "preis": 2649.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3006,
+   "kuehl": 2.5,
+   "kuehl_min": 0.9,
+   "kuehl_max": 3.0,
+   "heiz": 3.2,
+   "heiz_min": 0.9,
+   "heiz_max": 5.0,
+   "seer": 8.5,
+   "scop": 5.1,
+   "schall_aussen": 47.0,
+   "schall_innen_min": 23.0,
+   "schall_innen_max": 46.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "aussen_typ": "CLC8001i 25 E",
+   "innen_typ": "CLC8001i-W 25 E (weiß)",
+   "hinweis": "Auslaufartikel laut Lieferzeitenliste KW40"
+  },
+  {
+   "typ": "CLC8001i-Set 35 E",
+   "bestellnr": "7733701692",
+   "linie": "Climate Class 8000i",
+   "beschreibung": "Single-Split 3,5 kW, weiße Inneneinheit",
+   "effizienz": "A+++ / A+++",
+   "preis": 2925.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3006,
+   "kuehl": 3.5,
+   "kuehl_min": 0.9,
+   "kuehl_max": 4.2,
+   "heiz": 4.2,
+   "heiz_min": 0.9,
+   "heiz_max": 6.5,
+   "seer": 8.5,
+   "scop": 5.1,
+   "schall_aussen": 48.0,
+   "schall_innen_min": 23.0,
+   "schall_innen_max": 46.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "aussen_typ": "CLC8001i 35 E",
+   "innen_typ": "CLC8001i-W 35 E (weiß)",
+   "hinweis": "Auslaufartikel"
+  },
+  {
+   "typ": "CLC8001i-Set 25 ET",
+   "bestellnr": "7733701689",
+   "linie": "Climate Class 8000i",
+   "beschreibung": "Single-Split 2,5 kW, Inneneinheit anthrazit",
+   "effizienz": "A+++ / A+++",
+   "preis": 2863.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3006,
+   "kuehl": 2.5,
+   "kuehl_min": 0.9,
+   "kuehl_max": 3.0,
+   "heiz": 3.2,
+   "heiz_min": 0.9,
+   "heiz_max": 5.0,
+   "seer": 8.5,
+   "scop": 5.1,
+   "schall_aussen": 47.0,
+   "schall_innen_min": 23.0,
+   "schall_innen_max": 46.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "anthrazit",
+   "aussen_typ": "CLC8001i 25 E",
+   "innen_typ": "CLC8001i-W 25 E (anthrazit)",
+   "hinweis": "Auslaufartikel"
+  },
+  {
+   "typ": "CLC8001i-Set 35 ET",
+   "bestellnr": "7733701693",
+   "linie": "Climate Class 8000i",
+   "beschreibung": "Single-Split 3,5 kW, Inneneinheit anthrazit",
+   "effizienz": "A+++ / A+++",
+   "preis": 3140.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3006,
+   "kuehl": 3.5,
+   "kuehl_min": 0.9,
+   "kuehl_max": 4.2,
+   "heiz": 4.2,
+   "heiz_min": 0.9,
+   "heiz_max": 6.5,
+   "seer": 8.5,
+   "scop": 5.1,
+   "schall_aussen": 48.0,
+   "schall_innen_min": 23.0,
+   "schall_innen_max": 46.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "anthrazit",
+   "aussen_typ": "CLC8001i 35 E",
+   "innen_typ": "CLC8001i-W 35 E (anthrazit)",
+   "hinweis": "Auslaufartikel"
+  },
+  {
+   "typ": "CLC8001i-Set 25 ES",
+   "bestellnr": "7733701690",
+   "linie": "Climate Class 8000i",
+   "beschreibung": "Single-Split 2,5 kW, silberne Inneneinheit",
+   "effizienz": "A+++ / A+++",
+   "preis": 2863.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3006,
+   "kuehl": 2.5,
+   "kuehl_min": 0.9,
+   "kuehl_max": 3.0,
+   "heiz": 3.2,
+   "heiz_min": 0.9,
+   "heiz_max": 5.0,
+   "seer": 8.5,
+   "scop": 5.1,
+   "schall_aussen": 47.0,
+   "schall_innen_min": 23.0,
+   "schall_innen_max": 46.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "silber",
+   "aussen_typ": "CLC8001i 25 E",
+   "innen_typ": "CLC8001i-W 25 E (silber)",
+   "hinweis": "Auslaufartikel"
+  },
+  {
+   "typ": "CLC8001i-Set 35 ES",
+   "bestellnr": "7733701694",
+   "linie": "Climate Class 8000i",
+   "beschreibung": "Single-Split 3,5 kW, silberne Inneneinheit",
+   "effizienz": "A+++ / A+++",
+   "preis": 3140.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3006,
+   "kuehl": 3.5,
+   "kuehl_min": 0.9,
+   "kuehl_max": 4.2,
+   "heiz": 4.2,
+   "heiz_min": 0.9,
+   "heiz_max": 6.5,
+   "seer": 8.5,
+   "scop": 5.1,
+   "schall_aussen": 48.0,
+   "schall_innen_min": 23.0,
+   "schall_innen_max": 46.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "silber",
+   "aussen_typ": "CLC8001i 35 E",
+   "innen_typ": "CLC8001i-W 35 E (silber)",
+   "hinweis": "Auslaufartikel"
+  },
+  {
+   "typ": "CLC8001i-Set 25 ER",
+   "bestellnr": "7733701691",
+   "linie": "Climate Class 8000i",
+   "beschreibung": "Single-Split 2,5 kW, rote Inneneinheit",
+   "effizienz": "A+++ / A+++",
+   "preis": 2863.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3006,
+   "kuehl": 2.5,
+   "kuehl_min": 0.9,
+   "kuehl_max": 3.0,
+   "heiz": 3.2,
+   "heiz_min": 0.9,
+   "heiz_max": 5.0,
+   "seer": 8.5,
+   "scop": 5.1,
+   "schall_aussen": 47.0,
+   "schall_innen_min": 23.0,
+   "schall_innen_max": 46.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "rot",
+   "aussen_typ": "CLC8001i 25 E",
+   "innen_typ": "CLC8001i-W 25 E (rot)",
+   "hinweis": "Auslaufartikel"
+  },
+  {
+   "typ": "CLC8001i-Set 35 ER",
+   "bestellnr": "7733701695",
+   "linie": "Climate Class 8000i",
+   "beschreibung": "Single-Split 3,5 kW, rote Inneneinheit",
+   "effizienz": "A+++ / A+++",
+   "preis": 3140.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3006,
+   "kuehl": 3.5,
+   "kuehl_min": 0.9,
+   "kuehl_max": 4.2,
+   "heiz": 4.2,
+   "heiz_min": 0.9,
+   "heiz_max": 6.5,
+   "seer": 8.5,
+   "scop": 5.1,
+   "schall_aussen": 48.0,
+   "schall_innen_min": 23.0,
+   "schall_innen_max": 46.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "rot",
+   "aussen_typ": "CLC8001i 35 E",
+   "innen_typ": "CLC8001i-W 35 E (rot)",
+   "hinweis": "Auslaufartikel"
+  },
+  {
+   "typ": "CL7000i-Set 20 E",
+   "bestellnr": "7733703118",
+   "linie": "Climate 7000i",
+   "beschreibung": "Single-Split 2,0 kW, weiße Inneneinheit",
+   "effizienz": "A+++ / A+++",
+   "preis": 1932.0,
+   "lieferstatus": "lieferbar; BEG-förderfähig mit MSG-1",
+   "verfuegbar": true,
+   "seite": 3014,
+   "kuehl": 2.0,
+   "kuehl_min": 0.9,
+   "kuehl_max": 3.7,
+   "heiz": 2.3,
+   "heiz_min": 0.68,
+   "heiz_max": 4.0,
+   "seer": 9.4,
+   "scop": 5.1,
+   "schall_aussen": 53.0,
+   "schall_innen_min": 25.0,
+   "schall_innen_max": 37.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "aussen_typ": "CL7000i 20 E",
+   "innen_typ": "CL7000iU W 20 E",
+   "hinweis": null
+  },
+  {
+   "typ": "CL7000i-Set 26 E",
+   "bestellnr": "7733703119",
+   "linie": "Climate 7000i",
+   "beschreibung": "Single-Split 2,6 kW, weiße Inneneinheit",
+   "effizienz": "A+++ / A+++",
+   "preis": 2201.0,
+   "lieferstatus": "lieferbar; BEG-förderfähig mit MSG-1",
+   "verfuegbar": true,
+   "seite": 3014,
+   "kuehl": 2.5,
+   "kuehl_min": 1.0,
+   "kuehl_max": 4.3,
+   "heiz": 4.1,
+   "heiz_min": 0.75,
+   "heiz_max": 5.16,
+   "seer": 10.1,
+   "scop": 5.1,
+   "schall_aussen": 56.0,
+   "schall_innen_min": 30.0,
+   "schall_innen_max": 43.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "aussen_typ": "CL7000i 26 E",
+   "innen_typ": "CL7000iU W 26 E",
+   "hinweis": null
+  },
+  {
+   "typ": "CL7000i-Set 35 E",
+   "bestellnr": "7733703120",
+   "linie": "Climate 7000i",
+   "beschreibung": "Single-Split 3,5 kW, weiße Inneneinheit",
+   "effizienz": "A+++ / A+++",
+   "preis": 2416.0,
+   "lieferstatus": "lieferbar; BEG-förderfähig mit MSG-1",
+   "verfuegbar": true,
+   "seite": 3014,
+   "kuehl": 3.4,
+   "kuehl_min": 1.0,
+   "kuehl_max": 4.3,
+   "heiz": 4.1,
+   "heiz_min": 0.75,
+   "heiz_max": 5.17,
+   "seer": 9.7,
+   "scop": 5.1,
+   "schall_aussen": 60.0,
+   "schall_innen_min": 33.0,
+   "schall_innen_max": 43.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "aussen_typ": "CL7000i 35 E",
+   "innen_typ": "CL7000iU W 35 E",
+   "hinweis": null
+  },
+  {
+   "typ": "CL7000i-Set 53 E",
+   "bestellnr": "7733703122",
+   "linie": "Climate 7000i",
+   "beschreibung": "Single-Split 5 kW, weiße Inneneinheit",
+   "effizienz": "A+++ / A++",
+   "preis": 2684.0,
+   "lieferstatus": "lieferbar; BEG-förderfähig mit MSG-1",
+   "verfuegbar": true,
+   "seite": 3014,
+   "kuehl": 5.0,
+   "kuehl_min": 1.3,
+   "kuehl_max": 5.6,
+   "heiz": 5.6,
+   "heiz_min": 1.2,
+   "heiz_max": 6.68,
+   "seer": 8.5,
+   "scop": 4.6,
+   "schall_aussen": 60.0,
+   "schall_innen_min": 34.0,
+   "schall_innen_max": 44.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "aussen_typ": "CL7000i 53 E",
+   "innen_typ": "CL7000iU W 53 E",
+   "hinweis": null
+  },
+  {
+   "typ": "CL7000i-Set 26 ES",
+   "bestellnr": "7733703124",
+   "linie": "Climate 7000i",
+   "beschreibung": "Single-Split 2,6 kW, silberne Inneneinheit",
+   "effizienz": "A+++ / A+++",
+   "preis": 2362.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3014,
+   "kuehl": 2.5,
+   "kuehl_min": 1.0,
+   "kuehl_max": 4.3,
+   "heiz": 4.1,
+   "heiz_min": 0.75,
+   "heiz_max": 5.16,
+   "seer": 10.1,
+   "scop": 5.1,
+   "schall_aussen": 56.0,
+   "schall_innen_min": 30.0,
+   "schall_innen_max": 43.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "silber",
+   "aussen_typ": "CL7000i 26 E",
+   "innen_typ": "CL7000iU W 26 ES",
+   "hinweis": null
+  },
+  {
+   "typ": "CL7000i-Set 35 ES",
+   "bestellnr": "7733703125",
+   "linie": "Climate 7000i",
+   "beschreibung": "Single-Split 3,5 kW, silberne Inneneinheit",
+   "effizienz": "A+++ / A+++",
+   "preis": 2576.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3014,
+   "kuehl": 3.4,
+   "kuehl_min": 1.0,
+   "kuehl_max": 4.3,
+   "heiz": 4.1,
+   "heiz_min": 0.75,
+   "heiz_max": 5.17,
+   "seer": 9.7,
+   "scop": 5.1,
+   "schall_aussen": 60.0,
+   "schall_innen_min": 33.0,
+   "schall_innen_max": 43.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "silber",
+   "aussen_typ": "CL7000i 35 E",
+   "innen_typ": "CL7000iU W 35 ES",
+   "hinweis": null
+  },
+  {
+   "typ": "CL7000i-Set 26 EB",
+   "bestellnr": "7733703129",
+   "linie": "Climate 7000i",
+   "beschreibung": "Single-Split 2,6 kW, schwarze Inneneinheit",
+   "effizienz": "A+++ / A+++",
+   "preis": 2362.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3014,
+   "kuehl": 2.5,
+   "kuehl_min": 1.0,
+   "kuehl_max": 4.3,
+   "heiz": 4.1,
+   "heiz_min": 0.75,
+   "heiz_max": 5.16,
+   "seer": 10.1,
+   "scop": 5.1,
+   "schall_aussen": 56.0,
+   "schall_innen_min": 30.0,
+   "schall_innen_max": 43.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "schwarz",
+   "aussen_typ": "CL7000i 26 E",
+   "innen_typ": "CL7000iU W 26 EB",
+   "hinweis": null
+  },
+  {
+   "typ": "CL7000i-Set 35 EB",
+   "bestellnr": "7733703130",
+   "linie": "Climate 7000i",
+   "beschreibung": "Single-Split 3,5 kW, schwarze Inneneinheit",
+   "effizienz": "A+++ / A+++",
+   "preis": 2576.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3014,
+   "kuehl": 3.4,
+   "kuehl_min": 1.0,
+   "kuehl_max": 4.3,
+   "heiz": 4.1,
+   "heiz_min": 0.75,
+   "heiz_max": 5.17,
+   "seer": 9.7,
+   "scop": 5.1,
+   "schall_aussen": 60.0,
+   "schall_innen_min": 33.0,
+   "schall_innen_max": 43.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "schwarz",
+   "aussen_typ": "CL7000i 35 E",
+   "innen_typ": "CL7000iU W 35 EB",
+   "hinweis": null
+  },
+  {
+   "typ": "CL6000i P-Set 26 W F",
+   "bestellnr": "7733704025",
+   "linie": "Climate 6000i P",
+   "beschreibung": "Single-Split 2,6 kW, Kältemittel R290",
+   "effizienz": "A+++ / A++",
+   "preis": 1800.0,
+   "lieferstatus": "verfügbar ab Q3/2026",
+   "verfuegbar": false,
+   "seite": 3019,
+   "kuehl": 2.6,
+   "kuehl_min": null,
+   "kuehl_max": null,
+   "heiz": null,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "aussen_typ": "CL6000iP 26",
+   "innen_typ": "CL6000iP W 26 F",
+   "hinweis": "R290; ab Q3/2026"
+  },
+  {
+   "typ": "CL6000i P-Set 35 W F",
+   "bestellnr": "7733704027",
+   "linie": "Climate 6000i P",
+   "beschreibung": "Single-Split 3,5 kW, Kältemittel R290",
+   "effizienz": "A+++ / A++",
+   "preis": 1900.0,
+   "lieferstatus": "verfügbar ab Q3/2026",
+   "verfuegbar": false,
+   "seite": 3019,
+   "kuehl": 3.5,
+   "kuehl_min": null,
+   "kuehl_max": null,
+   "heiz": null,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "aussen_typ": "CL6000iP 35",
+   "innen_typ": "CL6000iP W 35 F",
+   "hinweis": "R290; ab Q3/2026"
+  },
+  {
+   "typ": "CL3200i-Set 26 WE",
+   "bestellnr": "7733703595",
+   "linie": "Climate 3200i",
+   "beschreibung": "Single-Split 2,6 kW",
+   "effizienz": "A++ / A+",
+   "preis": 1351.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3024,
+   "kuehl": 2.63,
+   "kuehl_min": 1.02,
+   "kuehl_max": 3.22,
+   "heiz": 2.93,
+   "heiz_min": 0.82,
+   "heiz_max": 3.37,
+   "seer": 7.4,
+   "scop": 4.1,
+   "schall_aussen": 56.0,
+   "schall_innen_min": 32.0,
+   "schall_innen_max": 37.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "aussen_typ": "CL3000i 26 E",
+   "innen_typ": "CL3200iU W 26 E",
+   "hinweis": "Außeneinheit trägt Typbezeichnung CL3000i"
+  },
+  {
+   "typ": "CL3200i-Set 35 WE",
+   "bestellnr": "7733703596",
+   "linie": "Climate 3200i",
+   "beschreibung": "Single-Split 3,5 kW",
+   "effizienz": "A++ / A+",
+   "preis": 1603.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3024,
+   "kuehl": 3.52,
+   "kuehl_min": 1.38,
+   "kuehl_max": 4.31,
+   "heiz": 3.8,
+   "heiz_min": 1.07,
+   "heiz_max": 4.38,
+   "seer": 7.0,
+   "scop": 4.2,
+   "schall_aussen": 55.0,
+   "schall_innen_min": 32.0,
+   "schall_innen_max": 37.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "aussen_typ": "CL3000i 35 E",
+   "innen_typ": "CL3200iU W 35 E",
+   "hinweis": null
+  },
+  {
+   "typ": "CL3200i-Set 53 WE",
+   "bestellnr": "7733703597",
+   "linie": "Climate 3200i",
+   "beschreibung": "Single-Split 5,3 kW",
+   "effizienz": "A++ / A+",
+   "preis": 1981.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3024,
+   "kuehl": 5.28,
+   "kuehl_min": 3.39,
+   "kuehl_max": 5.9,
+   "heiz": 5.56,
+   "heiz_min": 3.1,
+   "heiz_max": 5.85,
+   "seer": 7.0,
+   "scop": 4.0,
+   "schall_aussen": 57.0,
+   "schall_innen_min": 37.0,
+   "schall_innen_max": 41.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "aussen_typ": "CL3000i 53 E",
+   "innen_typ": "CL3200iU W 53 E",
+   "hinweis": null
+  },
+  {
+   "typ": "CL3200i-Set 70 WE",
+   "bestellnr": "7733703598",
+   "linie": "Climate 3200i",
+   "beschreibung": "Single-Split 7 kW",
+   "effizienz": "A++ / A+",
+   "preis": 2204.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3024,
+   "kuehl": 7.03,
+   "kuehl_min": 2.11,
+   "kuehl_max": 8.21,
+   "heiz": 7.33,
+   "heiz_min": 1.55,
+   "heiz_max": 8.2,
+   "seer": 6.4,
+   "scop": 4.0,
+   "schall_aussen": 60.0,
+   "schall_innen_min": 37.0,
+   "schall_innen_max": 46.0,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "aussen_typ": "CL3000i 70 E",
+   "innen_typ": "CL3200iU W 70 E",
+   "hinweis": null
+  },
+  {
+   "typ": "CL3000i-Set 26 WE",
+   "bestellnr": "7733701735",
+   "linie": "Climate 3000i",
+   "beschreibung": "Single-Split 2,6 kW",
+   "effizienz": "A++ / A+",
+   "preis": 1336.0,
+   "lieferstatus": "lieferbar solange Vorrat reicht",
+   "verfuegbar": true,
+   "seite": 3024,
+   "kuehl": 2.6,
+   "kuehl_min": null,
+   "kuehl_max": null,
+   "heiz": null,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": null,
+   "datenquelle": "aus Typbezeichnung abgeleitet",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "aussen_typ": "CL3000i 26 E",
+   "innen_typ": "CL3000iU W 26 E",
+   "hinweis": "Abverkauf"
+  },
+  {
+   "typ": "CL3000i-Set 35 WE",
+   "bestellnr": "7733701736",
+   "linie": "Climate 3000i",
+   "beschreibung": "Single-Split 3,5 kW",
+   "effizienz": "A++ / A+",
+   "preis": 1590.0,
+   "lieferstatus": "lieferbar solange Vorrat reicht",
+   "verfuegbar": true,
+   "seite": 3024,
+   "kuehl": 3.5,
+   "kuehl_min": null,
+   "kuehl_max": null,
+   "heiz": null,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": null,
+   "datenquelle": "aus Typbezeichnung abgeleitet",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "aussen_typ": "CL3000i 35 E",
+   "innen_typ": "CL3000iU W 35 E",
+   "hinweis": "Abverkauf"
+  },
+  {
+   "typ": "CL3000i-Set 53 WE",
+   "bestellnr": "7733701737",
+   "linie": "Climate 3000i",
+   "beschreibung": "Single-Split 5,3 kW",
+   "effizienz": "A++ / A+",
+   "preis": 1971.0,
+   "lieferstatus": "lieferbar solange Vorrat reicht",
+   "verfuegbar": true,
+   "seite": 3024,
+   "kuehl": 5.3,
+   "kuehl_min": null,
+   "kuehl_max": null,
+   "heiz": null,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": null,
+   "datenquelle": "aus Typbezeichnung abgeleitet",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "aussen_typ": "CL3000i 53 E",
+   "innen_typ": "CL3000iU W 53 E",
+   "hinweis": "Abverkauf"
+  },
+  {
+   "typ": "CL3000i-Set 70 WE",
+   "bestellnr": "7733701738",
+   "linie": "Climate 3000i",
+   "beschreibung": "Single-Split 7 kW",
+   "effizienz": "A++ / A+",
+   "preis": 2200.0,
+   "lieferstatus": "lieferbar solange Vorrat reicht",
+   "verfuegbar": true,
+   "seite": 3024,
+   "kuehl": 7.0,
+   "kuehl_min": null,
+   "kuehl_max": null,
+   "heiz": null,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": null,
+   "datenquelle": "aus Typbezeichnung abgeleitet",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "aussen_typ": "CL3000i 70 E",
+   "innen_typ": "CL3000iU W 70 E",
+   "hinweis": "Abverkauf"
+  }
+ ],
+ "aussen": [
+  {
+   "typ": "CL5000M 53/2 E",
+   "bestellnr": "7733701933",
+   "linie": "Climate 5000 M",
+   "beschreibung": "Außeneinheit, max. 2 Inneneinheiten",
+   "effizienz": "A++ / A+",
+   "preis": 1927.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3032,
+   "kuehl": 5.27,
+   "kuehl_min": 1.7,
+   "kuehl_max": 5.57,
+   "heiz": 5.5,
+   "heiz_min": 1.82,
+   "heiz_max": 5.63,
+   "seer": 6.9,
+   "scop": 4.0,
+   "schall_aussen": 54.0,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "anschluesse": 2,
+   "min_ie": 1,
+   "einschraenkung": "max. 3,5 + 5,3 kW; 5,3 + 5,3 nicht zulässig"
+  },
+  {
+   "typ": "CL5000M 79/3 E",
+   "bestellnr": "7733701935",
+   "linie": "Climate 5000 M",
+   "beschreibung": "Außeneinheit, max. 3 Inneneinheiten",
+   "effizienz": "A++ / A+",
+   "preis": 2607.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3032,
+   "kuehl": 7.91,
+   "kuehl_min": 3.03,
+   "kuehl_max": 8.5,
+   "heiz": 8.2,
+   "heiz_min": 2.17,
+   "heiz_max": 8.5,
+   "seer": 6.6,
+   "scop": 4.1,
+   "schall_aussen": 55.0,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "anschluesse": 3,
+   "min_ie": 1,
+   "einschraenkung": "1 Einheit nur 5,3 oder 7 kW"
+  },
+  {
+   "typ": "CL5000M 105/4 E",
+   "bestellnr": "7733701937",
+   "linie": "Climate 5000 M",
+   "beschreibung": "Außeneinheit, max. 4 Inneneinheiten",
+   "effizienz": "A+ / A (Produktinfo) · A++ / A+ (Bestellseite)",
+   "preis": 3400.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3032,
+   "kuehl": 10.55,
+   "kuehl_min": 3.08,
+   "kuehl_max": 11.29,
+   "heiz": 10.5,
+   "heiz_min": 3.28,
+   "heiz_max": 11.96,
+   "seer": 6.5,
+   "scop": 4.0,
+   "schall_aussen": 62.0,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "anschluesse": 4,
+   "min_ie": 2,
+   "einschraenkung": "mind. 2 Inneneinheiten"
+  },
+  {
+   "typ": "CL5000M 125/5 E",
+   "bestellnr": "7733701938",
+   "linie": "Climate 5000 M",
+   "beschreibung": "Außeneinheit, max. 5 Inneneinheiten",
+   "effizienz": "A++ / A (Produktinfo) · – (Bestellseite)",
+   "preis": 3626.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3032,
+   "kuehl": 12.3,
+   "kuehl_min": 3.17,
+   "kuehl_max": 12.85,
+   "heiz": 12.3,
+   "heiz_min": 3.52,
+   "heiz_max": 12.85,
+   "seer": 7.0,
+   "scop": 3.9,
+   "schall_aussen": null,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "anschluesse": 5,
+   "min_ie": 2,
+   "einschraenkung": "mind. 2 Inneneinheiten"
+  },
+  {
+   "typ": "CL7000M 53/2 E",
+   "bestellnr": "7733703620",
+   "linie": "Climate 7000 M",
+   "beschreibung": "Außeneinheit, max. 2 Inneneinheiten",
+   "effizienz": "A+++ / A++",
+   "preis": 2389.0,
+   "lieferstatus": "lieferbar (Katalogseiten Stand 03/2025)",
+   "verfuegbar": true,
+   "seite": 3052,
+   "kuehl": 5.28,
+   "kuehl_min": 2.2,
+   "kuehl_max": 6.39,
+   "heiz": 5.3,
+   "heiz_min": 1.47,
+   "heiz_max": 6.74,
+   "seer": 8.5,
+   "scop": 4.6,
+   "schall_aussen": 59.0,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "anschluesse": 2,
+   "min_ie": 1,
+   "einschraenkung": "max. 3,5 + 5,3 kW"
+  },
+  {
+   "typ": "CL7000M 79/3 E",
+   "bestellnr": "7733703619",
+   "linie": "Climate 7000 M",
+   "beschreibung": "Außeneinheit, max. 3 Inneneinheiten",
+   "effizienz": "A+++ / A++",
+   "preis": 3272.0,
+   "lieferstatus": "lieferbar (Katalogseiten Stand 03/2025)",
+   "verfuegbar": true,
+   "seite": 3052,
+   "kuehl": 7.91,
+   "kuehl_min": 2.77,
+   "kuehl_max": 8.5,
+   "heiz": 8.2,
+   "heiz_min": 1.93,
+   "heiz_max": 8.5,
+   "seer": 8.5,
+   "scop": 4.6,
+   "schall_aussen": 62.0,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": "R32",
+   "datenquelle": "Katalog",
+   "anschluesse": 3,
+   "min_ie": 2,
+   "einschraenkung": "mind. 2 Inneneinheiten"
+  }
+ ],
+ "innen": [
+  {
+   "typ": "CL5000iM CN 26 E",
+   "bestellnr": "7733701994",
+   "linie": "Climate 5000i M",
+   "beschreibung": "Konsolengerät 2,6 kW",
+   "effizienz": "–",
+   "preis": 851.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3035,
+   "kuehl": 2.64,
+   "kuehl_min": 0.64,
+   "kuehl_max": 3.4,
+   "heiz": 2.93,
+   "heiz_min": 0.42,
+   "heiz_max": 3.96,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 27.0,
+   "schall_innen_max": 37.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Konsole",
+   "farbe": "weiß",
+   "klasse": 2.6,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E",
+    "CL7000M 53/2 E",
+    "CL7000M 79/3 E"
+   ]
+  },
+  {
+   "typ": "CL5000iU CN 35 E",
+   "bestellnr": "7733701995",
+   "linie": "Climate 5000i U",
+   "beschreibung": "Konsolengerät 3,5 kW",
+   "effizienz": "–",
+   "preis": 964.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3035,
+   "kuehl": 3.5,
+   "kuehl_min": 0.76,
+   "kuehl_max": 4.25,
+   "heiz": 3.81,
+   "heiz_min": 0.45,
+   "heiz_max": 4.69,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 27.0,
+   "schall_innen_max": 37.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Konsole",
+   "farbe": "weiß",
+   "klasse": 3.5,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E",
+    "CL7000M 53/2 E",
+    "CL7000M 79/3 E"
+   ]
+  },
+  {
+   "typ": "CL5000iU CN 50 E",
+   "bestellnr": "7733701996",
+   "linie": "Climate 5000i U",
+   "beschreibung": "Konsolengerät 5 kW",
+   "effizienz": "–",
+   "preis": 1077.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3035,
+   "kuehl": 4.98,
+   "kuehl_min": 2.64,
+   "kuehl_max": 5.57,
+   "heiz": 5.28,
+   "heiz_min": 2.2,
+   "heiz_max": 6.3,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 32.0,
+   "schall_innen_max": 41.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Konsole",
+   "farbe": "weiß",
+   "klasse": 5.3,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E",
+    "CL7000M 53/2 E",
+    "CL7000M 79/3 E"
+   ]
+  },
+  {
+   "typ": "CL5001iU 4CC 21 E",
+   "bestellnr": "7739625380",
+   "linie": "Climate 5000i U",
+   "beschreibung": "Deckenkassette 2 kW",
+   "effizienz": "–",
+   "preis": 800.0,
+   "lieferstatus": "verfügbar ab Q3/2026",
+   "verfuegbar": false,
+   "seite": 3037,
+   "kuehl": 2.1,
+   "kuehl_min": 0.36,
+   "kuehl_max": 3.6,
+   "heiz": 2.3,
+   "heiz_min": 0.5,
+   "heiz_max": 3.6,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 33.0,
+   "schall_innen_max": 37.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Deckenkassette",
+   "farbe": "weiß",
+   "klasse": 2.0,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL5001iU 4CC 26 E",
+   "bestellnr": "7739625381",
+   "linie": "Climate 5000i U",
+   "beschreibung": "Deckenkassette 2,6 kW",
+   "effizienz": "–",
+   "preis": 820.0,
+   "lieferstatus": "verfügbar ab Q3/2026",
+   "verfuegbar": false,
+   "seite": 3037,
+   "kuehl": 2.6,
+   "kuehl_min": 0.36,
+   "kuehl_max": 3.4,
+   "heiz": 2.9,
+   "heiz_min": 0.5,
+   "heiz_max": 3.6,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 33.0,
+   "schall_innen_max": 37.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Deckenkassette",
+   "farbe": "weiß",
+   "klasse": 2.6,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL5001iU 4CC 35 E",
+   "bestellnr": "7739625382",
+   "linie": "Climate 5000i U",
+   "beschreibung": "Deckenkassette 3,5 kW",
+   "effizienz": "–",
+   "preis": 860.0,
+   "lieferstatus": "verfügbar ab Q3/2026",
+   "verfuegbar": false,
+   "seite": 3037,
+   "kuehl": 3.5,
+   "kuehl_min": 0.85,
+   "kuehl_max": 4.2,
+   "heiz": 3.8,
+   "heiz_min": 0.5,
+   "heiz_max": 4.3,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 32.0,
+   "schall_innen_max": 42.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Deckenkassette",
+   "farbe": "weiß",
+   "klasse": 3.5,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL5001iU 4CC 53 E",
+   "bestellnr": "7739625383",
+   "linie": "Climate 5000i U",
+   "beschreibung": "Deckenkassette 5,3 kW",
+   "effizienz": "–",
+   "preis": 900.0,
+   "lieferstatus": "verfügbar ab Q3/2026",
+   "verfuegbar": false,
+   "seite": 3037,
+   "kuehl": 5.3,
+   "kuehl_min": 2.9,
+   "kuehl_max": 5.6,
+   "heiz": 5.6,
+   "heiz_min": 2.4,
+   "heiz_max": 6.1,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 32.0,
+   "schall_innen_max": 44.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Deckenkassette",
+   "farbe": "weiß",
+   "klasse": 5.3,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL5000iM 4CC 21 E",
+   "bestellnr": "7739622251",
+   "linie": "Climate 5000i M",
+   "beschreibung": "Deckenkassette 2 kW",
+   "effizienz": "–",
+   "preis": 770.0,
+   "lieferstatus": "verfügbar bis Q3/2026",
+   "verfuegbar": true,
+   "seite": 3040,
+   "kuehl": 2.05,
+   "kuehl_min": 0.49,
+   "kuehl_max": 2.39,
+   "heiz": 2.34,
+   "heiz_min": 0.61,
+   "heiz_max": 2.72,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 32.0,
+   "schall_innen_max": 37.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Deckenkassette",
+   "farbe": "weiß",
+   "klasse": 2.0,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL5000iM 4CC 26 E",
+   "bestellnr": "7739622252",
+   "linie": "Climate 5000i M",
+   "beschreibung": "Deckenkassette 2,6 kW",
+   "effizienz": "–",
+   "preis": 803.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3040,
+   "kuehl": 2.64,
+   "kuehl_min": 0.64,
+   "kuehl_max": 3.08,
+   "heiz": 2.93,
+   "heiz_min": 0.77,
+   "heiz_max": 3.4,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 37.0,
+   "schall_innen_max": 39.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Deckenkassette",
+   "farbe": "weiß",
+   "klasse": 2.6,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL5000iU 4CC 35 E",
+   "bestellnr": "7739622253",
+   "linie": "Climate 5000i U",
+   "beschreibung": "Deckenkassette 3,5 kW",
+   "effizienz": "–",
+   "preis": 860.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3040,
+   "kuehl": 3.5,
+   "kuehl_min": 0.9,
+   "kuehl_max": 4.1,
+   "heiz": 3.8,
+   "heiz_min": 0.5,
+   "heiz_max": 4.3,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 35.0,
+   "schall_innen_max": 42.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Deckenkassette",
+   "farbe": "weiß",
+   "klasse": 3.5,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL5000iU 4CC 53 E",
+   "bestellnr": "7739622254",
+   "linie": "Climate 5000i U",
+   "beschreibung": "Deckenkassette 5,3 kW",
+   "effizienz": "–",
+   "preis": 940.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3040,
+   "kuehl": 5.3,
+   "kuehl_min": 2.9,
+   "kuehl_max": 5.6,
+   "heiz": 5.6,
+   "heiz_min": 2.4,
+   "heiz_max": 6.1,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 39.0,
+   "schall_innen_max": 45.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Deckenkassette",
+   "farbe": "weiß",
+   "klasse": 5.3,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL3200iM W 20 E",
+   "bestellnr": "7733703864",
+   "linie": "Climate 3200i",
+   "beschreibung": "Wandhängende Inneneinheit 2 kW",
+   "effizienz": "–",
+   "preis": 364.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3042,
+   "kuehl": 2.05,
+   "kuehl_min": null,
+   "kuehl_max": null,
+   "heiz": 2.34,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 22.0,
+   "schall_innen_max": 37.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "klasse": 2.0,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL3200iU W 26 E",
+   "bestellnr": "7733703588",
+   "linie": "Climate 3200i",
+   "beschreibung": "Wandhängende Inneneinheit 2,6 kW",
+   "effizienz": "–",
+   "preis": 385.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3042,
+   "kuehl": 2.63,
+   "kuehl_min": 1.02,
+   "kuehl_max": 3.22,
+   "heiz": 2.93,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 32.0,
+   "schall_innen_max": 37.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "klasse": 2.6,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL3200iU W 35 E",
+   "bestellnr": "7733703589",
+   "linie": "Climate 3200i",
+   "beschreibung": "Wandhängende Inneneinheit 3,5 kW",
+   "effizienz": "–",
+   "preis": 421.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3042,
+   "kuehl": 3.52,
+   "kuehl_min": 1.38,
+   "kuehl_max": 4.31,
+   "heiz": 3.8,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 32.0,
+   "schall_innen_max": 37.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "klasse": 3.5,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL3200iU W 53 E",
+   "bestellnr": "7733703590",
+   "linie": "Climate 3200i",
+   "beschreibung": "Wandhängende Inneneinheit 5,3 kW",
+   "effizienz": "–",
+   "preis": 504.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3042,
+   "kuehl": 5.28,
+   "kuehl_min": 3.39,
+   "kuehl_max": 5.9,
+   "heiz": 5.56,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 37.0,
+   "schall_innen_max": 41.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "klasse": 5.3,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL3200iU W 70 E",
+   "bestellnr": "7733703591",
+   "linie": "Climate 3200i",
+   "beschreibung": "Wandhängende Inneneinheit 7 kW",
+   "effizienz": "–",
+   "preis": 613.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3042,
+   "kuehl": 7.03,
+   "kuehl_min": 2.11,
+   "kuehl_max": 8.21,
+   "heiz": 7.33,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 37.0,
+   "schall_innen_max": 46.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "klasse": 7.0,
+   "aussen_kompatibel": [
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL3000iU W 20 E",
+   "bestellnr": "7733701997",
+   "linie": "Climate 3000i",
+   "beschreibung": "Wandhängende Inneneinheit 2 kW",
+   "effizienz": "–",
+   "preis": 341.0,
+   "lieferstatus": "lieferbar solange Vorrat reicht",
+   "verfuegbar": true,
+   "seite": 3042,
+   "kuehl": 2.0,
+   "kuehl_min": null,
+   "kuehl_max": null,
+   "heiz": 2.5,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": null,
+   "datenquelle": "aus Typbezeichnung abgeleitet",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "klasse": 2.0,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL3000iU W 26 E",
+   "bestellnr": "7733701564",
+   "linie": "Climate 3000i",
+   "beschreibung": "Wandhängende Inneneinheit 2,6 kW",
+   "effizienz": "–",
+   "preis": 370.0,
+   "lieferstatus": "lieferbar solange Vorrat reicht",
+   "verfuegbar": true,
+   "seite": 3042,
+   "kuehl": 2.6,
+   "kuehl_min": null,
+   "kuehl_max": null,
+   "heiz": 3.0,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": null,
+   "datenquelle": "aus Typbezeichnung abgeleitet",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "klasse": 2.6,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL3000iU W 35 E",
+   "bestellnr": "7733701566",
+   "linie": "Climate 3000i",
+   "beschreibung": "Wandhängende Inneneinheit 3,5 kW",
+   "effizienz": "–",
+   "preis": 408.0,
+   "lieferstatus": "lieferbar solange Vorrat reicht",
+   "verfuegbar": true,
+   "seite": 3042,
+   "kuehl": 3.5,
+   "kuehl_min": null,
+   "kuehl_max": null,
+   "heiz": 4.0,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": null,
+   "datenquelle": "aus Typbezeichnung abgeleitet",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "klasse": 3.5,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL3000iU W 53 E",
+   "bestellnr": "7733701568",
+   "linie": "Climate 3000i",
+   "beschreibung": "Wandhängende Inneneinheit 5,3 kW",
+   "effizienz": "–",
+   "preis": 494.0,
+   "lieferstatus": "lieferbar solange Vorrat reicht",
+   "verfuegbar": true,
+   "seite": 3042,
+   "kuehl": 5.3,
+   "kuehl_min": null,
+   "kuehl_max": null,
+   "heiz": 5.6,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": null,
+   "datenquelle": "aus Typbezeichnung abgeleitet",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "klasse": 5.3,
+   "aussen_kompatibel": [
+    "CL5000M 53/2 E",
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL3000iU W 70 E",
+   "bestellnr": "7733701570",
+   "linie": "Climate 3000i",
+   "beschreibung": "Wandhängende Inneneinheit 7 kW",
+   "effizienz": "–",
+   "preis": 609.0,
+   "lieferstatus": "lieferbar solange Vorrat reicht",
+   "verfuegbar": true,
+   "seite": 3042,
+   "kuehl": 7.0,
+   "kuehl_min": null,
+   "kuehl_max": null,
+   "heiz": null,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": null,
+   "schall_innen_max": null,
+   "kaeltemittel": null,
+   "datenquelle": "aus Typbezeichnung abgeleitet",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "klasse": 7.0,
+   "aussen_kompatibel": [
+    "CL5000M 79/3 E",
+    "CL5000M 105/4 E",
+    "CL5000M 125/5 E"
+   ]
+  },
+  {
+   "typ": "CL7000iU W 20 E",
+   "bestellnr": "7733702574",
+   "linie": "Climate 7000i",
+   "beschreibung": "Wandhängende Inneneinheit 2 kW, weiß",
+   "effizienz": "–",
+   "preis": 773.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3055,
+   "kuehl": 2.0,
+   "kuehl_min": 0.96,
+   "kuehl_max": 3.71,
+   "heiz": 2.3,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 25.0,
+   "schall_innen_max": 37.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "klasse": 2.0,
+   "aussen_kompatibel": [
+    "CL7000M 53/2 E",
+    "CL7000M 79/3 E"
+   ]
+  },
+  {
+   "typ": "CL7000iU W 26 E",
+   "bestellnr": "7733702576",
+   "linie": "Climate 7000i",
+   "beschreibung": "Wandhängende Inneneinheit 2,6 kW, weiß",
+   "effizienz": "–",
+   "preis": 859.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3055,
+   "kuehl": 2.5,
+   "kuehl_min": 1.03,
+   "kuehl_max": 4.28,
+   "heiz": 4.1,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 30.0,
+   "schall_innen_max": 43.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "klasse": 2.6,
+   "aussen_kompatibel": [
+    "CL7000M 53/2 E",
+    "CL7000M 79/3 E"
+   ]
+  },
+  {
+   "typ": "CL7000iU W 26 EB",
+   "bestellnr": "7733703056",
+   "linie": "Climate 7000i",
+   "beschreibung": "Wandhängende Inneneinheit 2,6 kW, schwarz",
+   "effizienz": "–",
+   "preis": 1020.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3055,
+   "kuehl": 2.5,
+   "kuehl_min": 1.03,
+   "kuehl_max": 4.28,
+   "heiz": 4.1,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 30.0,
+   "schall_innen_max": 43.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "schwarz",
+   "klasse": 2.6,
+   "aussen_kompatibel": [
+    "CL7000M 53/2 E",
+    "CL7000M 79/3 E"
+   ]
+  },
+  {
+   "typ": "CL7000iU W 26 ES",
+   "bestellnr": "7733703051",
+   "linie": "Climate 7000i",
+   "beschreibung": "Wandhängende Inneneinheit 2,6 kW, silber",
+   "effizienz": "–",
+   "preis": 1020.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3055,
+   "kuehl": 2.5,
+   "kuehl_min": 1.03,
+   "kuehl_max": 4.28,
+   "heiz": 4.1,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 30.0,
+   "schall_innen_max": 43.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "silber",
+   "klasse": 2.6,
+   "aussen_kompatibel": [
+    "CL7000M 53/2 E",
+    "CL7000M 79/3 E"
+   ]
+  },
+  {
+   "typ": "CL7000iU W 35 E",
+   "bestellnr": "7733702578",
+   "linie": "Climate 7000i",
+   "beschreibung": "Wandhängende Inneneinheit 3,5 kW, weiß",
+   "effizienz": "–",
+   "preis": 913.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3055,
+   "kuehl": 3.4,
+   "kuehl_min": 1.03,
+   "kuehl_max": 4.28,
+   "heiz": 4.1,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 33.0,
+   "schall_innen_max": 43.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "klasse": 3.5,
+   "aussen_kompatibel": [
+    "CL7000M 53/2 E",
+    "CL7000M 79/3 E"
+   ]
+  },
+  {
+   "typ": "CL7000iU W 35 EB",
+   "bestellnr": "7733703057",
+   "linie": "Climate 7000i",
+   "beschreibung": "Wandhängende Inneneinheit 3,5 kW, schwarz",
+   "effizienz": "–",
+   "preis": 1073.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3055,
+   "kuehl": 3.4,
+   "kuehl_min": 1.03,
+   "kuehl_max": 4.28,
+   "heiz": 4.1,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 33.0,
+   "schall_innen_max": 43.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "schwarz",
+   "klasse": 3.5,
+   "aussen_kompatibel": [
+    "CL7000M 53/2 E",
+    "CL7000M 79/3 E"
+   ]
+  },
+  {
+   "typ": "CL7000iU W 35 ES",
+   "bestellnr": "7733703052",
+   "linie": "Climate 7000i",
+   "beschreibung": "Wandhängende Inneneinheit 3,5 kW, silber",
+   "effizienz": "–",
+   "preis": 1073.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3055,
+   "kuehl": 3.4,
+   "kuehl_min": 1.03,
+   "kuehl_max": 4.28,
+   "heiz": 4.1,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 33.0,
+   "schall_innen_max": 43.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "silber",
+   "klasse": 3.5,
+   "aussen_kompatibel": [
+    "CL7000M 53/2 E",
+    "CL7000M 79/3 E"
+   ]
+  },
+  {
+   "typ": "CL7000iU W 53 E",
+   "bestellnr": "7733702582",
+   "linie": "Climate 7000i",
+   "beschreibung": "Wandhängende Inneneinheit 5,3 kW, weiß",
+   "effizienz": "–",
+   "preis": 1020.0,
+   "lieferstatus": "lieferbar",
+   "verfuegbar": true,
+   "seite": 3055,
+   "kuehl": 5.0,
+   "kuehl_min": 1.32,
+   "kuehl_max": 5.66,
+   "heiz": 5.6,
+   "heiz_min": null,
+   "heiz_max": null,
+   "seer": null,
+   "scop": null,
+   "schall_aussen": null,
+   "schall_innen_min": 34.0,
+   "schall_innen_max": 44.0,
+   "kaeltemittel": null,
+   "datenquelle": "Katalog",
+   "bauart": "Wandgerät",
+   "farbe": "weiß",
+   "klasse": 5.3,
+   "aussen_kompatibel": [
+    "CL7000M 53/2 E",
+    "CL7000M 79/3 E"
+   ]
+  }
+ ],
+ "kombinationen": [
+  {
+   "aussen": "CL5000M 53/2 E",
+   "klassen": [
+    3.5
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 53/2 E",
+   "klassen": [
+    5.3
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 53/2 E",
+   "klassen": [
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 53/2 E",
+   "klassen": [
+    2.6,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 53/2 E",
+   "klassen": [
+    3.5,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 53/2 E",
+   "klassen": [
+    5.3,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 53/2 E",
+   "klassen": [
+    2.6,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 53/2 E",
+   "klassen": [
+    3.5,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 53/2 E",
+   "klassen": [
+    5.3,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 53/2 E",
+   "klassen": [
+    3.5,
+    3.5
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 53/2 E",
+   "klassen": [
+    5.3,
+    3.5
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    5.3
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    7.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    2.6,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    3.5,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    5.3,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    2.6,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    3.5,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    5.3,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    3.5,
+    3.5
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    5.3,
+    3.5
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    5.3,
+    5.3
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    3.5,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    5.3,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    3.5,
+    3.5,
+    3.5
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 79/3 E",
+   "klassen": [
+    5.3,
+    3.5,
+    3.5
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    7.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    2.6,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    7.0,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    3.5
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    3.5
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    7.0,
+    3.5
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    5.3
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    7.0,
+    5.3
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    7.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    7.0,
+    2.6,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    7.0,
+    3.5,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    5.3,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    7.0,
+    2.6,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    7.0,
+    3.5,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    5.3,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    3.5,
+    3.5
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    3.5,
+    3.5
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    7.0,
+    3.5,
+    3.5
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    5.3,
+    3.5
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    2.0,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    2.6,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    7.0,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    7.0,
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.0,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.6,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.6,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    3.5,
+    3.5,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    3.5,
+    3.5,
+    2.0
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.6,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.6,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    3.5,
+    3.5,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    3.5,
+    3.5,
+    2.6
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    3.5,
+    3.5,
+    3.5,
+    3.5
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 105/4 E",
+   "klassen": [
+    5.3,
+    3.5,
+    3.5,
+    3.5
+   ],
+   "seite": 3045
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    5.3
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    5.3
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    5.3,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    5.3,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    5.3,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    5.3,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    3.5
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    3.5
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5,
+    3.5
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    5.3,
+    3.5
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    5.3,
+    3.5
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    2.0,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    2.6,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    3.5,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    3.5,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5,
+    3.5,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    3.5,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    3.5,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5,
+    3.5,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    3.5,
+    3.5
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    3.5,
+    3.5
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5,
+    3.5,
+    3.5
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    2.6,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    2.6,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    2.6,
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5,
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    3.5,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    3.5,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5,
+    3.5,
+    2.0,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    2.6,
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5,
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    3.5,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    3.5,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5,
+    3.5,
+    2.6,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    3.5,
+    3.5,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    3.5,
+    3.5,
+    2.0
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    2.6,
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5,
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    3.5,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    3.5,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    7.0,
+    3.5,
+    3.5,
+    2.6,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    3.5,
+    3.5,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    3.5,
+    3.5,
+    2.6
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    3.5,
+    3.5,
+    3.5,
+    3.5,
+    3.5
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL5000M 125/5 E",
+   "klassen": [
+    5.3,
+    3.5,
+    3.5,
+    3.5,
+    3.5
+   ],
+   "seite": 3046
+  },
+  {
+   "aussen": "CL7000M 53/2 E",
+   "klassen": [
+    3.5
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 53/2 E",
+   "klassen": [
+    5.3
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 53/2 E",
+   "klassen": [
+    2.0,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 53/2 E",
+   "klassen": [
+    2.6,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 53/2 E",
+   "klassen": [
+    3.5,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 53/2 E",
+   "klassen": [
+    5.3,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 53/2 E",
+   "klassen": [
+    2.6,
+    2.6
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 53/2 E",
+   "klassen": [
+    3.5,
+    2.6
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 53/2 E",
+   "klassen": [
+    5.3,
+    2.6
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 53/2 E",
+   "klassen": [
+    3.5,
+    3.5
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 53/2 E",
+   "klassen": [
+    5.3,
+    3.5
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    3.5,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    5.3,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    7.0,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    2.6,
+    2.6
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    3.5,
+    2.6
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    5.3,
+    2.6
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    7.0,
+    2.6
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    3.5,
+    3.5
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    5.3,
+    3.5
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    7.0,
+    3.5
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    5.3,
+    5.3
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    7.0,
+    5.3
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    2.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    2.6,
+    2.0,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    3.5,
+    2.0,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    5.3,
+    2.0,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    7.0,
+    2.0,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    7.0,
+    2.6,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    7.0,
+    3.5,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    5.3,
+    5.3,
+    2.0
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    2.6,
+    2.6,
+    2.6
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    3.5,
+    2.6,
+    2.6
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    5.3,
+    2.6,
+    2.6
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    7.0,
+    2.6,
+    2.6
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    3.5,
+    3.5,
+    2.6
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    5.3,
+    3.5,
+    2.6
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    7.0,
+    3.5,
+    2.6
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    5.3,
+    5.3,
+    2.6
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    3.5,
+    3.5,
+    3.5
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    5.3,
+    3.5,
+    3.5
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    7.0,
+    3.5,
+    3.5
+   ],
+   "seite": 3060
+  },
+  {
+   "aussen": "CL7000M 79/3 E",
+   "klassen": [
+    5.3,
+    5.3,
+    3.5
+   ],
+   "seite": 3060
+  }
+ ],
+ "zubehoer": [
+  {
+   "kategorie": "Gerätespezifisch",
+   "name": "Smart Grid Modul MSG-1",
+   "bestellnr": "7733702555",
+   "beschreibung": "Netzdienliche Schnittstelle; für BEG-Förderung (BAFA) nötig; kompatibel mit Climate 7000i Außeneinheiten",
+   "preis": 84.0,
+   "passend": "Climate 7000i Single",
+   "seite": 3017
+  },
+  {
+   "kategorie": "Gerätespezifisch",
+   "name": "Verbindungsmodul MC R",
+   "bestellnr": "7733701597",
+   "beschreibung": "Potentialfreier Kontakt, externes Ein/Aus, Alarmkontakt",
+   "preis": 61.0,
+   "passend": "CL3000i, CL3200i, CL7000i",
+   "seite": 3017
+  },
+  {
+   "kategorie": "Gerätespezifisch",
+   "name": "Internet-Gateway G 10-3",
+   "bestellnr": "7736606771",
+   "beschreibung": "WLAN-Gateway, App HomeCom Easy, Matter-ready – verfügbar bis Q2/2026",
+   "preis": 123.0,
+   "passend": "CL3000i, CL3200i, CL5000iU/M 4CC, CL5000iU/M CN",
+   "seite": 3027
+  },
+  {
+   "kategorie": "Gerätespezifisch",
+   "name": "Internet-Gateway G 10-4",
+   "bestellnr": "7733703987",
+   "beschreibung": "WLAN-Gateway, App HomeCom Easy, Matter-ready – verfügbar ab Q2/2026",
+   "preis": 60.0,
+   "passend": "CL3200i, CL6000iP, CL5000iU 4CC, CL5000iU/M CN",
+   "seite": 3027
+  },
+  {
+   "kategorie": "Gerätespezifisch",
+   "name": "G 10 CLC Gateway-Anschluss",
+   "bestellnr": "7733701951",
+   "beschreibung": "Anschluss für Deckenkassetten; nötig für Gateway G 10-3 bzw. Kabelregler CRC R-1",
+   "preis": 97.0,
+   "passend": "CL5000iM/U 4CC",
+   "seite": 3040
+  },
+  {
+   "kategorie": "Gerätespezifisch",
+   "name": "Multi-Split-Adapter 3/8\" (ODU) auf 1/4\" (IDU)",
+   "bestellnr": "7733703606",
+   "beschreibung": "Adapter Rohranschluss Außeneinheit",
+   "preis": 9.5,
+   "passend": "Climate 5000 M, Climate 7000 M",
+   "seite": 3032
+  },
+  {
+   "kategorie": "Gerätespezifisch",
+   "name": "Multi-Split-Adapter 1/4\" (ODU) auf 3/8\" (IDU)",
+   "bestellnr": "7733703603",
+   "beschreibung": "Adapter Rohranschluss Außeneinheit",
+   "preis": 7.3,
+   "passend": "Climate 5000 M, Climate 7000 M",
+   "seite": 3032
+  },
+  {
+   "kategorie": "Gerätespezifisch",
+   "name": "Multi-Split-Adapter 3/8\" (ODU) auf 1/2\" (IDU)",
+   "bestellnr": "7733703604",
+   "beschreibung": "Adapter Rohranschluss Außeneinheit",
+   "preis": 10.5,
+   "passend": "Climate 5000 M, Climate 7000 M",
+   "seite": 3032
+  },
+  {
+   "kategorie": "Gerätespezifisch",
+   "name": "Multi-Split-Adapter 1/2\" (ODU) auf 3/8\" (IDU)",
+   "bestellnr": "7733703607",
+   "beschreibung": "Adapter Rohranschluss Außeneinheit",
+   "preis": 11.5,
+   "passend": "Climate 5000 M, Climate 7000 M",
+   "seite": 3032
+  },
+  {
+   "kategorie": "Gerätespezifisch",
+   "name": "Multi-Split-Adapter 1/2\" (ODU) auf 5/8\" (IDU)",
+   "bestellnr": "7733703605",
+   "beschreibung": "Adapter Rohranschluss Außeneinheit",
+   "preis": 15.5,
+   "passend": "Climate 5000 M, Climate 7000 M",
+   "seite": 3032
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Kommunikationskabel ≤ 5,3 kW",
+   "bestellnr": "7733701741",
+   "beschreibung": "1,5 mm², Länge 5,5 m, für 2,6 bis 5,3 kW",
+   "preis": 56.0,
+   "passend": "Split-Klimageräte",
+   "seite": 3063
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Kommunikationskabel 7 kW",
+   "bestellnr": "7733704678",
+   "beschreibung": "Verlängerungskabel 2,5 mm², Länge 5,5 m, für 7 kW",
+   "preis": 54.0,
+   "passend": "Split-Klimageräte",
+   "seite": 3063
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Kabelregler CRC R-1",
+   "bestellnr": "7733701903",
+   "beschreibung": "Wochenprogramm, 6 Schaltpunkte/Tag; für CL5000iM 4CC, CL5000iM CN, CL3000i (MC R nötig)",
+   "preis": 142.0,
+   "passend": "4CC, CN, CL3000i",
+   "seite": 3063
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Bodenkonsole",
+   "bestellnr": "7716161065",
+   "beschreibung": "Aufstellung der Außeneinheit, mit Schwingungsdämpfern",
+   "preis": 224.0,
+   "passend": "Climate Außeneinheiten",
+   "seite": 3063
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Kleine Wandkonsole",
+   "bestellnr": "7747222358",
+   "beschreibung": "Wandmontage der Außeneinheit",
+   "preis": 282.0,
+   "passend": "Climate Außeneinheiten",
+   "seite": 3063
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Spiralschlauch Ø 16 mm",
+   "bestellnr": "7738345076",
+   "beschreibung": "Kondensatableitung, Rolle 30 m",
+   "preis": 64.0,
+   "passend": "Inneneinheiten mit 16 mm Kondensatablauf",
+   "seite": 3063
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Doppelrohr 1/4\" + 3/8\", 5 m",
+   "bestellnr": "8750501319",
+   "beschreibung": "Kupfer-Doppelrohr-Paket",
+   "preis": 107.0,
+   "passend": "2,5 und 3,5 kW",
+   "seite": 3064
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Doppelrohr 1/4\" + 3/8\", 10 m",
+   "bestellnr": "7733701500",
+   "beschreibung": "Kupfer-Doppelrohr, Isolierung EN 13501-1",
+   "preis": 276.0,
+   "passend": "2,5 und 3,5 kW",
+   "seite": 3064
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Doppelrohr 1/4\" + 3/8\", 20 m",
+   "bestellnr": "7733701501",
+   "beschreibung": "Kupfer-Doppelrohr, Isolierung EN 13501-1",
+   "preis": 447.0,
+   "passend": "2,5 und 3,5 kW",
+   "seite": 3064
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Doppelrohr 1/4\" + 1/2\", 5 m",
+   "bestellnr": "7739838151",
+   "beschreibung": "Kupfer-Doppelrohr-Paket",
+   "preis": 151.0,
+   "passend": "5,3 kW",
+   "seite": 3064
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Doppelrohr 1/4\" + 1/2\", 10 m",
+   "bestellnr": "7733701502",
+   "beschreibung": "Kupfer-Doppelrohr, Isolierung EN 13501-1",
+   "preis": 276.0,
+   "passend": "5,3 kW",
+   "seite": 3064
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Doppelrohr 1/4\" + 1/2\", 20 m",
+   "bestellnr": "7733701503",
+   "beschreibung": "Kupfer-Doppelrohr, Isolierung EN 13501-1",
+   "preis": 447.0,
+   "passend": "5,3 kW",
+   "seite": 3064
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Doppelrohr 3/8\" + 5/8\", 5 m",
+   "bestellnr": "7739838153",
+   "beschreibung": "Kupfer-Doppelrohr-Paket",
+   "preis": 183.0,
+   "passend": "7 kW",
+   "seite": 3064
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Kälteleitung 3/8\" + 5/8\", 10 m",
+   "bestellnr": "8738206697",
+   "beschreibung": "Kälteleitung",
+   "preis": 366.0,
+   "passend": "7 kW",
+   "seite": 3064
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Kälteleitung 3/8\" + 5/8\", 20 m",
+   "bestellnr": "7748000688",
+   "beschreibung": "Kälteleitung",
+   "preis": 725.0,
+   "passend": "7 kW",
+   "seite": 3064
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "SAE-Klemmringverschraubung 1/4\"",
+   "bestellnr": "7738345078",
+   "beschreibung": "bördelfreie Verbindung, 2 Stück",
+   "preis": 14.0,
+   "passend": "Split-Klimageräte",
+   "seite": 3064
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "SAE-Klemmringverschraubung 3/8\"",
+   "bestellnr": "7738345079",
+   "beschreibung": "bördelfreie Verbindung, 2 Stück",
+   "preis": 14.0,
+   "passend": "Split-Klimageräte",
+   "seite": 3064
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "SAE-Klemmringverschraubung 1/2\"",
+   "bestellnr": "7738345080",
+   "beschreibung": "bördelfreie Verbindung, 2 Stück",
+   "preis": 16.0,
+   "passend": "Split-Klimageräte",
+   "seite": 3064
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "SAE-Klemmringverschraubung 5/8\"",
+   "bestellnr": "7738345081",
+   "beschreibung": "bördelfreie Verbindung, 2 Stück",
+   "preis": 20.0,
+   "passend": "Split-Klimageräte",
+   "seite": 3064
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Kondensatpumpe Geräteeinbau",
+   "bestellnr": "7738336975",
+   "beschreibung": "max. 12 l/h, max. 10 m Förderhöhe",
+   "preis": 225.0,
+   "passend": "Climate Geräteserie",
+   "seite": 3065
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Kondensatpumpe Silent+ mini",
+   "bestellnr": "7738345075",
+   "beschreibung": "unterhalb Wandgerät, max. 45 l/h, 16 dB(A)",
+   "preis": 344.0,
+   "passend": "wandhängende Inneneinheiten",
+   "seite": 3065
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Kondensatpumpe inkl. Kanal",
+   "bestellnr": "7738345958",
+   "beschreibung": "max. 12 l/h, mit 800 mm Kanal",
+   "preis": 276.0,
+   "passend": "Climate Geräteserie",
+   "seite": 3065
+  },
+  {
+   "kategorie": "Dienstleistung",
+   "name": "Auftragspauschale",
+   "bestellnr": "7739607426",
+   "beschreibung": "Geschäftszeit Montag bis Freitag",
+   "preis": 151.0,
+   "passend": "–",
+   "seite": 3066
+  },
+  {
+   "kategorie": "Dienstleistung",
+   "name": "Inbetriebnahme Außeneinheit bis 18 kW",
+   "bestellnr": "8737804256",
+   "beschreibung": "Inbetriebnahme Klimagerät",
+   "preis": 551.0,
+   "passend": "–",
+   "seite": 3066
+  },
+  {
+   "kategorie": "Dienstleistung",
+   "name": "Inbetriebnahme je Inneneinheit",
+   "bestellnr": "8737804260",
+   "beschreibung": "Inbetriebnahme Klimagerät",
+   "preis": 62.0,
+   "passend": "–",
+   "seite": 3066
+  },
+  {
+   "kategorie": "Dienstleistung",
+   "name": "Zusätzlicher Anschluss kältetechnische Rohrverbindungen",
+   "bestellnr": "8737805649",
+   "beschreibung": "Inbetriebnahme Klimagerät",
+   "preis": 137.0,
+   "passend": "–",
+   "seite": 3066
+  },
+  {
+   "kategorie": "Dienstleistung",
+   "name": "Service-Pauschale Kältemittel R32",
+   "bestellnr": "8737805293",
+   "beschreibung": "je 100 g, Pauschalpreis",
+   "preis": 14.5,
+   "passend": "–",
+   "seite": 3066
+  }
+ ],
+ "merkmale": {
+  "Climate Class 8000i": [
+   "Testsieger „Klimageräte“ Stiftung Warentest 06/24",
+   "Einfache Reinigung durch spezielle Bauweise und waschbare Teile",
+   "Plasmacluster-Technologie zur Luftreinigung",
+   "Multi-Space-Modus: mehrere Räume temperierbar",
+   "Coanda-Effekt vermeidet Luftzug",
+   "Dry Mode (Entfeuchtung)",
+   "Eco Mode (reduzierter Stromverbrauch)",
+   "5 Jahre Garantie",
+   "Human Sensor, WLAN integriert, App HomeCom Easy"
+  ],
+  "Climate 7000i": [
+   "Förderfähig nach BEG (mit Zubehör MSG-1)",
+   "SEER 10,1 / SCOP 5,1 (2,6-kW-Variante)",
+   "Ionen-Technologie zur Luftreinigung",
+   "Bewegungssensor regelt Leistung bei Abwesenheit",
+   "3D-Swing",
+   "Dry Mode mit einstellbarer Luftfeuchte",
+   "Save-Plus-Modus",
+   "WLAN integriert, Matter-zertifiziert, Sprachassistenz",
+   "5 Jahre Garantie"
+  ],
+  "Climate 6000i P": [
+   "Natürliches Kältemittel R290 (GWP 0,02), PFAS-frei",
+   "Sicherheitskonzept für A3-Kältemittel, funkenfreie Komponenten, Leckagesensor",
+   "Installation in Räumen ab 9,1 m²",
+   "A+++ Kühlen / A++ Heizen",
+   "Verfügbar ab Q3/2026"
+  ],
+  "Climate 3200i": [
+   "Kühlung bis +50 °C Außentemperatur",
+   "Kältemittel R32",
+   "Luftreinigung über Ionen-Technologie",
+   "Frostschutz (Raum konstant über 8 °C)",
+   "App HomeCom Easy mit Zubehör",
+   "Inneneinheiten auch für Multi-Split (CL5000 M)",
+   "5 Jahre Garantie"
+  ],
+  "Climate 5000 M": [
+   "Anschluss von bis zu 5 Inneneinheiten",
+   "Kühlen –15 bis +50 °C, Heizen –15 bis +24 °C",
+   "Kombinierbar mit Wandgeräten, Deckenkassetten und Konsolen",
+   "5 Jahre Garantie"
+  ],
+  "Climate 5000i M / U (Konsole)": [
+   "Bodenkonsolen in 3 Leistungsgrößen",
+   "Besonders für Dachgeschoss geeignet (Bodenmontage)",
+   "Kombinierbar mit Climate 5000 M und 7000 M"
+  ],
+  "Climate 5000i U / M (Kassette)": [
+   "Deckenkassetten in 4 Leistungsgrößen",
+   "Integrierte Kondensatpumpe",
+   "360°-Luftstrom (CL5001iU)",
+   "CL5001iU lieferbar ab Q3/2026"
+  ],
+  "Climate 7000 M": [
+   "Anschluss von bis zu 3 Inneneinheiten",
+   "Netzdienliche Schnittstelle integriert",
+   "Kombinierbar mit CL7000i-Wandgeräten und Konsolen",
+   "5 Jahre Garantie"
+  ]
+ },
+ "einsatz": [
+  {
+   "linie": "Climate Class 8000i",
+   "bereich": "Elektrik",
+   "merkmal": "Kommunikationskabel",
+   "wert": "4-adrig zwischen Innen- und Außeneinheit",
+   "seite": 3005
+  },
+  {
+   "linie": "Climate Class 8000i",
+   "bereich": "Elektrik",
+   "merkmal": "Stromkabel",
+   "wert": "3-adrig an Außeneinheit; Typ H07RN-F, mind. 1,5 mm²",
+   "seite": 3005
+  },
+  {
+   "linie": "Climate Class 8000i",
+   "bereich": "Elektrik",
+   "merkmal": "Netzabsicherung",
+   "wert": "16 A",
+   "seite": 3005
+  },
+  {
+   "linie": "Climate Class 8000i",
+   "bereich": "Elektrik",
+   "merkmal": "Elektrische Anschlussleistung",
+   "wert": "25 E: 1,17 kW · 35 E: 1,75 kW",
+   "seite": 3005
+  },
+  {
+   "linie": "Climate Class 8000i",
+   "bereich": "Rohrleitung",
+   "merkmal": "Max. Rohrleitungslänge / Höhenunterschied / Min. Länge",
+   "wert": "15 m / 10 m / 3 m",
+   "seite": 3005
+  },
+  {
+   "linie": "Climate Class 8000i",
+   "bereich": "Rohrleitung",
+   "merkmal": "Außeneinheit vorbefüllt bis / Nachfüllung",
+   "wert": "15 m / 0 g/m",
+   "seite": 3005
+  },
+  {
+   "linie": "Climate Class 8000i",
+   "bereich": "Rohrleitung",
+   "merkmal": "Rohrdurchmesser",
+   "wert": "Flüssigkeit 1/4\" (6,35 mm), Gas 3/8\" (9,52 mm); Anschluss links, rechts, hinten",
+   "seite": 3005
+  },
+  {
+   "linie": "Climate Class 8000i",
+   "bereich": "Kältemittel",
+   "merkmal": "Zulässige Konzentration R32",
+   "wert": "Berechnung nach DIN EN 378; oberer Deckelungsfaktor 12 kg; bis 1,842 kg keine Maßnahmen; min. Raumfläche 4 m²",
+   "seite": 3005
+  },
+  {
+   "linie": "Climate Class 8000i",
+   "bereich": "Betriebsbereich",
+   "merkmal": "Außentemperatur Kühlen / Heizen",
+   "wert": "–15 bis +43 °C / –15 bis +24 °C (Datentabelle: Kühlen –10 bis +48 °C)",
+   "seite": 3005
+  },
+  {
+   "linie": "Climate 7000i",
+   "bereich": "Elektrik",
+   "merkmal": "Kommunikationskabel",
+   "wert": "5-adrig zwischen Innen- und Außeneinheit",
+   "seite": 3013
+  },
+  {
+   "linie": "Climate 7000i",
+   "bereich": "Elektrik",
+   "merkmal": "Stromkabel",
+   "wert": "3-adrig an Außeneinheit; Typ H07RN-F, mind. 1,5 mm²",
+   "seite": 3013
+  },
+  {
+   "linie": "Climate 7000i",
+   "bereich": "Elektrik",
+   "merkmal": "Netzabsicherung",
+   "wert": "2 / 2,6 / 3,5 kW: 13 A · 5 kW: 16 A",
+   "seite": 3013
+  },
+  {
+   "linie": "Climate 7000i",
+   "bereich": "Elektrik",
+   "merkmal": "Elektrische Anschlussleistung",
+   "wert": "20 E: 0,92 kW · 26 E: 1,4 kW · 35 E: 1,4 kW · 53 E: 1,6 kW",
+   "seite": 3013
+  },
+  {
+   "linie": "Climate 7000i",
+   "bereich": "Rohrleitung",
+   "merkmal": "Max. Rohrleitungslänge",
+   "wert": "20/26/35 E: 25 m · 53 E: 30 m",
+   "seite": 3013
+  },
+  {
+   "linie": "Climate 7000i",
+   "bereich": "Rohrleitung",
+   "merkmal": "Max. Höhenunterschied",
+   "wert": "20/26/35 E: 10 m · 53 E: 20 m",
+   "seite": 3013
+  },
+  {
+   "linie": "Climate 7000i",
+   "bereich": "Rohrleitung",
+   "merkmal": "Min. Länge / vorbefüllt bis / Nachfüllung",
+   "wert": "3 m / 5 m / 12 g/m",
+   "seite": 3013
+  },
+  {
+   "linie": "Climate 7000i",
+   "bereich": "Rohrleitung",
+   "merkmal": "Rohrdurchmesser",
+   "wert": "Flüssigkeit 6,35 (1/4\"); Gas 9,53 (3/8\"), 53 E: 12,7 (1/2\")",
+   "seite": 3013
+  },
+  {
+   "linie": "Climate 7000i",
+   "bereich": "Kältemittel",
+   "merkmal": "Zulässige Konzentration R32",
+   "wert": "DIN EN 378; Deckelungsfaktor 12 kg; bis 1,842 kg keine Maßnahmen; min. Raumfläche 4 m²",
+   "seite": 3013
+  },
+  {
+   "linie": "Climate 7000i",
+   "bereich": "Betriebsbereich",
+   "merkmal": "Außentemperatur Kühlen / Heizen",
+   "wert": "–15 bis +50 °C / –30 bis +30 °C",
+   "seite": 3013
+  },
+  {
+   "linie": "Climate 7000i",
+   "bereich": "Betriebsbereich",
+   "merkmal": "Raumtemperatur Kühlen / Heizen",
+   "wert": "≥ 17 °C / ≤ 30 °C",
+   "seite": 3013
+  },
+  {
+   "linie": "Climate 6000i P",
+   "bereich": "Rohrleitung",
+   "merkmal": "Max. Rohrleitungslänge / Höhenunterschied / Min. Länge",
+   "wert": "15 m / 10 m / 3 m",
+   "seite": 3019
+  },
+  {
+   "linie": "Climate 6000i P",
+   "bereich": "Rohrleitung",
+   "merkmal": "Außeneinheit vorbefüllt bis / Nachfüllung",
+   "wert": "5 m / 10 g/m über 5 m",
+   "seite": 3019
+  },
+  {
+   "linie": "Climate 6000i P",
+   "bereich": "Kältemittel",
+   "merkmal": "Kältemittel / Mindestraumfläche",
+   "wert": "R290 (GWP 0,02), A3; Leckagesensor in Inneneinheit; Installation in Räumen ab 9,1 m²",
+   "seite": 3019
+  },
+  {
+   "linie": "Climate 3200i",
+   "bereich": "Elektrik",
+   "merkmal": "Kommunikationskabel",
+   "wert": "5-adrig zwischen Innen- und Außeneinheit",
+   "seite": 3023
+  },
+  {
+   "linie": "Climate 3200i",
+   "bereich": "Elektrik",
+   "merkmal": "Stromkabel",
+   "wert": "3-adrig; Typ H07RN-F, mind. 1,5 mm² bzw. 2,5 mm² (7 kW)",
+   "seite": 3023
+  },
+  {
+   "linie": "Climate 3200i",
+   "bereich": "Elektrik",
+   "merkmal": "Netzabsicherung",
+   "wert": "2,6 / 3,5 kW: 13 A · 5,3 kW: 16 A · 7 kW: 25 A",
+   "seite": 3023
+  },
+  {
+   "linie": "Climate 3200i",
+   "bereich": "Elektrik",
+   "merkmal": "Elektrische Anschlussleistung",
+   "wert": "26 WE: 1,10 kW · 35 WE: 1,65 kW · 53 WE: 2,05 kW · 70 WE: 3,20 kW",
+   "seite": 3023
+  },
+  {
+   "linie": "Climate 3200i",
+   "bereich": "Rohrleitung",
+   "merkmal": "Max. Rohrleitungslänge",
+   "wert": "26/35: 25 m · 53: 30 m · 70: 50 m",
+   "seite": 3023
+  },
+  {
+   "linie": "Climate 3200i",
+   "bereich": "Rohrleitung",
+   "merkmal": "Max. Höhenunterschied",
+   "wert": "26/35: 10 m · 53: 20 m · 70: 25 m",
+   "seite": 3023
+  },
+  {
+   "linie": "Climate 3200i",
+   "bereich": "Rohrleitung",
+   "merkmal": "Min. Länge / vorbefüllt bis / Nachfüllung",
+   "wert": "3 m / 5 m / 12 g/m (70 WE: 24 g/m)",
+   "seite": 3023
+  },
+  {
+   "linie": "Climate 3200i",
+   "bereich": "Kältemittel",
+   "merkmal": "Zulässige Konzentration R32",
+   "wert": "DIN EN 378; Deckelungsfaktor 12 kg; bis 1,842 kg keine Maßnahmen; min. Raumfläche 4 m², bei 7 kW 6 m²",
+   "seite": 3023
+  },
+  {
+   "linie": "Climate 3200i",
+   "bereich": "Betriebsbereich",
+   "merkmal": "Außentemperatur Kühlen / Heizen",
+   "wert": "–15 bis +50 °C / –15 bis +30 °C (Datentabelle Heizen max. +24 °C)",
+   "seite": 3023
+  },
+  {
+   "linie": "Climate 3200i",
+   "bereich": "Betriebsbereich",
+   "merkmal": "Raumtemperatur Kühlen / Heizen",
+   "wert": "≥ 17 °C / ≤ 30 °C",
+   "seite": 3023
+  },
+  {
+   "linie": "Climate 5000 M",
+   "bereich": "Elektrik",
+   "merkmal": "Elektrische Anschlussleistung",
+   "wert": "53/2 (2×2,6 kW): 3,05 kW · 79/3 (3×2,6): 4,1 kW · 105/4 (4×2,6): 4,6 kW · 125/5 (5×2,6): 4,7 kW",
+   "seite": 3031
+  },
+  {
+   "linie": "Climate 5000 M",
+   "bereich": "Elektrik",
+   "merkmal": "Stromaufnahme max. / Stromkabel",
+   "wert": "53/2: 13 A, ≥ 1,5 mm² · 79/3: 18 A, ≥ 2,5 mm² · 105/4: 21,5 A, ≥ 4,0 mm² · 125/5: 22 A, ≥ 4,0 mm²",
+   "seite": 3031
+  },
+  {
+   "linie": "Climate 5000 M",
+   "bereich": "Elektrik",
+   "merkmal": "Kommunikationskabel",
+   "wert": "4-adrig, ≥ 1,5 mm²; Anschlusskabel Typ H07RN-F",
+   "seite": 3031
+  },
+  {
+   "linie": "Climate 5000 M",
+   "bereich": "Rohrleitung",
+   "merkmal": "Max. Rohrleitungslänge (alle Inneneinheiten)",
+   "wert": "53/2: 40 m · 79/3: 60 m · 105/4: 80 m · 125/5: 80 m",
+   "seite": 3031
+  },
+  {
+   "linie": "Climate 5000 M",
+   "bereich": "Rohrleitung",
+   "merkmal": "Max. Rohrleitungslänge (eine Inneneinheit)",
+   "wert": "53/2: 25 m · 79/3: 30 m · 105/4: 35 m · 125/5: 35 m",
+   "seite": 3031
+  },
+  {
+   "linie": "Climate 5000 M",
+   "bereich": "Rohrleitung",
+   "merkmal": "Max. Höhenunterschied Innen/Außen · zwischen Inneneinheiten",
+   "wert": "15 m · 10 m",
+   "seite": 3031
+  },
+  {
+   "linie": "Climate 5000 M",
+   "bereich": "Rohrleitung",
+   "merkmal": "Außeneinheit vorbefüllt bis",
+   "wert": "53/2: 15 m · 79/3: 22,5 m · 105/4: 30 m · 125/5: 37,5 m",
+   "seite": 3031
+  },
+  {
+   "linie": "Climate 5000 M",
+   "bereich": "Kältemittel",
+   "merkmal": "Kältemittel vorgefüllt",
+   "wert": "53/2: 1,25 kg · 79/3: 1,72 kg · 105/4: 2,1 kg · 125/5: 2,4 kg",
+   "seite": 3031
+  },
+  {
+   "linie": "Climate 5000 M",
+   "bereich": "Kältemittel",
+   "merkmal": "Zusätzliches Kältemittel",
+   "wert": "12 g/m × (Gesamtlänge – vorbefüllte Länge)",
+   "seite": 3031
+  },
+  {
+   "linie": "Climate 5000 M",
+   "bereich": "Rohrleitung",
+   "merkmal": "Rohrdurchmesser Inneneinheiten",
+   "wert": "2/2,6/3,5 kW: 1/4\" + 3/8\" · 5,3 kW: 1/4\" + 1/2\" · 7 kW: 3/8\" + 5/8\"",
+   "seite": 3031
+  },
+  {
+   "linie": "Climate 5000 M",
+   "bereich": "Rohrleitung",
+   "merkmal": "Anschlüsse Außeneinheit",
+   "wert": "53/2: 2×1/4\", 2×3/8\" · 79/3: 3×1/4\", 3×3/8\" · 105/4: 4×1/4\", 3×3/8\" + 1×1/2\" · 125/5: 5×1/4\", 4×3/8\" + 1×1/2\"",
+   "seite": 3031
+  },
+  {
+   "linie": "Climate 5000 M",
+   "bereich": "Kältemittel",
+   "merkmal": "Zulässige Konzentration R32",
+   "wert": "DIN EN 378; Deckelungsfaktor 12 kg; unter 1,2 kg keine Beschränkung der minimalen Raumgröße",
+   "seite": 3031
+  },
+  {
+   "linie": "Climate 5000 M",
+   "bereich": "Betriebsbereich",
+   "merkmal": "Außentemperatur Kühlen / Heizen",
+   "wert": "–15 bis +50 °C / –15 bis +30 °C (Datentabelle Heizen max. +24 °C)",
+   "seite": 3031
+  },
+  {
+   "linie": "Climate 5000 M",
+   "bereich": "Betriebsbereich",
+   "merkmal": "Raumtemperatur Kühlen / Heizen",
+   "wert": "≥ 17 °C / ≤ 30 °C",
+   "seite": 3031
+  },
+  {
+   "linie": "Climate 5000 M",
+   "bereich": "Montage",
+   "merkmal": "Deckenkassette",
+   "wert": "Mindestabstände A 260 mm, H > 290 mm, B 600 mm; Mindesteinbauhöhe Decke 2,2 m (EN 378)",
+   "seite": 3031
+  },
+  {
+   "linie": "Climate 5000 M",
+   "bereich": "Montage",
+   "merkmal": "Heizbetrieb",
+   "wert": "Kondensat der Außeneinheit nicht auf Wege/Straßen ableiten (Eisbildung)",
+   "seite": 3031
+  },
+  {
+   "linie": "Climate 7000 M",
+   "bereich": "Elektrik",
+   "merkmal": "Stromaufnahme max. / Stromkabel / Kommunikation",
+   "wert": "53/2: 13 A, ≥ 1,5 mm² · 79/3: 18 A, ≥ 2,5 mm² · Kommunikation ≥ 1,5 mm², 4-adrig",
+   "seite": 3051
+  },
+  {
+   "linie": "Climate 7000 M",
+   "bereich": "Elektrik",
+   "merkmal": "Elektrische Anschlussleistung",
+   "wert": "53/2: 3,05 kW · 79/3: 4,1 kW",
+   "seite": 3051
+  },
+  {
+   "linie": "Climate 7000 M",
+   "bereich": "Rohrleitung",
+   "merkmal": "Max. Rohrleitungslänge alle / eine Inneneinheit",
+   "wert": "53/2: 40 m / 25 m · 79/3: 60 m / 30 m",
+   "seite": 3051
+  },
+  {
+   "linie": "Climate 7000 M",
+   "bereich": "Rohrleitung",
+   "merkmal": "Max. Höhenunterschied Innen/Außen · zwischen Inneneinheiten",
+   "wert": "15 m · 10 m",
+   "seite": 3051
+  },
+  {
+   "linie": "Climate 7000 M",
+   "bereich": "Rohrleitung",
+   "merkmal": "Außeneinheit vorbefüllt bis / vorgefüllt",
+   "wert": "53/2: 15 m / 1,5 kg · 79/3: 22,5 m / 2,1 kg",
+   "seite": 3051
+  },
+  {
+   "linie": "Climate 7000 M",
+   "bereich": "Kältemittel",
+   "merkmal": "Zusätzliches Kältemittel",
+   "wert": "12 g/m × (Gesamtlänge – vorbefüllte Länge)",
+   "seite": 3051
+  },
+  {
+   "linie": "Climate 7000 M",
+   "bereich": "Rohrleitung",
+   "merkmal": "Rohrdurchmesser",
+   "wert": "Inneneinheiten 2/2,6/3,5 kW: 1/4\" + 3/8\" · 5,3 kW: 1/4\" + 1/2\" · AE 53/2: 2×1/4\", 2×3/8\" · 79/3: 3×1/4\", 2×3/8\" + 1×1/2\"",
+   "seite": 3051
+  },
+  {
+   "linie": "Climate 7000 M",
+   "bereich": "Kältemittel",
+   "merkmal": "Zulässige Konzentration R32",
+   "wert": "DIN EN 378; Deckelungsfaktor 12 kg; unter 1,2 kg keine Beschränkung der minimalen Raumgröße",
+   "seite": 3051
+  },
+  {
+   "linie": "Climate 7000 M",
+   "bereich": "Betriebsbereich",
+   "merkmal": "Außentemperatur Kühlen / Heizen · Raumtemperatur",
+   "wert": "–15 bis +50 °C / –15 bis +24 °C · Kühlen ≥ 17 °C, Heizen ≤ 30 °C",
+   "seite": 3051
+  }
+ ],
+ "pruefhinweise": [
+  "CL3000i-Set 26 WE: keine Heizleistung bekannt – wird für Heizbetrieb nicht empfohlen.",
+  "CL3000i-Set 26 WE: keine Kühlleistung im Katalog – 2.6 kW aus der Typbezeichnung abgeleitet.",
+  "CL3000i-Set 35 WE: keine Heizleistung bekannt – wird für Heizbetrieb nicht empfohlen.",
+  "CL3000i-Set 35 WE: keine Kühlleistung im Katalog – 3.5 kW aus der Typbezeichnung abgeleitet.",
+  "CL3000i-Set 53 WE: keine Heizleistung bekannt – wird für Heizbetrieb nicht empfohlen.",
+  "CL3000i-Set 53 WE: keine Kühlleistung im Katalog – 5.3 kW aus der Typbezeichnung abgeleitet.",
+  "CL3000i-Set 70 WE: keine Heizleistung bekannt – wird für Heizbetrieb nicht empfohlen.",
+  "CL3000i-Set 70 WE: keine Kühlleistung im Katalog – 7.0 kW aus der Typbezeichnung abgeleitet.",
+  "CL3000iU W 20 E: keine Heizleistung im Katalog – 2.5 kW aus Konfigurator v6.9.1 übernommen.",
+  "CL3000iU W 20 E: keine Kühlleistung im Katalog – 2.0 kW aus der Typbezeichnung abgeleitet.",
+  "CL3000iU W 26 E: keine Heizleistung im Katalog – 3.0 kW aus Konfigurator v6.9.1 übernommen.",
+  "CL3000iU W 26 E: keine Kühlleistung im Katalog – 2.6 kW aus der Typbezeichnung abgeleitet.",
+  "CL3000iU W 35 E: keine Heizleistung im Katalog – 4.0 kW aus Konfigurator v6.9.1 übernommen.",
+  "CL3000iU W 35 E: keine Kühlleistung im Katalog – 3.5 kW aus der Typbezeichnung abgeleitet.",
+  "CL3000iU W 53 E: keine Heizleistung im Katalog – 5.6 kW aus Konfigurator v6.9.1 übernommen.",
+  "CL3000iU W 53 E: keine Kühlleistung im Katalog – 5.3 kW aus der Typbezeichnung abgeleitet.",
+  "CL3000iU W 70 E: keine Heizleistung bekannt – wird für Heizbetrieb nicht empfohlen.",
+  "CL3000iU W 70 E: keine Kühlleistung im Katalog – 7.0 kW aus der Typbezeichnung abgeleitet.",
+  "CL5000M 125/5 E: Schalldruck außen = 0 in der Excel – als „unbekannt“ behandelt.",
+  "CL5000iU CN 50 E: 5-kW-Gerät; Zuordnung zur Klasse 5,3 im Katalog nicht ausdrücklich – bestätigen",
+  "CL6000i P-Set 26 W F: keine Heizleistung bekannt – wird für Heizbetrieb nicht empfohlen.",
+  "CL6000i P-Set 35 W F: keine Heizleistung bekannt – wird für Heizbetrieb nicht empfohlen.",
+  "CL7000M 53/2 E: Kennwerte-Blatt nennt max. 3 Inneneinheiten, Regel-Blatt 2 – Regel-Blatt verwendet.",
+  "CL7000M 79/3 E: Kennwerte-Blatt nennt max. 2 Inneneinheiten, Regel-Blatt 3 – Regel-Blatt verwendet.",
+  "CLC8001i-Set 25 E: Lieferstatus „lieferbar“, laut Set-Blatt aber „Auslaufartikel laut Lieferzeitenliste KW40“.",
+  "CLC8001i-Set 25 ER: Lieferstatus „lieferbar“, laut Set-Blatt aber „Auslaufartikel“.",
+  "CLC8001i-Set 25 ES: Lieferstatus „lieferbar“, laut Set-Blatt aber „Auslaufartikel“.",
+  "CLC8001i-Set 25 ET: Lieferstatus „lieferbar“, laut Set-Blatt aber „Auslaufartikel“.",
+  "CLC8001i-Set 35 E: Lieferstatus „lieferbar“, laut Set-Blatt aber „Auslaufartikel“.",
+  "CLC8001i-Set 35 ER: Lieferstatus „lieferbar“, laut Set-Blatt aber „Auslaufartikel“.",
+  "CLC8001i-Set 35 ES: Lieferstatus „lieferbar“, laut Set-Blatt aber „Auslaufartikel“.",
+  "CLC8001i-Set 35 ET: Lieferstatus „lieferbar“, laut Set-Blatt aber „Auslaufartikel“."
+ ]
+}

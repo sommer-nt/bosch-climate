@@ -67,7 +67,7 @@ def stueckliste_zusammenfassen(positionen: list[Position]) -> list[Position]:
             gesammelt[key].menge += pos.menge
         else:
             gesammelt[key] = Position(pos.art, pos.id, pos.name, pos.artikel, pos.menge, pos.einzelpreis)
-    reihenfolge = {"aussen": 0, "innen": 1, "zubehoer": 2}
+    reihenfolge = {"set": 0, "aussen": 0, "innen": 1, "zubehoer": 2, "leistung": 3}
     return sorted(gesammelt.values(), key=lambda p: reihenfolge[p.art])
 
 
