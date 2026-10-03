@@ -134,11 +134,13 @@ def gehe(seite: str, raum: int | None = None, erledigt: str | None = None) -> No
 
 
 def _nach_oben() -> None:
+    """Nach einem Seitenwechsel an den Seitenanfang springen – direkt im Dokument, ohne iframe
+    (ein 1-px-iframe zeigte unter Windows einen Mini-Scrollbalken über der Zusammenfassung)."""
     if _ss().pop("v2_oben", False):
-        st.iframe(
-            "<script>for (const s of ['[data-testid=\"stMain\"]', '[data-testid=\"stAppViewContainer\"]',"
-            " 'section.main']) { const el = window.parent.document.querySelector(s); if (el) el.scrollTo(0, 0); }"
-            " window.parent.scrollTo(0, 0);</script>", height=1)
+        _ss().v2_sprung = _ss().get("v2_sprung", 0) + 1  # neuer Inhalt → Skript läuft erneut
+        st.html(f"<script>/* {_ss().v2_sprung} */ for (const s of ['[data-testid=\"stMain\"]', "
+                "'[data-testid=\"stAppViewContainer\"]']) { const el = document.querySelector(s); "
+                "if (el) el.scrollTo(0, 0); } window.scrollTo(0, 0);</script>", unsafe_allow_javascript=True)
 
 
 def karten(key: str, optionen: list[tuple], wert, setzen, spalten: int = 3, klein: bool = False,
