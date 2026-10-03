@@ -8,6 +8,9 @@ Geräteauswahl kommt aus ``splitklima.v2.auswahl`` (Gesamtsortiment aus dem Kata
 
 from __future__ import annotations
 
+import os
+import tempfile
+import threading
 from datetime import datetime
 from pathlib import Path
 
@@ -23,6 +26,7 @@ from splitklima.ki_plan import (
 from splitklima.modell import Fenstergruppe, Projekt, Raum, Wand
 from splitklima.preise import fmt_eur, gesamtpreis
 from splitklima import klima_plz as KP
+from splitklima import klimadaten as KD
 from splitklima.standort import klimaregion
 from splitklima.v2 import auswahl as A
 from splitklima.v2.angebot import pdf_angebot_v2
@@ -323,6 +327,72 @@ def grad(x: float) -> str:
     return f"{x:.1f} °C".replace(".", ",").replace("-", "−")
 
 
+@st.cache_resource(show_spinner=False)
+def klimadaten_start() -> dict:
+    """Beim ersten Aufruf der App: fehlt die PLZ-Tabelle, wird sie im Hintergrund von der
+    BWP-Klimakarte geladen (einmal je Server-Prozess; abschaltbar mit KLIMADATEN_AUTO=0)."""
+    zustand: dict = {"status": "vorhanden" if KP.tabelle_vorhanden() else "aus", "meldungen": []}
+    if zustand["status"] == "aus" and os.environ.get("KLIMADATEN_AUTO", "1") != "0":
+        zustand["status"] = "laeuft"
+
+        def lauf() -> None:
+            ok, meldungen = KD.von_bwp_laden(timeout=45)
+            zustand.update(status="ok" if ok else "fehler", meldungen=meldungen)
+
+        threading.Thread(target=lauf, daemon=True, name="klimadaten").start()
+    return zustand
+
+
+def klima_synchronisieren(p: Projekt) -> None:
+    """Liegt (inzwischen) ein genauerer Wert für die PLZ vor, wird er übernommen – außer bei manueller Eingabe."""
+    if p.norm_aussen_manuell:
+        return
+    wert = KP.norm_aussentemperatur(p.plz)
+    if wert is not None and (wert.quelle != p.klima_quelle or round(wert.theta_e, 1) != p.einstellungen.norm_aussen):
+        p.einstellungen.norm_aussen = round(wert.theta_e, 1)
+        p.klima_quelle = wert.quelle
+
+
+def _klimadaten_laden_ui() -> None:
+    """Status des automatischen Ladens, Knopf „Jetzt laden“ und Datei-Upload als Rückfallebene."""
+    zustand = klimadaten_start()
+    if zustand["status"] == "laeuft":
+        @st.fragment(run_every=3)
+        def warten() -> None:
+            if klimadaten_start()["status"] != "laeuft":
+                st.rerun()
+            st.caption("Die PLZ-genauen Werte der DIN/TS 12831-1 werden gerade von der BWP-Klimakarte geladen …")
+        warten()
+        return
+    if zustand["status"] == "fehler":
+        st.caption("Automatisches Laden der BWP-Klimakarte nicht möglich: " + (zustand["meldungen"] or ["–"])[0])
+    else:
+        st.caption("Die PLZ-genauen Werte der DIN/TS 12831-1 sind noch nicht hinterlegt.")
+    c1, c2 = st.columns(2)
+    if c1.button("BWP-Klimakarte laden", icon=":material/cloud_download:", key="klima_laden",
+                 width="stretch"):
+        with st.spinner("Klimakarte wird geladen und geprüft …"):
+            ok, meldungen = KD.von_bwp_laden(timeout=45)
+        zustand.update(status="ok" if ok else "fehler", meldungen=meldungen)
+        _ss().v2_klima_meldung = (ok, meldungen)
+        st.rerun()
+    with c2.popover("Tabelle hochladen", icon=":material/upload_file:", width="stretch"):
+        st.caption("Excel oder CSV mit den Spalten PLZ, Norm-Außentemperatur und optional Jahresmitteltemperatur "
+                   "(z. B. Export der Klimakarte).")
+        datei = st.file_uploader("Klimadaten", type=["csv", "xlsx", "txt"], label_visibility="collapsed",
+                                 key="klima_upload")
+        if datei is not None and st.button("Übernehmen", type="primary", key="klima_upload_ok"):
+            endung = Path(datei.name).suffix.lower() if Path(datei.name).suffix.lower() in (".xlsx", ".csv") else ".csv"
+            with tempfile.TemporaryDirectory() as tmp:
+                pfad = Path(tmp) / f"klimadaten{endung}"
+                pfad.write_bytes(datei.getvalue())
+                ok, meldungen = KD.aus_datei(pfad)
+            if ok:
+                zustand.update(status="ok", meldungen=meldungen)
+            _ss().v2_klima_meldung = (ok, meldungen)
+            st.rerun()
+
+
 def _klima_karte(p: Projekt) -> None:
     e = p.einstellungen
     wert = KP.norm_aussentemperatur(p.plz)
@@ -336,11 +406,21 @@ def _klima_karte(p: Projekt) -> None:
             else:
                 quelle = p.klima_quelle or (wert.quelle if wert else "")
             st.caption(f"{p.ort} · {quelle}")
-            if wert and wert.theta_m is not None and not p.norm_aussen_manuell:
-                st.caption(f"Jahresmitteltemperatur θm,e {grad(wert.theta_m)}")
+            if wert and not p.norm_aussen_manuell:
+                details = []
+                if wert.theta_m is not None:
+                    details.append(f"Jahresmittel θm,e {grad(wert.theta_m)}")
+                if wert.hoehe is not None:
+                    details.append(f"Höhe {wert.hoehe:.0f} m")
+                if wert.klimazone:
+                    details.append(f"Klimazone {wert.klimazone}")
+                if details:
+                    st.caption(" · ".join(details))
+            if msg := _ss().pop("v2_klima_meldung", None):
+                ok, meldungen = msg
+                (st.success if ok else st.error)(("Klimadaten übernommen. " if ok else "") + " ".join(meldungen[:3]))
             if wert and wert.status == "richtwert" and not p.norm_aussen_manuell:
-                st.caption(f"Die PLZ-genauen Werte der DIN/TS 12831-1 sind noch nicht hinterlegt. Wert z. B. mit der "
-                           f"[Klimakarte des BWP]({KP.KLIMAKARTE_URL}) prüfen und bei Bedarf anpassen.")
+                _klimadaten_laden_ui()
         with c2:
             manuell = st.toggle("Wert anpassen", p.norm_aussen_manuell, key=_k("ta_manuell"))
             if manuell:
@@ -758,6 +838,8 @@ def app_v2(kat: Katalog) -> None:
     if "v2_projekt" not in _ss():
         neues_projekt()
     p: Projekt = _ss().v2_projekt
+    klimadaten_start()
+    klima_synchronisieren(p)
     _nach_oben()
 
     links, mitte, rechts = st.columns([1.05, 3, 1.35], gap="medium")

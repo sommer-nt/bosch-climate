@@ -82,16 +82,23 @@ Norm-Außentemperatur θe nach **DIN/TS 12831-1**:
 
 Der Wert lässt sich jederzeit manuell anpassen; Herkunft und Wert stehen im Angebots-PDF.
 
-Die **offizielle PLZ-Tabelle der DIN/TS 12831-1** (8.199 PLZ-Bereiche) ist urheberrechtlich
-geschützt und deshalb nicht enthalten. Liegt sie vor (Excel oder CSV mit den Spalten PLZ,
-Norm-Außentemperatur und optional Jahresmitteltemperatur):
+**Woher die PLZ-Werte kommen:** Die App lädt sie beim ersten Start selbst von der
+[Klimakarte des BWP](https://www.waermepumpe.de/werkzeuge/klimakarte/) (PLZ-genaue Werte der
+DIN/TS 12831-1 mit Jahresmittel, Höhe und Klimazone), prüft sie streng und speichert sie als
+`splitklima/daten/normaussentemperatur_plz.csv`. Klappt das nicht (z. B. ohne Internet), gibt es auf
+der Seite „Gebäude“ den Knopf **„BWP-Klimakarte laden“** und **„Tabelle hochladen“** (Excel/CSV).
+Abschalten: Umgebungsvariable `KLIMADATEN_AUTO=0`.
+
+Per Kommandozeile:
 
 ```bash
-python tools/normtemperatur_import.py Klimadaten_DIN_TS_12831-1.xlsx
+python tools/normtemperatur_import.py --bwp            # von der BWP-Klimakarte laden
+python tools/normtemperatur_import.py Tabelle.xlsx     # aus einer Datei (Excel oder CSV)
 ```
 
-Der Import prüft PLZ (führende Nullen aus Excel werden ergänzt), Wertebereiche, Doppel-Einträge
-und die Abdeckung und schreibt nur bei fehlerfreier Datei `splitklima/daten/normaussentemperatur_plz.csv`.
+Geprüft werden PLZ (führende Nullen aus Excel werden ergänzt), Wertebereiche, widersprüchliche
+Doppel-Einträge und Vollständigkeit; bei Fehlern bleibt die bisherige Tabelle unverändert.
+Die Tabelle wird nicht eingecheckt (`.gitignore`), da die Werte aus der DIN/TS 12831-1 stammen.
 
 Katalog aktualisieren (neue Excel nach `splitklima/daten/quellen/` legen):
 
