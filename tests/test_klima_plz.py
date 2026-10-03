@@ -131,6 +131,7 @@ def test_import_bricht_bei_fehlern_ab(tmp_path, fehler):
 
 # ---------------------------------------------------------------- Oberfläche
 def _app(monkeypatch, tabelle):
+    monkeypatch.setenv("KLIMADATEN_AUTO", "0")
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     monkeypatch.delenv("APP_PASSWORT", raising=False)
     monkeypatch.setattr(KP, "normtabelle", lambda: tabelle)
@@ -173,3 +174,96 @@ def test_oberflaeche_mehrdeutig_unbekannt_manuell(monkeypatch):
     at.toggle[0].set_value(False).run()
     p = at.session_state.v2_projekt
     assert not p.norm_aussen_manuell and p.klima_quelle.startswith("Standardwert")
+
+
+# ---------------------------------------------------------------- BWP-Klimakarte (simuliert)
+from splitklima import klimadaten as KD  # noqa: E402
+
+SEITE = ('<html><script>var bwpClimatezones_Info = "\\/werkzeuge\\/klimakarte?type=7289322&amp;'
+         'tx_bwpclimatezones_map%5Baction%5D=info";\n var bwpClimatezones_Load = '
+         "'/werkzeuge/klimakarte?type=7289322&amp;tx_bwpclimatezones_map%5Baction%5D=load';</script></html>")
+
+
+def _svg(n: int = 1200, kaputt: bool = False) -> str:
+    plz = sorted(KP.verzeichnis())[:n]
+    flaechen = []
+    for i, p in enumerate(plz):
+        dot = "15.0" if kaputt and i == 3 else f"-{10 + i % 50 / 10:.1f}"
+        flaechen.append(f'<polygon points="1,2 3,4" zip="{p}" place="Ort &amp; Co {i}" dot="{dot}" aat="9.{i % 9}" '
+                        f'alt="{200 + i}" zone="{1 + i % 15}" dotcolor="#fff"/>')
+    flaechen.append(flaechen[0].replace('points="1,2 3,4"', 'points="9,9 8,8"'))  # PLZ aus zwei Flächen
+    return "\n".join(flaechen)
+
+
+def _get(svg: str):
+    def get(url, timeout):
+        if url == KD.BWP_KARTE_URL:
+            return SEITE
+        if "action%5D=info" in url:
+            return '{"count": "1201"}'
+        assert url == "https://www.waermepumpe.de/werkzeuge/klimakarte?type=7289322&tx_bwpclimatezones_map%5Baction%5D=load"
+        return svg
+    return get
+
+
+def test_bwp_adressen_aus_seite():
+    q = KD.bwp_datenquellen(SEITE)
+    assert q["Load"].endswith("type=7289322&tx_bwpclimatezones_map%5Baction%5D=load")
+    assert q["Info"].startswith("https://www.waermepumpe.de/werkzeuge/klimakarte?")
+
+
+def test_bwp_laden_ok(tmp_path):
+    ziel = tmp_path / "tab.csv"
+    ok, meldungen = KD.von_bwp_laden(ziel, get=_get(_svg()))
+    assert ok, meldungen
+    tab = KP.lade_normtabelle(ziel)
+    erste = sorted(KP.verzeichnis())[0]
+    assert len(tab) == 1200 and tab[erste] == (-10.0, 9.0)
+    zeile = next(z for z in KP._zeilen_normtabelle(ziel) if z["plz"] == erste)
+    assert zeile["ort"] == "Ort & Co 0" and zeile["hoehe"] == "200" and zeile["klimazone"] == "1"
+    assert zeile["quelle"].startswith("BWP-Klimakarte (DIN/TS 12831-1)")
+
+
+def test_bwp_maskierte_antwort(tmp_path):
+    svg = _svg().replace('"', '\\"')  # z. B. als JSON-String ausgeliefert
+    assert KD.von_bwp_laden(tmp_path / "t.csv", get=_get(svg))[0]
+
+
+def test_bwp_fehler_lassen_tabelle_unveraendert(tmp_path):
+    ziel = tmp_path / "tab.csv"
+    ziel.write_text("plz;theta_e;theta_m\n72622;-12.4;9.1\n", encoding="utf-8")
+
+    def offline(url, timeout):
+        raise OSError("Netzwerk nicht erreichbar")
+
+    for get in (offline, _get(_svg(kaputt=True)), _get(_svg(n=20)), lambda u, t: "<html>umgebaut</html>"):
+        ok, meldungen = KD.von_bwp_laden(ziel, get=get)
+        assert not ok and meldungen
+        assert KP.lade_normtabelle(ziel) == {"72622": (-12.4, 9.1)}
+
+
+def test_export_der_klimakarte_als_csv(tmp_path):
+    """Format des Konsolen-Exports: PLZ;Ort;Norm-Außentemperatur;Jahresmitteltemperatur;Höhe;Klimazone"""
+    quelle = tmp_path / "bwp_klimadaten_plz.csv"
+    zeilen = ["PLZ;Ort;Norm-Außentemperatur;Jahresmitteltemperatur;Höhe;Klimazone"]
+    zeilen += [f"{p};Ort {i};-12.{i % 10};9.1;{300 + i};{1 + i % 15}"
+               for i, p in enumerate(sorted(KP.verzeichnis())[:1500])]
+    quelle.write_text("﻿" + "\n".join(zeilen), encoding="utf-8")
+    ok, _ = KD.aus_datei(quelle, tmp_path / "tab.csv")
+    assert ok and len(KP.lade_normtabelle(tmp_path / "tab.csv")) == 1500
+
+
+def test_oberflaeche_laden_knopf(monkeypatch):
+    import ui_v2
+
+    tabelle = {}
+    monkeypatch.setenv("KLIMADATEN_AUTO", "0")
+    monkeypatch.setattr(KD, "von_bwp_laden", lambda timeout=45: (tabelle.update(TAB), (True, ["Test"]))[1])
+    ui_v2.klimadaten_start.clear()
+    at = _app(monkeypatch, tabelle)
+    assert at.session_state.v2_projekt.klima_quelle.startswith("Richtwert")
+    next(b for b in at.button if b.label == "BWP-Klimakarte laden").click().run()
+    assert not at.exception
+    p = at.session_state.v2_projekt
+    assert p.einstellungen.norm_aussen == -12.4 and p.klima_quelle == "DIN/TS 12831-1"
+    ui_v2.klimadaten_start.clear()

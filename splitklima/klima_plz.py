@@ -56,6 +56,8 @@ class NormWert:
     theta_m: float | None  # Jahresmitteltemperatur °C (nur aus der offiziellen Tabelle)
     status: str  # din | nachbar | richtwert
     quelle: str  # Kurztext für Anzeige und PDF
+    hoehe: float | None = None  # m ü. NN (aus der Tabelle)
+    klimazone: str = ""  # Klimazone (aus der Tabelle)
 
     @property
     def offiziell(self) -> bool:
@@ -79,21 +81,38 @@ def verzeichnis() -> dict[str, PlzEintrag]:
     return out
 
 
+def _zeilen_normtabelle(pfad: Path) -> list[dict]:
+    if not pfad.exists():
+        return []
+    with pfad.open(encoding="utf-8") as f:
+        return list(csv.DictReader(f, delimiter=";"))
+
+
 def lade_normtabelle(pfad: Path = NORMTABELLE_CSV) -> dict[str, tuple[float, float | None]]:
     """Offizielle Tabelle: PLZ → (θe, θm,e). Leeres dict, wenn (noch) nicht hinterlegt."""
-    if not pfad.exists():
-        return {}
     out: dict[str, tuple[float, float | None]] = {}
-    with pfad.open(encoding="utf-8") as f:
-        for z in csv.DictReader(f, delimiter=";"):
-            tm = z.get("theta_m", "").strip()
-            out[z["plz"]] = (float(z["theta_e"]), float(tm) if tm else None)
+    for z in _zeilen_normtabelle(pfad):
+        tm = (z.get("theta_m") or "").strip()
+        out[z["plz"]] = (float(z["theta_e"]), float(tm) if tm else None)
     return out
 
 
 @lru_cache(maxsize=1)
 def normtabelle() -> dict[str, tuple[float, float | None]]:
     return lade_normtabelle()
+
+
+@lru_cache(maxsize=1)
+def normtabelle_zusatz() -> dict[str, dict[str, str]]:
+    """Zusatzangaben je PLZ aus der Tabelle: ort, hoehe, klimazone, quelle."""
+    return {z["plz"]: {k: (z.get(k) or "").strip() for k in ("ort", "hoehe", "klimazone", "quelle")}
+            for z in _zeilen_normtabelle(NORMTABELLE_CSV)}
+
+
+def tabellenstand() -> str:
+    """Herkunft der hinterlegten Tabelle (z. B. „BWP-Klimakarte …, geladen am …“) oder ""."""
+    zusatz = normtabelle_zusatz()
+    return next(iter(zusatz.values()), {}).get("quelle", "") if zusatz else ""
 
 
 def tabelle_vorhanden() -> bool:
@@ -166,9 +185,16 @@ def norm_aussentemperatur(plz: str, tabelle: dict[str, tuple[float, float | None
         return None
     ort = e.ort if e else ""
 
+    def zusatz(q: str) -> dict:
+        z = normtabelle_zusatz().get(q, {}) if tabelle is None else {}
+        h = z.get("hoehe", "")
+        return {"hoehe": float(h) if h else None, "klimazone": z.get("klimazone", "")}
+
     if p in tab:
         te, tm = tab[p]
-        return NormWert(p, ort, te, tm, "din", "DIN/TS 12831-1")
+        if not ort:
+            ort = (normtabelle_zusatz().get(p, {}) if tabelle is None else {}).get("ort", "")
+        return NormWert(p, ort, te, tm, "din", "DIN/TS 12831-1", **zusatz(p))
 
     if tab and e is not None:
         vz = verzeichnis()
@@ -178,7 +204,7 @@ def norm_aussentemperatur(plz: str, tabelle: dict[str, tuple[float, float | None
             if dist <= NACHBAR_MAX_KM:
                 te, tm = tab[q]
                 return NormWert(p, ort, te, tm, "nachbar",
-                                f"DIN/TS 12831-1, Wert der Nachbar-PLZ {q} ({de(dist)} km)")
+                                f"DIN/TS 12831-1, Wert der Nachbar-PLZ {q} ({de(dist)} km)", **zusatz(q))
 
     kr = klimaregion(p)
     bereich = kr.von <= int(p) <= kr.bis
