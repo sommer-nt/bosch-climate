@@ -32,6 +32,11 @@ def bauart_wunsch(raum: Raum) -> str:
     return BAUART_ALIAS.get(raum.ig_bauart, raum.ig_bauart)
 
 
+def farbwunsch(raum: Raum) -> str:
+    """Farbwunsch gilt nur für Wandgeräte (Kassetten und Konsolen gibt es nur in Weiß)."""
+    return raum.farbe if bauart_wunsch(raum) in ("", "Wandgerät") else ""
+
+
 @dataclass
 class Bedarf:
     raum: Raum
@@ -125,7 +130,7 @@ def single_set(b: Bedarf, kat: Katalog, projekt: Projekt) -> tuple[Artikel | Non
         return True
 
     kandidaten = [s for s in kat.sets if deckt(s)]
-    farbe = b.raum.farbe
+    farbe = farbwunsch(b.raum)
     stufen = [
         ([s for s in kandidaten if s.verfuegbar and (not farbe or s.farbe == farbe)], None),
         ([s for s in kandidaten if s.verfuegbar], f"{b.raum.name}: Farbe „{farbe}“ in passender Größe nicht "
@@ -164,7 +169,7 @@ def _innen_optionen(b: Bedarf, ae: Artikel, kat: Katalog, projekt: Projekt, nur_
             continue
         if wunsch and u.bauart != wunsch:
             continue
-        if farbe_streng and b.raum.farbe and u.farbe != b.raum.farbe:
+        if farbe_streng and farbwunsch(b.raum) and u.farbe != farbwunsch(b.raum):
             continue
         # Inneneinheit nach Kühllast (bzw. Heizlast bei „nur Heizen“) – wie in v6.9.1
         wert, bedarf = (u.heiz, b.heiz) if nur_heizen else (u.kuehl, b.kuehl)
@@ -205,7 +210,7 @@ def multi_system(gruppe: list[Bedarf], kat: Katalog, projekt: Projekt, bezeichnu
             farbe_gelockert = []
             for b in gruppe:
                 opt = _innen_optionen(b, ae, kat, projekt, nur_verfuegbar, farbe_streng=True)
-                if not opt and b.raum.farbe:
+                if not opt and farbwunsch(b.raum):
                     opt = _innen_optionen(b, ae, kat, projekt, nur_verfuegbar, farbe_streng=False)
                     farbe_gelockert.append(b.raum.name)
                 optionen.append(opt)
@@ -317,54 +322,89 @@ def _geschosse(bed: list[Bedarf]) -> dict[str, list[Bedarf]]:
     return g
 
 
+def nur_als_set(b: Bedarf, kat: Katalog) -> bool:
+    """Wunschfarbe gibt es nur als Single-Split-Set (z. B. rot/anthrazit: Climate Class 8000i),
+    nicht als Multi-Split-Inneneinheit → der Raum bekommt im Multi-Konzept ein eigenes Set."""
+    farbe = farbwunsch(b.raum)
+    if not farbe:
+        return False
+    if any(u.farbe == farbe for u in kat.innen):
+        return False
+    return any(s.farbe == farbe for s in kat.sets)
+
+
+def _multi_teilsysteme(bed: list[Bedarf], kat: Katalog, projekt: Projekt, name: str,
+                       mehrere: bool) -> list[Teilsystem]:
+    out = []
+    gs = gruppen(bed)
+    for j, g in enumerate(gs, 1):
+        bez = name if len(gs) == 1 else (f"{name} ({j})" if mehrere else f"System {j}")
+        out.append(single_system(g[0], kat, projekt, bez) if len(g) == 1 else multi_system(g, kat, projekt, bez))
+    return out
+
+
 def konzepte(projekt: Projekt, kat: Katalog, wunsch: str = "auto") -> list[Konzept]:
     bed = bedarfe(projekt)
     if not bed:
         return []
     out: list[Konzept] = []
     multi_moeglich = len(bed) > 1
+    # Räume, deren Wunschfarbe es nur als Set gibt, bekommen auch im Multi-Konzept ihr eigenes Set
+    eigene_sets = [b for b in bed if nur_als_set(b, kat)]
+    rest = [b for b in bed if b not in eigene_sets]
+    farb_sets = [single_system(b, kat, projekt) for b in eigene_sets]
 
-    if multi_moeglich and wunsch in ("auto", "multi"):
+    if multi_moeglich and len(rest) > 1 and wunsch in ("auto", "multi"):
         k = Konzept("multi_gesamt", "Ein Multi-Split-System",
                     "Alle Räume an möglichst wenigen Außeneinheiten. Wenige Geräte an der Fassade, "
                     "längere Kältemittelleitungen.")
-        gs = gruppen(bed)
-        for i, g in enumerate(gs, 1):
-            name = "Gebäude" if len(gs) == 1 else f"System {i}"
-            k.teilsysteme.append(single_system(g[0], kat, projekt, name) if len(g) == 1
-                                 else multi_system(g, kat, projekt, name))
+        k.teilsysteme = _multi_teilsysteme(rest, kat, projekt, "Gebäude", mehrere=False) + farb_sets
+        if farb_sets:
+            k.beschreibung += " Räume mit Wunschfarbe erhalten ein eigenes Set in dieser Farbe."
         out.append(k)
 
-        etagen = _geschosse(bed)
+        etagen = _geschosse(rest)
         if len(etagen) > 1 and any(len(g) > 1 for g in etagen.values()):
             k = Konzept("multi_geschoss", "Multi-Split je Geschoss",
                         "Je Geschoss ein eigenes System mit kurzen Leitungswegen; ein einzelner Raum auf einer "
                         "Etage erhält ein Single-Split-Set.")
             for name, liste in etagen.items():
-                for j, g in enumerate(gruppen(liste), 1):
-                    bez = name if len(liste) <= 5 else f"{name} ({j})"
-                    k.teilsysteme.append(single_system(g[0], kat, projekt, bez) if len(g) == 1
-                                         else multi_system(g, kat, projekt, bez))
+                k.teilsysteme += _multi_teilsysteme(liste, kat, projekt, name, mehrere=True)
+            k.teilsysteme += farb_sets
             out.append(k)
 
-    if wunsch in ("auto", "single") or not multi_moeglich:
+    if wunsch in ("auto", "single") or not multi_moeglich or not out:
         k = Konzept("single", "Single-Split je Raum",
                     "Jeder Raum erhält ein eigenes Set aus Außen- und Inneneinheit – unabhängig und effizient, "
                     "aber mehr Außengeräte.")
         k.teilsysteme = [single_system(b, kat, projekt) for b in bed]
+        if wunsch == "multi" and multi_moeglich:
+            k.beschreibung = ("Die gewünschte Farbe gibt es nur als Single-Split-Set – deshalb erhält jeder Raum "
+                              "ein eigenes Set.")
         out.append(k)
 
     empfehlung_setzen(out)
     return out
 
 
+def farbabweichungen(k: Konzept) -> int:
+    """Anzahl Räume, deren Wunschfarbe im Konzept nicht erfüllt ist."""
+    n = 0
+    for t in k.teilsysteme:
+        geraete = [(r, t.set) for r in t.raeume] if t.set else t.innen
+        n += sum(1 for r, u in geraete if farbwunsch(r) and u is not None and u.farbe != farbwunsch(r))
+    return n
+
+
 def empfehlung_setzen(liste: list[Konzept]) -> None:
-    """Wirtschaftlichstes vollständiges Konzept; bei Gleichstand weniger Außengeräte."""
+    """Erfüllte Farbwünsche zuerst, dann das wirtschaftlichste vollständige Konzept,
+    bei Gleichstand weniger Außengeräte."""
     for k in liste:
         k.empfohlen = False
     kandidaten = [k for k in liste if k.gedeckt]
     if kandidaten:
-        min(kandidaten, key=lambda k: (k.preis if k.preis is not None else math.inf, k.aussengeraete)).empfohlen = True
+        min(kandidaten, key=lambda k: (farbabweichungen(k), k.preis if k.preis is not None else math.inf,
+                                       k.aussengeraete)).empfohlen = True
 
 
 # ---------------------------------------------------------------- Optionale Leistungen

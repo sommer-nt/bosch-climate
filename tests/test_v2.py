@@ -151,3 +151,37 @@ def test_oberflaeche_v2_durchlauf(monkeypatch):
         at.session_state.v2_seite = seite
         at.run()
         assert not at.exception, seite
+
+
+@pytest.mark.parametrize("farbe", ["rot", "anthrazit", "silber", "schwarz"])
+def test_wunschfarbe_wird_empfohlen(farbe):
+    """Eine Wunschfarbe, die es gibt, steht in der Empfehlung – auch wenn Weiß günstiger wäre."""
+    p = beispielprojekt()
+    raum = next(r for r in p.raeume if raum_last(r, p.einstellungen).cool < 3.4)  # passt in jede Farbserie
+    raum.farbe = farbe
+    for wunsch in ("auto", "multi"):
+        liste = A.konzepte(p, KAT, wunsch)
+        empf = next(k for k in liste if k.empfohlen)
+        assert A.farbabweichungen(empf) == 0, (wunsch, empf.geraete_text)
+        for k in liste:
+            _pruefe_konzept(k, p)
+        geraete = [u for t in empf.teilsysteme for r, u in ([(x, t.set) for x in t.raeume] if t.set else t.innen)
+                   if r is raum]
+        assert geraete[0].farbe == farbe
+
+
+def test_rot_nur_als_set_im_multi_konzept():
+    p = beispielprojekt()
+    p.raeume[0].farbe = "rot"
+    k = next(k for k in A.konzepte(p, KAT, "multi") if k.key == "multi_gesamt")
+    eigenes = [t for t in k.teilsysteme if t.raeume == [p.raeume[0]]]
+    assert eigenes and eigenes[0].set.farbe == "rot" and "8000i" in eigenes[0].set.linie
+    assert sum(len(t.raeume) for t in k.teilsysteme) == len(p.raeume)
+
+
+def test_farbe_bei_kassette_ignoriert():
+    p = beispielprojekt()
+    p.raeume[0].farbe = "rot"
+    p.raeume[0].ig_bauart = "Deckenkassette"
+    for k in A.konzepte(p, KAT):
+        assert A.farbabweichungen(k) == 0 and not any("Wunschfarbe" in h for h in k.hinweise)
