@@ -49,6 +49,33 @@ Preise stehen in `splitklima/daten/preise.json` (je Artikel-ID). **Die mitgelief
 sind Platzhalter.** Gültige Listenpreise eintragen und `"freigegeben": true` setzen – bis
 dahin kennzeichnet die App den Preis als „Richtpreis aus Platzhalter-Preisliste“.
 
+## Version 2 (`app_v2.py`) – Gesamtsortiment
+
+Läuft parallel zu Version 1 (eigener Container, z. B. climate.sommer-nt.de), mit demselben
+Rechenkern und derselben KI-Planerkennung:
+
+- **Geführte Konfiguration**: links Navigationsbaum mit Fortschritt (System → Gebäude → Räume
+  je Raum → Ergebnis), Mitte Auswahlkarten mit eigenen Piktogrammen, rechts eine
+  **Live-Zusammenfassung** mit Produktbild, Gebäudelasten und Preis.
+- **KI-Upload** prominent auf der Startseite: Grundriss hochladen, Räume werden vorbefüllt.
+- **Gesamtsortiment** aus der Produktdaten-Excel (26 Sets, 6 Multi-Außeneinheiten,
+  29 Inneneinheiten) mit **freigegebenen Katalogpreisen** (UVP netto, März 2026).
+- Auswahl nach den **zulässigen Kombinationen** des Katalogs, Bauart- und Farbwunsch je Raum,
+  Lieferstatus; Empfehlung = günstigstes vollständiges Konzept.
+- **Produktbilder** aus dem Gesamtkatalog, Angebots-PDF mit Bildern, Stückliste und optionaler
+  Inbetriebnahme durch den Kundendienst.
+
+```bash
+streamlit run app_v2.py
+```
+
+Katalog aktualisieren (neue Excel nach `splitklima/daten/quellen/` legen):
+
+```bash
+python tools/katalog_import.py [Excel-Datei]   # → splitklima/daten/katalog.json (+ Prüfhinweise)
+python tools/katalog_bilder.py Katalog.pdf   # Produktbilder → splitklima/daten/bilder/
+```
+
 ## Start
 
 ```bash
@@ -115,6 +142,9 @@ docker compose up -d --build
 | `splitklima/preise.py` | Preisliste, Stückliste, Gesamtpreis |
 | `splitklima/daten/preise.json` | Preise je Artikel (Platzhalter – bitte pflegen) |
 | `splitklima/daten/produkte.json` | Produktdaten Außen-/Inneneinheiten (aus v6.9.1 übernommen) |
+| `app_v2.py`, `ui_v2.py` | Version 2: Oberfläche mit Auswahlkarten, Navigation, Live-Zusammenfassung |
+| `splitklima/v2/` | Version 2: Katalog, Geräteauswahl nach Katalogregeln, Bilder, Piktogramme, Angebots-PDF |
+| `splitklima/daten/katalog.json` | Gesamtsortiment mit Preisen (erzeugt aus der Produktdaten-Excel) |
 
 Die Produktdaten liegen jetzt als JSON vor (in v6.9.1 als „spätere JSON-Auslagerung“
 vorbereitet) und können ohne Code-Änderung gepflegt werden.
@@ -124,6 +154,9 @@ vorbereitet) und können ohne Code-Änderung gepflegt werden.
 ```bash
 python -m pytest -q
 ```
+
+`tests/test_v2.py` prüft Version 2: jede vorgeschlagene Anlage (Beispielhaus und 60 zufällige
+Häuser) hält die zulässigen Kombinationen ein und deckt die Lasten aus dem Rechenkern.
 
 `tests/test_abgleich_html.py` rechnet **155 Fälle** (die 5 Validierungsfälle und 150
 zufällige Projekte mit 1–8 Räumen und allen Einstellungen) und vergleicht Python mit dem
