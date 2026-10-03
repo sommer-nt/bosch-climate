@@ -22,7 +22,8 @@ from splitklima.ki_plan import (
 )
 from splitklima.modell import Fenstergruppe, Projekt, Raum, Wand
 from splitklima.preise import fmt_eur, gesamtpreis
-from splitklima.standort import finde_ort, klimaregion
+from splitklima import klima_plz as KP
+from splitklima.standort import klimaregion
 from splitklima.v2 import auswahl as A
 from splitklima.v2.angebot import pdf_angebot_v2
 from splitklima.v2.bilder import bild, bild_innen_set
@@ -192,6 +193,8 @@ def neues_projekt(p: Projekt | None = None) -> None:
     baujahr_anwenden(p)
     _ss().v2_projekt = p
     _ss().v2_rev = _ss().get("v2_rev", 0) + 1
+    if not p.klima_quelle and (start := KP.eintrag(p.plz)):
+        standort_setzen(p, start)
     _ss().v2_geprueft = set()
     _ss().v2_erledigt = set()
     _ss().v2_seite = "system"
@@ -302,21 +305,77 @@ def seite_system(p: Projekt) -> None:
     _weiter_zurueck(None, ("gebaeude", "Weiter zum Gebäude"), "system")
 
 
+def standort_setzen(p: Projekt, eintrag: KP.PlzEintrag) -> None:
+    """Standort übernehmen und Norm-Außentemperatur aus der PLZ ermitteln (DIN/TS 12831-1)."""
+    e = p.einstellungen
+    p.plz, p.ort = eintrag.plz, eintrag.text
+    wert = KP.norm_aussentemperatur(eintrag.plz)
+    if wert is not None:
+        e.norm_aussen = round(wert.theta_e, 1)
+        p.klima_quelle = wert.quelle
+    p.norm_aussen_manuell = False
+    e.sommer = klimaregion(eintrag.plz).sommer
+    _ss().v2_rev += 1
+
+
+def grad(x: float) -> str:
+    """Temperatur mit einer Nachkommastelle und echtem Minuszeichen, z. B. „−12,4 °C“."""
+    return f"{x:.1f} °C".replace(".", ",").replace("-", "−")
+
+
+def _klima_karte(p: Projekt) -> None:
+    e = p.einstellungen
+    wert = KP.norm_aussentemperatur(p.plz)
+    with st.container(border=True, key="klima-karte"):
+        c1, c2 = st.columns([3, 2], vertical_alignment="center")
+        with c1:
+            st.markdown(f'<div style="font-size:.85rem;color:#5c6773">Norm-Außentemperatur θe</div>'
+                        f'<div class="preis">{grad(e.norm_aussen)}</div>', unsafe_allow_html=True)
+            if p.norm_aussen_manuell:
+                quelle = "manuell eingegeben" + (f" (PLZ-Wert: {grad(wert.theta_e)})" if wert else "")
+            else:
+                quelle = p.klima_quelle or (wert.quelle if wert else "")
+            st.caption(f"{p.ort} · {quelle}")
+            if wert and wert.theta_m is not None and not p.norm_aussen_manuell:
+                st.caption(f"Jahresmitteltemperatur θm,e {grad(wert.theta_m)}")
+            if wert and wert.status == "richtwert" and not p.norm_aussen_manuell:
+                st.caption(f"Die PLZ-genauen Werte der DIN/TS 12831-1 sind noch nicht hinterlegt. Wert z. B. mit der "
+                           f"[Klimakarte des BWP]({KP.KLIMAKARTE_URL}) prüfen und bei Bedarf anpassen.")
+        with c2:
+            manuell = st.toggle("Wert anpassen", p.norm_aussen_manuell, key=_k("ta_manuell"))
+            if manuell:
+                neu = zahl(st, "Norm-Außentemperatur", "°C", e.norm_aussen, -25.0, 0.0, 0.1, "ta_wert")
+                if not p.norm_aussen_manuell or neu != e.norm_aussen:
+                    e.norm_aussen, p.norm_aussen_manuell = round(neu, 1), True
+                    p.klima_quelle = "manuell eingegeben"
+            elif p.norm_aussen_manuell:  # zurück auf den PLZ-Wert
+                eintrag = KP.eintrag(p.plz)
+                if eintrag:
+                    standort_setzen(p, eintrag)
+                    st.rerun()
+            st.caption(f"Sommer-Auslegung {de(e.sommer)} °C")
+
+
 def seite_gebaeude(p: Projekt) -> None:
     e = p.einstellungen
     st.markdown("#### Wo steht das Gebäude?")
     c1, c2 = st.columns(2)
     p.name = c1.text_input("Projektname", p.name, key=_k("name"))
-    ort = c2.text_input("PLZ oder Ort", p.ort, key=_k("ort"))
-    treffer = finde_ort(ort)
-    if ort != p.ort:
-        p.ort = f"{treffer[0]} {treffer[1]}" if treffer else ort
-        if treffer:
-            p.plz = treffer[0]
-            kr = klimaregion(p.plz)
-            e.norm_aussen, e.sommer = kr.norm_aussen, kr.sommer
-    kr = klimaregion(p.plz)
-    c2.caption(f"Klimaregion {kr.name} · Auslegung Sommer {de(e.sommer)} °C · Winter {de(e.norm_aussen)} °C")
+    eingabe = c2.text_input("PLZ oder Ort", p.ort, key=_k("ort"), placeholder="z. B. 72622 oder Nürtingen")
+    if eingabe.strip() != p.ort:
+        treffer = KP.suche(eingabe)
+        if len(treffer) == 1:
+            standort_setzen(p, treffer[0])
+            st.rerun()
+        elif treffer:
+            wahl = c2.selectbox("Bitte auswählen", [None, *treffer], format_func=lambda t: t.text if t else "–",
+                                key=_k(f"ortwahl_{eingabe}"))
+            if wahl:
+                standort_setzen(p, wahl)
+                st.rerun()
+        else:
+            c2.error("Diese PLZ bzw. diesen Ort gibt es in Deutschland nicht – bitte prüfen.")
+    _klima_karte(p)
 
     st.markdown("#### Baujahr")
     c1, _ = st.columns([1, 2])
@@ -665,7 +724,8 @@ def zusammenfassung(p: Projekt, kat: Katalog) -> None:
 
         zeilen = [("System", dict((v, t) for v, t, _ in SYSTEME)[p.systemwunsch]),
                   ("Betrieb", dict((v, t) for v, t, _ in BETRIEB)[e.betriebsart]),
-                  ("Standort", p.ort), ("Baujahr", str(p.baujahr or "–"))]
+                  ("Standort", p.ort), ("Norm-Außentemp.", grad(e.norm_aussen)),
+                  ("Baujahr", str(p.baujahr or "–"))]
         if p.raeume:
             last = gebaeude_last(p)
             zeilen += [("Räume", f"{len(p.raeume)} · {de(sum(r.flaeche for r in p.raeume))} m²"),
