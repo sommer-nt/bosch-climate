@@ -30,8 +30,9 @@ from urllib.parse import urljoin
 from . import klima_plz as KP
 
 BWP_KARTE_URL = KP.KLIMAKARTE_URL
-THETA_E_BEREICH = (-25.0, 0.0)
-THETA_M_BEREICH = (2.0, 14.0)
+# Physikalisch mögliche Werte in Deutschland – inkl. Hochgebirge (PLZ 82475 Zugspitze: θm,e ≈ 0 °C)
+THETA_E_BEREICH = (-30.0, 2.0)
+THETA_M_BEREICH = (-8.0, 14.0)
 MIN_PLZ = 1000  # weniger PLZ → offensichtlich keine vollständige Tabelle
 UA = "Mozilla/5.0 (Split-Klima-Konfigurator; Klimadaten DIN/TS 12831-1)"
 
