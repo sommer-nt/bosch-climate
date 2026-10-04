@@ -267,3 +267,15 @@ def test_oberflaeche_laden_knopf(monkeypatch):
     p = at.session_state.v2_projekt
     assert p.einstellungen.norm_aussen == -12.4 and p.klima_quelle == "DIN/TS 12831-1"
     ui_v2.klimadaten_start.clear()
+
+
+def test_hochgebirge_zugspitze_wird_akzeptiert(tmp_path):
+    """PLZ 82475 (Zugspitze) hat ein Jahresmittel um 0 °C – das ist real, kein Fehler."""
+    zeilen = [{"nr": i, "plz": p, "theta_e": -12.0, "theta_m": 9.0} for i, p in enumerate(sorted(KP.verzeichnis())[:1200])]
+    zeilen.append({"nr": 9999, "plz": "82475", "theta_e": -24.6, "theta_m": 0.1})
+    werte, fehler = KD.pruefen(zeilen)
+    assert not fehler and werte["82475"].theta_m == 0.1
+    for kaputt in ({"theta_e": 15.0, "theta_m": 9.0}, {"theta_e": -12.0, "theta_m": 30.0},
+                   {"theta_e": -45.0, "theta_m": 9.0}):
+        _, fehler = KD.pruefen(zeilen[:-1] + [{"nr": 1, "plz": "82475", **kaputt}])
+        assert fehler
