@@ -62,6 +62,9 @@ Rechenkern und derselben KI-Planerkennung:
   29 Inneneinheiten) mit **freigegebenen Katalogpreisen** (UVP netto, März 2026).
 - Auswahl nach den **zulässigen Kombinationen** des Katalogs, Bauart- und Farbwunsch je Raum,
   Lieferstatus; Empfehlung = günstigstes vollständiges Konzept.
+- **Flachdach:** je Raum Dachform wählbar (Flachdach, Satteldach Süd/Nord/Ost-West – auch für Nicht-DG-Räume wie
+  Hallen); Aufstellort der Außeneinheit (Wand, Boden, Flachdach) mit passender Konsole als optionales Zubehör
+  und Montagehinweisen im Ergebnis und im Angebots-PDF.
 - **Produktbilder** aus dem Gesamtkatalog, Angebots-PDF mit Bildern, Stückliste und optionaler
   Inbetriebnahme durch den Kundendienst.
 
@@ -134,10 +137,11 @@ python tools/katalog_import.py [Excel-Datei]   # → splitklima/daten/katalog.js
 python tools/katalog_bilder.py Katalog.pdf   # Produktbilder → splitklima/daten/bilder/
 ```
 
-Der Gesamtkatalog 03/2026 enthält nur ~150 px kleine Bilder. `tools/ergaenzung_import.py` ersetzt sie durch die
-hochaufgelösten Originale aus dem Ergänzungskatalog 09/2026 (`BILD_ERSATZ`); die farbigen 8000i- und 7000i-Sets
+Der Gesamtkatalog 03/2026 (Druckfassung) enthält nur ~150 px kleine Bilder. `tools/ergaenzung_import.py
+Ergaenzungskatalog.pdf [Gesamtkatalog_edit.pdf]` ersetzt sie durch die hochaufgelösten Originale aus dem
+Ergänzungskatalog 09/2026 (`BILD_ERSATZ`) und der Acrobat-Fassung des Gesamtkatalogs (`BILD_GESAMT`); die farbigen 8000i- und 7000i-Sets
 werden aus dem scharfen weißen Set und dem farbigen Innengerät zusammengesetzt (`SET_FARBEN`). Nicht ersetzt
-(keine bessere Quelle): Climate 3000i, Kassette 5001iU, Innengeräte 7000i/8000i weiß.
+(keine bessere Quelle): Climate 3000i und Kassette 5001iU.
 
 ## Start
 

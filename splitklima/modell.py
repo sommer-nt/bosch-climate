@@ -130,3 +130,4 @@ class Projekt(BaseModel):
     klima_quelle: str = ""
     norm_aussen_manuell: bool = False
     geraetelinie: str = ""  # Version 2: Wunsch-Gerätelinie, z. B. "7000i" ("" = wirtschaftlichste)
+    aufstellung: Literal["", "wand", "boden", "flachdach"] = ""  # Version 2: Aufstellort der Außeneinheit(en)
