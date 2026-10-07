@@ -121,6 +121,77 @@ div[class*="st-key-navr-"] button p {{font-size:.86rem}}
 .raumkopf {{display:flex; gap:.8rem; align-items:center; color:{BLAU}}}
 .raumkopf .name {{font-weight:600; color:#1d2834}}
 .raumkopf .info {{font-size:.8rem; color:#5c6773}}
+.einheit {{white-space:nowrap}}
+.zs-zeile {{gap:.6rem}} .zs-zeile span:last-child {{text-align:right}}
+[data-testid="stMetricValue"] {{font-size:clamp(1.35rem, 2.3vw, 2.25rem) !important}}
+[data-testid="stMetricValue"] > div {{overflow:visible !important; text-overflow:clip !important}}
+/* ---------- Smartphone/Tablet: Schrittleiste und Preisleiste (Desktop ausgeblendet) */
+.st-key-mobilnav, .mobilpreis {{display:none !important}}
+@media (max-width: 1024px) {{
+  .block-container {{padding-left:1rem; padding-right:1rem; padding-top:2.6rem}}
+  .st-key-mobilnav {{display:flex !important}}
+  /* linke Navigationsspalte ausblenden – ersetzt durch die Schrittleiste */
+  [data-testid="stColumn"]:has(.st-key-navspalte) {{display:none !important}}
+  .st-key-mobilnav [data-testid="stHorizontalBlock"] {{flex-wrap:nowrap !important; gap:.35rem !important}}
+  .st-key-mobilnav [data-testid="stColumn"] {{min-width:0 !important}}
+  .st-key-mobilnav button {{padding:.3rem .2rem !important; min-height:2.3rem}}
+  .st-key-mobilnav button p {{font-size:.82rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}}
+  /* Auswahlkarten als umbrechendes Raster in Lesereihenfolge */
+  [class*="st-key-kgrid-"] {{display:grid !important; gap:.6rem !important;
+                              grid-template-columns:repeat(auto-fill, minmax(6.4rem, 1fr))}}
+  [class*="st-key-kgrid-"]:has(.karte:not(.klein)) {{grid-template-columns:repeat(auto-fill, minmax(13rem, 1fr))}}
+  [class*="st-key-kgrid-"] > [data-testid="stLayoutWrapper"],
+  [class*="st-key-kgrid-"] [data-testid="stHorizontalBlock"] {{display:contents !important}}
+  [class*="st-key-kgrid-"] [data-testid="stColumn"] {{min-width:0 !important; width:auto !important}}
+  [class*="st-key-kgrid-"] [data-testid="stColumn"]:not(:has(.karte)) {{display:none !important}}
+  /* Zahlenfeld + Einheit bleiben nebeneinander */
+  [class*="st-key-zahl-"] [data-testid="stHorizontalBlock"] {{flex-wrap:nowrap !important}}
+  [class*="st-key-zahl-"] [data-testid="stColumn"] {{min-width:0 !important}}
+  [class*="st-key-wz-"] button p {{white-space:normal}}
+  [data-testid="stMain"] [data-testid="stButton"] button p, [data-testid="stDownloadButton"] button p {{
+      white-space:normal !important; overflow:visible !important; text-overflow:clip !important}}
+  [data-testid="stMetricLabel"], [data-testid="stMetricLabel"] * {{white-space:normal !important;
+      overflow:visible !important; text-overflow:clip !important}}
+  [data-testid="stCheckbox"] label, [data-testid="stCheckbox"] label p {{white-space:normal !important;
+      overflow:visible !important; text-overflow:clip !important}}
+}}
+@media (max-width: 640px) {{
+  .block-container {{padding-bottom:5.5rem; padding-top:3.8rem}}
+  [data-testid="stImage"] img, [data-testid="stMarkdownContainer"] img:not(.karte img), .stHtml img {{
+      max-height:140px; width:auto !important; max-width:100%; object-fit:contain}}
+  .st-key-zusammenfassung img {{display:none}}  /* Preis steht in der festen Leiste unten */
+  [class*="st-key-kgrid-"]:has(.karte.klein .sub) {{grid-template-columns:repeat(2, minmax(0, 1fr))}}
+  .karte .sub {{hyphens:auto}}
+  .marke {{font-size:1.15rem}}
+  /* große Karten: Symbol links, Text rechts */
+  [class*="st-key-kgrid-"]:has(.karte:not(.klein)) {{grid-template-columns:1fr}}
+  [class*="st-key-kgrid-"] {{grid-template-columns:repeat(3, minmax(0, 1fr))}}
+  .karte:not(.klein) {{display:grid; grid-template-columns:auto 1fr; column-gap:.9rem; align-items:center;
+                       text-align:left; padding:0}}
+  .karte:not(.klein) > div:nth-of-type(1) {{grid-row:span 2}}
+  .karte:not(.klein) > div:nth-of-type(1) svg, .karte:not(.klein) > div:nth-of-type(1) img {{height:42px !important;
+                       width:auto !important}}
+  .karte:not(.klein) .titel {{margin-top:0}}
+  .karte.klein svg {{width:34px; height:34px}}
+  .karte.klein .titel {{font-size:.78rem}}
+  .farbpunkt {{width:30px; height:30px}}
+  /* Kennzahlen und Produktbilder im Ergebnis: 2 je Zeile */
+  .st-key-kennzahlen [data-testid="stColumn"], .st-key-konzeptbilder [data-testid="stColumn"] {{
+      min-width:calc(50% - 1rem) !important}}
+  .st-key-konzeptbilder [data-testid="stColumn"]:not(:has(img)) {{display:none}}
+  [class*="st-key-wz-"]:not(.st-key-wz-raum) [data-testid="stHorizontalBlock"] {{flex-wrap:nowrap !important}}
+  [class*="st-key-wz-"]:not(.st-key-wz-raum) [data-testid="stColumn"] {{min-width:0 !important}}
+  [class*="st-key-wz-"] [data-testid="stColumn"]:last-child:not(:has(button)) {{display:none}}
+  .st-key-wz-raum [data-testid="stColumn"] {{min-width:calc(50% - .5rem) !important}}
+  .st-key-wz-raum [data-testid="stColumn"]:last-child {{min-width:100% !important}}
+  /* feste Preisleiste unten */
+  .mobilpreis {{display:flex !important; position:fixed; left:0; right:0; bottom:0; z-index:1000;
+               justify-content:space-between; align-items:center; gap:.8rem; padding:.6rem 1rem;
+               background:white; border-top:1px solid #dfe3e8; box-shadow:0 -4px 14px rgba(0,0,0,.08)}}
+  .mp-name {{font-weight:600; font-size:.9rem; color:#1d2834}}
+  .mp-info {{font-size:.75rem; color:#5c6773}}
+  .mp-preis {{font-size:1.35rem; font-weight:700; color:{BLAU}; white-space:nowrap}}
+}}
 </style>
 """
 
@@ -164,11 +235,14 @@ def _nach_oben() -> None:
 def karten(key: str, optionen: list[tuple], wert, setzen, spalten: int = 3, klein: bool = False,
            groesse: int = 56) -> None:
     """Auswahlkarten mit Piktogramm. optionen: (wert, titel, untertitel, symbol | html)."""
-    cols = st.columns(spalten)
     geklickt = None
+    raster = st.container(key=f"kgrid-{key}")  # Smartphone/Tablet: per CSS als umbrechendes Raster
+    cols: list = []
     for i, (v, titel, sub, symbol) in enumerate(optionen):
         an = v == wert
         ikon = symbol if symbol.startswith("<") else svg(symbol, groesse)
+        if i % spalten == 0:
+            cols = raster.columns(spalten)
         with cols[i % spalten].container(border=True, key=f"karte-{key}-{i}"):
             st.markdown(
                 f'<div class="karte{" klein" if klein else ""}{" an" if an else ""}">'
@@ -184,7 +258,7 @@ def karten(key: str, optionen: list[tuple], wert, setzen, spalten: int = 3, klei
 def zahl(spalte, label: str, einheit: str, wert: float, mn: float, mx: float, schritt: float, key: str,
          fmt: str = "%.1f") -> float:
     """Zahlenfeld mit Einheit rechts daneben."""
-    c1, c2 = spalte.columns([5, 1], vertical_alignment="bottom", gap="small")
+    c1, c2 = spalte.container(key=f"zahl-{key}").columns([5, 1], vertical_alignment="bottom", gap="small")
     v = c1.number_input(label, mn, mx, float(min(max(wert, mn), mx)), schritt, format=fmt, key=_k(key))
     c2.markdown(f'<div class="einheit">{einheit}</div>', unsafe_allow_html=True)
     return float(v)
@@ -647,7 +721,7 @@ def seite_raum(p: Projekt, i: int, kat: Katalog | None = None) -> None:
         st.caption(f"{wunsch}n: als Large-Split-Set (Climate 5000i L) oder als Multi-Split-Inneneinheit.")
 
     st.write("")
-    c1, c2, c3 = st.columns([1, 1, 2])
+    c1, c2, c3 = st.container(key="wz-raum").columns([1, 1.3, 1.7])
     if c3.button("Raum entfernen", icon=":material/delete:", type="tertiary"):
         p.raeume.pop(i)
         _ss().v2_geprueft = {j if j < i else j - 1 for j in _ss().v2_geprueft if j != i}
@@ -778,9 +852,9 @@ def seite_ergebnis(p: Projekt, kat: Katalog) -> None:
             if gewaehlt is not empfohlen:
                 st.caption(f"Empfohlen wäre: {empfohlen.name} ({fmt_eur(empfohlen.preis)})")
         if bilder:
-            for sp, pf in zip(st.columns(len(bilder) + 1), bilder):
+            for sp, pf in zip(st.container(key="konzeptbilder").columns(len(bilder) + 1), bilder):
                 sp.image(str(pf), width=min(BILD_MAX, Image.open(pf).width))
-        m = st.columns(4)
+        m = st.container(key="kennzahlen").columns(4)
         m[0].metric("Außengeräte", gewaehlt.aussengeraete)
         m[1].metric("Innengeräte", gewaehlt.innengeraete)
         m[2].metric("Kühlleistung", f"{de(gewaehlt.leistung_kuehl)} kW", help="Summe Nennleistung Außengeräte")
@@ -874,7 +948,7 @@ def seite_ergebnis(p: Projekt, kat: Katalog) -> None:
 
 def _weiter_zurueck(zurueck: tuple[str, str] | None, weiter: tuple[str, str] | None, hier: str) -> None:
     st.write("")
-    c1, c2, _ = st.columns([1, 1.4, 1.6])
+    c1, c2, _ = st.container(key=f"wz-{hier}").columns([1, 1.6, 1])
     if zurueck and c1.button("Zurück", icon=":material/arrow_back:", width="stretch", key=f"zur_{hier}"):
         gehe(zurueck[0])
     if weiter and c2.button(weiter[1], type="primary", icon=":material/arrow_forward:", width="stretch",
@@ -909,17 +983,47 @@ def navigation(p: Projekt) -> None:
     konfiguration_speichern_laden(p)
 
 
-def konfiguration_speichern_laden(p: Projekt) -> None:
+def mobil_navigation(p: Projekt) -> None:
+    """Kompakte Schrittleiste für Smartphone/Tablet (per CSS nur dort sichtbar)."""
+    seite = _ss().v2_seite
+    with st.container(key="mobilnav", border=True):
+        spalten = st.columns([1, 1, 1, 1, 0.55], gap="small")
+        for sp, (key, titel, icon) in zip(spalten, SCHRITTE):
+            aktiv = seite == key or (key == "raeume" and seite == "raum")
+            if sp.button(titel, key=f"mnav-{key}", width="stretch", type="primary" if aktiv else "secondary",
+                         disabled=key == "ergebnis" and not p.raeume):
+                gehe(key)
+        with spalten[4].popover("", icon=":material/save:", width="stretch"):
+            st.markdown("**Konfiguration**")
+            konfiguration_speichern_laden(p, mobil=True)
+
+
+def mobil_preisleiste(p: Projekt, kat: Katalog) -> None:
+    """Feste Preisleiste am unteren Rand (nur Smartphone)."""
+    if not p.raeume:
+        return
+    k = _gewaehlt(_konzepte(p, kat))
+    if not k:
+        return
+    last = gebaeude_last(p)
+    st.html(f'<div class="mobilpreis"><div><div class="mp-name">{k.name}</div>'
+            f'<div class="mp-info">Kühllast {de(last.cool, 2)} kW · {k.aussengeraete} AG / {k.innengeraete} IG</div>'
+            f'</div><div class="mp-preis">{fmt_eur(k.preis)}</div></div>')
+
+
+def konfiguration_speichern_laden(p: Projekt, mobil: bool = False) -> None:
     """Aktuelle Konfiguration als JSON herunterladen bzw. eine gespeicherte wieder laden."""
     auswahl = {"konzept": _ss().get("v2_konzept"), "seite": _ss().v2_seite, "raum": _ss().get("v2_raum", 0),
                "erledigt": sorted(_ss().v2_erledigt), "geprueft": sorted(_ss().v2_geprueft)}
-    with st.container(border=True):
-        st.markdown("**Konfiguration**")
+    endung = "-m" if mobil else ""
+    with st.container(border=not mobil):
+        if not mobil:
+            st.markdown("**Konfiguration**")
         st.download_button("Speichern (JSON)", SP.exportieren(p, auswahl), file_name=SP.dateiname(p),
                            mime="application/json", icon=":material/download:", width="stretch",
-                           key="konfig-speichern")
+                           key=f"konfig-speichern{endung}")
         with st.popover("Laden", icon=":material/upload:", width="stretch"):
-            datei = st.file_uploader("Gespeicherte Konfiguration (.json)", type=["json"], key="konfig-laden")
+            datei = st.file_uploader("Gespeicherte Konfiguration (.json)", type=["json"], key=f"konfig-laden{endung}")
             if datei is not None and _ss().get("v2_geladen") != datei.file_id:
                 _ss().v2_geladen = datei.file_id
                 _ss().v2_import = datei.getvalue()
@@ -1033,6 +1137,7 @@ def app_v2(kat: Katalog) -> None:
     links, mitte, rechts = st.columns([1.05, 3, 1.35], gap="medium")
     seite = _ss().v2_seite
     with mitte:
+        mobil_navigation(p)
         if seite == "system":
             seite_system(p)
         elif seite == "gebaeude":
@@ -1043,7 +1148,8 @@ def app_v2(kat: Katalog) -> None:
             seite_raum(p, _ss().v2_raum, kat)
         else:
             seite_ergebnis(p, kat)
-    with links:
+        mobil_preisleiste(p, kat)
+    with links, st.container(key="navspalte"):
         navigation(p)
     with rechts:
         zusammenfassung(p, kat)

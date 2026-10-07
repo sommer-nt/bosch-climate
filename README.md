@@ -69,6 +69,10 @@ Rechenkern und derselben KI-Planerkennung:
   Kondensatpumpe 7738336975) werden nicht mehr angeboten. Summe „Geräte + Zubehör“ im Ergebnis und im PDF.
 - **Farbwunsch:** geht vor der bevorzugten Gerätelinie; reicht das größte Gerät in Wunschfarbe nicht (schwarz/silber
   bis 3,4 kW), erhält der Raum mehrere Geräte in dieser Farbe – mit Hinweis.
+- **Smartphone und Tablet:** bis 1024 px Breite kompakte Schrittleiste oben statt Navigationsspalte (Speichern/Laden
+  im Menü), Auswahlkarten als umbrechendes Raster in Lesereihenfolge (Smartphone: 3 je Zeile, große Karten mit
+  Symbol links), Einheiten neben den Eingabefeldern; auf dem Smartphone feste Preisleiste unten mit Konzept,
+  Kühllast und Preis. Desktop unverändert.
 - **Konfiguration speichern/laden:** „Speichern (JSON)“ lädt Räume, Einstellungen, Gerätewünsche und Zubehörmengen
   als Datei herunter; „Laden“ stellt sie wieder her (Format `bosch-climate-konfiguration`, Version 1).
 - **Flachdach:** je Raum Dachform wählbar (Flachdach, Satteldach Süd/Nord/Ost-West – auch für Nicht-DG-Räume wie
