@@ -68,6 +68,35 @@ SET_FARBEN = {
     "set_8000i_rot": ("set_8000i_weiss", "ie_8000i_rot"),
     "set_7000i_schwarz": ("set_7000i_weiss", "ie_7000i_schwarz"), "set_7000i_silber": ("set_7000i_weiss", "ie_7000i_silber"),
 }
+# Neues Zubehör im Ergänzungskatalog 09/2026 (Texte S. 55, 129–134; Preise aus der Preistabelle)
+ZUBEHOER_NEU = [
+    ("Allgemein", "Kabelregler CRC R-3", "7733704064",
+     "Kabelgebundener Raumregler, Wochenprogramm, Betriebsmodi, Temperaturbegrenzung; Wandgeräte: MC R nötig "
+     "(Nachfolger CRC R-1)", "Climate Split-Klimageräte", 129),
+    ("Allgemein", "Dämpfungssockel-Set 450 mm", "7738347185",
+     "Schallentkoppelte Aufstellung der Außeneinheit auf festem Untergrund, UV-beständiger Recycling-Gummi "
+     "mit Aluschiene, 450×160×90 mm, max. 260 kg je Sockel", "Climate Außeneinheiten", 129),
+    ("Allgemein", "Dämpfungssockel-Set 600 mm", "7738347186",
+     "Schallentkoppelte Aufstellung großer Außeneinheiten, 600×160×90 mm, max. 470 kg je Sockel",
+     "CL7000M 79/3, CL5000M 105/4, CL5000M 125/5", 129),
+    ("Allgemein", "Kondensatpumpe Geräteeinbau", "7738346711",
+     "Einbau in die Inneneinheit, max. 35 l/h, Förderhöhe 10 m (Nachfolger 7738336975)", "Climate Geräteserie (R32)",
+     131),
+    ("Gerätespezifisch", "G 10 CLC-1 Gateway-Anschluss", "7733704066",
+     "Verbindet CL5000iL CF mit Internet-Gateway G 10-4 und optional Kabelregler CRC R", "CL5000iL CF", 55),
+    ("Paket", "Basispaket BOPA CL701 (Bodenkonsole)", "7739625892",
+     "CL7000i-Set 26 E + Spiralschlauch 30 m, Doppelrohr 1/4\"+3/8\" 5 m, 4 Klemmringverschraubungen, "
+     "Kommunikationskabel 5,5 m, Bodenkonsole", "CL7000i-Set 26 E", 133),
+    ("Paket", "Basispaket BOPA CL702 (Wandkonsole)", "7739624113",
+     "CL7000i-Set 26 E + Spiralschlauch 30 m, Doppelrohr 1/4\"+3/8\" 5 m, 4 Klemmringverschraubungen, "
+     "Kommunikationskabel 5,5 m, Wandkonsole", "CL7000i-Set 26 E", 133),
+    ("Paket", "Basispaket BOPA CL321 (Bodenkonsole)", "7739625891",
+     "CL3200i-Set 26 WE + Spiralschlauch 30 m, Doppelrohr 1/4\"+3/8\" 5 m, 4 Klemmringverschraubungen, "
+     "Kommunikationskabel 5,5 m, Bodenkonsole", "CL3200i-Set 26 WE", 134),
+    ("Paket", "Basispaket BOPA CL322 (Wandkonsole)", "7739625457",
+     "CL3200i-Set 26 WE + Spiralschlauch 30 m, Doppelrohr 1/4\"+3/8\" 5 m, 4 Klemmringverschraubungen, "
+     "Kommunikationskabel 5,5 m, Wandkonsole", "CL3200i-Set 26 WE", 134),
+]
 TYP_RE = re.compile(r"^CLC?\d{4}[A-Za-z]*(?:-Set)?\s+[\w ./-]+$")
 PREIS_RE = re.compile(r"(\d{10})\s*\|\s*([\d.]+,(?:\d\d|––|--))")
 
@@ -378,6 +407,17 @@ def set_farbvarianten() -> dict[str, str]:
     return out
 
 
+def zubehoer_neu(alle_preise: dict[str, float], hinweise: list[str]) -> list[dict]:
+    out = []
+    for kat, name, nr, text, passend, seite in ZUBEHOER_NEU:
+        if nr not in alle_preise:
+            hinweise.append(f"Zubehör {name} ({nr}): kein Preis im Ergänzungskatalog gefunden.")
+            continue
+        out.append({"kategorie": kat, "name": name, "bestellnr": nr, "beschreibung": text, "preis": alle_preise[nr],
+                    "passend": passend, "seite": seite})
+    return out
+
+
 def _gesamt_bilder(gesamt: str | None) -> dict[str, str]:
     if not gesamt:
         return {}
@@ -409,6 +449,7 @@ def main(pdf: str, gesamt: str | None = None) -> None:
         "quelle": "Bosch Ergänzungskatalog Klima-, Lüftungs- und Wärmepumpen-Sortiment 09/2026",
         "preisbasis": "Unverbindliche Preisempfehlung netto, zzgl. MwSt., Montage und Material (09/2026)",
         "sets": sets, "aussen": aussen, "innen": innen, "kombinationen": kombis,
+        "zubehoer": zubehoer_neu(alle_preise, hinweise),
         "preise": alle_preise, "bilder": {**bilder(doc), **bilder_ersetzen(doc), **_gesamt_bilder(gesamt), **ie_aus_set(),
                    **set_farbvarianten()}, "pruefhinweise": hinweise,
     }

@@ -31,6 +31,8 @@ from splitklima.standort import klimaregion
 from splitklima.v2 import auswahl as A
 from splitklima.v2.angebot import pdf_angebot_v2
 from splitklima.v2.bilder import bild, bild_innen_set
+from splitklima.v2 import speichern as SP
+from splitklima.v2 import zubehoer as Z
 from splitklima.v2.katalog import FARBEN, Katalog
 from splitklima.v2.piktogramme import svg
 
@@ -201,11 +203,12 @@ def baujahr_anwenden(p: Projekt) -> None:
         r.baualter = klasse
 
 
-def neues_projekt(p: Projekt | None = None) -> None:
+def neues_projekt(p: Projekt | None = None, geladen: bool = False) -> None:
     p = p or Projekt(raeume=[])
     if p.baujahr is None:
         p.baujahr = 1995
-    baujahr_anwenden(p)
+    if not geladen:  # gespeicherte Konfiguration: Dämmstandard/Baualter so lassen, wie gespeichert
+        baujahr_anwenden(p)
     _ss().v2_projekt = p
     _ss().v2_rev = _ss().get("v2_rev", 0) + 1
     if not p.klima_quelle and (start := KP.eintrag(p.plz)):
@@ -514,8 +517,6 @@ def _raum_neu(p: Projekt) -> None:
 
 
 def seite_raeume(p: Projekt) -> None:
-    if msg := _ss().pop("v2_toast", None):
-        st.toast(msg, icon="✅")
     ki_bereich(p, gross=not p.raeume)
     info = _ss().get("v2_ki_info")
     st.write("")
@@ -546,7 +547,7 @@ def seite_raeume(p: Projekt) -> None:
     _weiter_zurueck(("gebaeude", "Gebäude"), ("ergebnis", "Zum Ergebnis") if p.raeume else None, "raeume")
 
 
-def seite_raum(p: Projekt, i: int) -> None:
+def seite_raum(p: Projekt, i: int, kat: Katalog | None = None) -> None:
     if not p.raeume:
         gehe("raeume")
     i = min(i, len(p.raeume) - 1)
@@ -633,6 +634,12 @@ def seite_raum(p: Projekt, i: int) -> None:
         if r.farbe and r.farbe != "weiß":
             st.caption("Farbige Inneneinheiten gibt es in den Serien Climate 7000i (silber, schwarz) und "
                        "Climate Class 8000i (anthrazit, silber, rot).")
+            grenze = A.farbgrenze(r, kat) if kat else None
+            last = raum_last(r, p.einstellungen)
+            if grenze and last.cool > grenze[0]:
+                st.info(f"„{r.farbe.capitalize()}“ gibt es bis {de(grenze[0])} kW je Gerät. Dieser Raum braucht "
+                        f"{de(last.cool, 2)} kW – wir planen deshalb mehrere Geräte in {r.farbe}. Für ein einzelnes "
+                        "Gerät „Keine Präferenz“ wählen.", icon=":material/palette:")
     elif wunsch == "Truhe/Decke":
         st.caption("Ceiling/Floor-Truhengeräte (Climate 5000i L) – unter der Decke oder am Boden, 5,3 bis 16 kW, "
                    "auch als Twin.")
@@ -674,6 +681,62 @@ def _teilsystem_karte(t: A.Teilsystem, p: Projekt) -> None:
                 farbe = f" · {u.farbe}" if u.farbe and u.farbe != "weiß" else ""
                 st.markdown(f"<span style='font-size:.88rem'>▸ {r.name}: {u.typ if t.aussen else 'Inneneinheit'}"
                             f"{farbe}</span>", unsafe_allow_html=True)
+
+
+def zubehoer_bereich(p: Projekt, k: A.Konzept, kat: Katalog) -> None:
+    """Zubehör und Montagematerial: Vorschlag aus dem Konzept, Mengen frei änderbar."""
+    zeilen, _ = Z.tabelle(p, k, kat)
+    summe = Z.summe(zeilen)
+    with st.expander(f"Zubehör und Montagematerial · {fmt_eur(summe)}", icon=":material/handyman:",
+                     expanded=bool(p.zubehoer_mengen)):
+        c1, _ = st.columns([1, 1])
+        laenge = zahl(c1, "Leitungslänge je Innengerät", "m", p.leitungslaenge, 1.0, 50.0, 1.0, "zlaenge", "%.0f")
+        c2, c3, c4 = st.columns(3)
+        app = c2.toggle("App-Steuerung (WLAN)", p.app_steuerung, key=_k("zapp"),
+                        help="Internet-Gateways für Geräte ohne integriertes WLAN (7000i/8000i haben WLAN integriert).")
+        boerdel = c3.toggle("Bördelfrei (Klemmring)", p.boerdelfrei, key=_k("zboerdel"),
+                            help="SAE-Klemmringverschraubungen, 2 je Leitung und Seite.")
+        pumpe = c4.toggle("Kondensatpumpe", p.kondensatpumpe, key=_k("zpumpe"),
+                          help="Wenn das Kondensat nicht mit Gefälle abgeleitet werden kann. Kassetten haben eine "
+                               "integrierte Pumpe.")
+        if (laenge, app, boerdel, pumpe) != (p.leitungslaenge, p.app_steuerung, p.boerdelfrei, p.kondensatpumpe):
+            p.leitungslaenge, p.app_steuerung, p.boerdelfrei, p.kondensatpumpe = laenge, app, boerdel, pumpe
+            st.rerun()
+        alle = st.toggle("Alle Zubehörartikel zeigen", key=_k("zalle"))
+        sichtbar = [z for z in zeilen if alle or z.vorschlag or z.menge]
+        df = st.data_editor(
+            pdx.DataFrame([{"Menge": z.menge, "Artikel": z.name, "Bestell-Nr.": z.bestellnr,
+                            "Einzelpreis": z.einzelpreis, "Summe": z.summe, "Gruppe": z.gruppe,
+                            "Vorschlag": z.vorschlag, "Hinweis": z.grund} for z in sichtbar]),
+            hide_index=True, width="stretch", num_rows="fixed", key=_k(f"zub-{k.key}-{alle}"),
+            disabled=["Artikel", "Bestell-Nr.", "Einzelpreis", "Summe", "Gruppe", "Vorschlag", "Hinweis"],
+            column_config={
+                "Menge": st.column_config.NumberColumn(min_value=0, max_value=999, step=1, format="%d", width="small"),
+                "Einzelpreis": st.column_config.NumberColumn(format="%.2f €"),
+                "Summe": st.column_config.NumberColumn(format="%.2f €"),
+                "Vorschlag": st.column_config.NumberColumn(format="%d", width="small"),
+            })
+        neu = dict(p.zubehoer_mengen)
+        for z, menge in zip(sichtbar, df["Menge"].tolist()):
+            menge = int(menge or 0)
+            if menge == z.vorschlag:
+                neu.pop(z.bestellnr, None)
+            else:
+                neu[z.bestellnr] = menge
+        if neu != p.zubehoer_mengen:
+            p.zubehoer_mengen = neu
+            st.rerun()
+        geraete = k.preis
+        st.markdown(f"**Summe Zubehör: {fmt_eur(summe)}**" + (
+            f" · Geräte + Zubehör: **{fmt_eur(geraete + summe)}**" if geraete is not None and summe is not None else ""))
+        c1, c2 = st.columns([3, 1], vertical_alignment="center")
+        c1.caption("Vorschlag aus Konzept, Aufstellort und Leitungslänge – Mengen in der Spalte „Menge“ anpassen. "
+                   f"{kat.preisbasis}.")
+        if p.zubehoer_mengen and c2.button("Vorschlag wiederherstellen", icon=":material/restart_alt:",
+                                           type="tertiary"):
+            p.zubehoer_mengen = {}
+            _ss().v2_rev += 1
+            st.rerun()
 
 
 def seite_ergebnis(p: Projekt, kat: Katalog) -> None:
@@ -747,9 +810,10 @@ def seite_ergebnis(p: Projekt, kat: Katalog) -> None:
             "Summe": fmt_eur(x.summe)} for x in gewaehlt.stueckliste()]), hide_index=True, width="stretch")
         st.markdown(f"**Summe Geräte: {fmt_eur(preis)}**")
         st.caption(f"{kat.preisbasis} · {kat.quelle}")
-    optional = A.optionale_leistungen(gewaehlt, kat, p.aufstellung)
+    zubehoer_bereich(p, gewaehlt, kat)
+    optional = A.optionale_leistungen(gewaehlt, kat)
     if optional:
-        with st.expander("Optional: Inbetriebnahme und Montagezubehör", icon=":material/build:"):
+        with st.expander("Optional: Inbetriebnahme durch den Bosch-Kundendienst", icon=":material/build:"):
             st.dataframe(pdx.DataFrame([{
                 "Leistung": x.name, "Bestell-Nr.": x.artikel, "Menge": x.menge,
                 "Einzelpreis": fmt_eur(x.einzelpreis), "Summe": fmt_eur(x.summe)} for x in optional]),
@@ -763,7 +827,8 @@ def seite_ergebnis(p: Projekt, kat: Katalog) -> None:
         st.dataframe(pdx.DataFrame(zeilen), hide_index=True, width="stretch")
         st.caption(f"Gebäude gesamt: Kühlen {de(last.cool, 2)} kW · Heizen {de(last.heat, 2)} kW "
                    "(Rechenkern CALC-0.4, in Anlehnung an VDI 2078 / DIN EN 12831-1)")
-    hinweise = gewaehlt.lieferhinweise + gewaehlt.hinweise + A.aufstellungshinweise(p, gewaehlt)
+    hinweise = (gewaehlt.lieferhinweise + gewaehlt.hinweise + A.aufstellungshinweise(p, gewaehlt)
+                + Z.tabelle(p, gewaehlt, kat)[1])
     if hinweise:
         with st.expander(f"Hinweise ({len(hinweise)})", icon=":material/info:"):
             for h in hinweise:
@@ -835,6 +900,60 @@ def navigation(p: Projekt) -> None:
                     if st.button(f"{zeichen}  {r.name}", key=f"navr-{i}", width="stretch",
                                  type="secondary" if seite == "raum" and _ss().v2_raum == i else "tertiary"):
                         gehe("raum", raum=i)
+    konfiguration_speichern_laden(p)
+
+
+def konfiguration_speichern_laden(p: Projekt) -> None:
+    """Aktuelle Konfiguration als JSON herunterladen bzw. eine gespeicherte wieder laden."""
+    auswahl = {"konzept": _ss().get("v2_konzept"), "seite": _ss().v2_seite, "raum": _ss().get("v2_raum", 0),
+               "erledigt": sorted(_ss().v2_erledigt), "geprueft": sorted(_ss().v2_geprueft)}
+    with st.container(border=True):
+        st.markdown("**Konfiguration**")
+        st.download_button("Speichern (JSON)", SP.exportieren(p, auswahl), file_name=SP.dateiname(p),
+                           mime="application/json", icon=":material/download:", width="stretch",
+                           key="konfig-speichern")
+        with st.popover("Laden", icon=":material/upload:", width="stretch"):
+            datei = st.file_uploader("Gespeicherte Konfiguration (.json)", type=["json"], key="konfig-laden")
+            if datei is not None and _ss().get("v2_geladen") != datei.file_id:
+                _ss().v2_geladen = datei.file_id
+                _ss().v2_import = datei.getvalue()
+                st.rerun()
+            if fehler := _ss().get("v2_import_fehler"):
+                st.error(fehler)
+            st.caption("Lädt Räume, Einstellungen, Gerätewünsche und Zubehörmengen. Die aktuelle Konfiguration "
+                       "wird ersetzt – vorher speichern.")
+
+
+def konfiguration_importieren() -> None:
+    """Hochgeladene Konfiguration (``v2_import``) am Anfang des Laufs übernehmen."""
+    daten = _ss().get("v2_import")
+    if daten is None:
+        return
+    del _ss()["v2_import"]
+    try:
+        projekt, auswahl = SP.importieren(daten)
+    except SP.LadeFehler as fehler:
+        _ss().v2_import_fehler = f"Laden nicht möglich: {fehler}"
+        return
+    _ss().v2_import_fehler = ""
+    konfiguration_uebernehmen(projekt, auswahl)
+
+
+def konfiguration_uebernehmen(projekt: Projekt, auswahl: dict) -> None:
+    neues_projekt(projekt, geladen=True)
+    n = len(projekt.raeume)
+    _ss().v2_erledigt = {s for s in auswahl.get("erledigt", []) if s in {k for k, _, _ in SCHRITTE}}
+    _ss().v2_geprueft = {i for i in auswahl.get("geprueft", []) if isinstance(i, int) and 0 <= i < n}
+    if auswahl.get("konzept"):
+        _ss().v2_konzept = str(auswahl["konzept"])
+    else:
+        _ss().pop("v2_konzept", None)
+    seite = auswahl.get("seite") if auswahl.get("seite") in {k for k, _, _ in SCHRITTE} | {"raum"} else "system"
+    if seite in ("raum", "ergebnis") and not n:
+        seite = "raeume"
+    _ss().v2_seite = seite
+    _ss().v2_raum = min(max(int(auswahl.get("raum") or 0), 0), max(n - 1, 0))
+    _ss().v2_toast = f"Konfiguration „{projekt.name}“ geladen ({n} Räume)."
 
 
 def zusammenfassung(p: Projekt, kat: Katalog) -> None:
@@ -897,10 +1016,13 @@ def app_v2(kat: Katalog) -> None:
     st.markdown(CSS, unsafe_allow_html=True)
     if "v2_projekt" not in _ss():
         neues_projekt()
+    konfiguration_importieren()
     p: Projekt = _ss().v2_projekt
     klimadaten_start()
     klima_synchronisieren(p)
     _nach_oben()
+    if msg := _ss().pop("v2_toast", None):
+        st.toast(msg, icon="✅")
 
     links, mitte, rechts = st.columns([1.05, 3, 1.35], gap="medium")
     seite = _ss().v2_seite
@@ -912,7 +1034,7 @@ def app_v2(kat: Katalog) -> None:
         elif seite == "raeume":
             seite_raeume(p)
         elif seite == "raum":
-            seite_raum(p, _ss().v2_raum)
+            seite_raum(p, _ss().v2_raum, kat)
         else:
             seite_ergebnis(p, kat)
     with links:

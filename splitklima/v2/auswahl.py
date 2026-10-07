@@ -26,12 +26,9 @@ NR_INBETRIEBNAHME_AE = "8737804256"
 NR_INBETRIEBNAHME_IE = "8737804260"
 NR_AUFTRAGSPAUSCHALE = "7739607426"
 NR_MSG1 = "7733702555"
-NR_BODENKONSOLE = "7716161065"
-NR_WANDKONSOLE = "7747222358"
 
-# Aufstellort der Außeneinheit → Konsole aus dem Zubehör (je Außeneinheit) und Montagehinweise
+# Aufstellort der Außeneinheit → Montagehinweise (Konsolen/Sockel: zubehoer.py)
 AUFSTELLUNG = {"": "Noch offen", "wand": "Fassade / Wand", "boden": "Boden / Terrasse", "flachdach": "Flachdach"}
-AUFSTELLUNG_KONSOLE = {"wand": NR_WANDKONSOLE, "boden": NR_BODENKONSOLE, "flachdach": NR_BODENKONSOLE}
 AUFSTELLUNG_HINWEISE = {
     "wand": ["Wandmontage: Tragfähigkeit der Wand und Körperschall zu angrenzenden Schlafräumen prüfen."],
     "boden": ["Bodenaufstellung: ebener, tragfähiger Untergrund, Kondensat- und Abtauwasser frostsicher ableiten."],
@@ -54,6 +51,18 @@ def bauart_wunsch(raum: Raum) -> str:
 def farbwunsch(raum: Raum) -> str:
     """Farbwunsch gilt nur für Wandgeräte (Kassetten und Konsolen gibt es nur in Weiß)."""
     return raum.farbe if bauart_wunsch(raum) in ("", "Wandgerät") else ""
+
+
+def farbgrenze(raum: Raum, kat: Katalog) -> tuple[float, float] | None:
+    """Größte Kühl-/Heizleistung eines Wandgeräts bzw. Sets in der Wunschfarbe (None = keine Farbe/nicht im
+    Sortiment). Beispiel: schwarz/silber gibt es nur als Climate 7000i bis 3,4 kW."""
+    farbe = farbwunsch(raum)
+    if not farbe:
+        return None
+    geraete = [a for a in (*kat.innen, *kat.sets) if a.farbe == farbe and a.verfuegbar]
+    if not geraete:
+        return None
+    return max((a.kuehl or 0) for a in geraete), max((a.heiz or 0) for a in geraete)
 
 
 @dataclass
@@ -133,6 +142,9 @@ def bedarfe(projekt: Projekt, kat: Katalog | None = None, mit_large: bool = Fals
             out.append(Bedarf(r, l.cool, l.heat))
             continue
         k_max, h_max = _max_einheit(r, kat, projekt.geraetelinie, mit_large)
+        grenze = farbgrenze(r, kat)
+        if grenze:  # Farbwunsch: lieber zwei Geräte in Wunschfarbe als eins in Weiß
+            k_max, h_max = min(k_max, grenze[0]) or k_max, min(h_max, grenze[1]) or h_max
         if k_max <= 0:
             out.append(Bedarf(r, l.cool, l.heat))
             continue
@@ -241,6 +253,12 @@ def single_set(b: Bedarf, kat: Katalog, projekt: Projekt, mit_large: bool = Fals
         linien_hinweis = [f"{b.raum.name}: {GERAETELINIEN.get(linie, linie)} deckt die Last nicht – "
                           "andere Gerätelinie gewählt."]
     farbe = farbwunsch(b.raum)
+    if linie and farbe and not any(s.farbe == farbe and s.verfuegbar for s in kandidaten):
+        farbig = [s for s in alle if s.farbe == farbe and s.verfuegbar]
+        if farbig:  # Farbwunsch des Raums geht vor der bevorzugten Gerätelinie
+            kandidaten = farbig
+            linien_hinweis = [f"{b.raum.name}: „{farbe}“ gibt es nicht als {GERAETELINIEN.get(linie, linie)} – "
+                              f"{farbig[0].linie} gewählt."]
     stufen = [
         ([s for s in kandidaten if s.verfuegbar and (not farbe or s.farbe == farbe)], None),
         ([s for s in kandidaten if s.verfuegbar], f"{b.raum.name}: Farbe „{farbe}“ in passender Größe nicht "
@@ -394,6 +412,7 @@ class Konzept:
     beschreibung: str
     teilsysteme: list[Teilsystem] = field(default_factory=list)
     empfohlen: bool = False
+    zusatzhinweise: list[str] = field(default_factory=list)
 
     @property
     def gedeckt(self) -> bool:
@@ -425,7 +444,7 @@ class Konzept:
 
     @property
     def hinweise(self) -> list[str]:
-        return [h for t in self.teilsysteme for h in t.hinweise]
+        return self.zusatzhinweise + [h for t in self.teilsysteme for h in t.hinweise]
 
     @property
     def lieferhinweise(self) -> list[str]:
@@ -454,13 +473,13 @@ def _geschosse(bed: list[Bedarf]) -> dict[str, list[Bedarf]]:
     return g
 
 
-def nur_als_set(b: Bedarf, kat: Katalog) -> bool:
+def nur_als_set(b: Bedarf, kat: Katalog, linie: str = "") -> bool:
     """Wunschfarbe gibt es nur als Single-Split-Set (z. B. rot/anthrazit: Climate Class 8000i),
     nicht als Multi-Split-Inneneinheit → der Raum bekommt im Multi-Konzept ein eigenes Set."""
     farbe = farbwunsch(b.raum)
     if not farbe:
         return False
-    if any(u.farbe == farbe for u in kat.innen):
+    if any(u.farbe == farbe and linie_passt(u, linie) for u in kat.innen):
         return False
     return any(s.farbe == farbe for s in kat.sets)
 
@@ -485,28 +504,44 @@ def konzepte(projekt: Projekt, kat: Katalog, wunsch: str = "auto") -> list[Konze
     out: list[Konzept] = []
     multi_moeglich = len(bed) > 1
     # Räume, deren Wunschfarbe es nur als Set gibt, bekommen auch im Multi-Konzept ihr eigenes Set
-    eigene_sets = [b for b in bed if nur_als_set(b, kat)]
+    eigene_sets = [b for b in bed if nur_als_set(b, kat, projekt.geraetelinie)]
     rest = [b for b in bed if b not in eigene_sets]
     farb_sets = [single_system(b, kat, projekt) for b in eigene_sets]
+    FARB_TEXT = " Räume mit Wunschfarbe erhalten ein eigenes Set in dieser Farbe."
+
+    def gesamt(liste: list[Bedarf]) -> list[Teilsystem]:
+        return _multi_teilsysteme(liste, kat, projekt, "Gebäude", mehrere=False) if liste else []
+
+    def je_geschoss(liste: list[Bedarf]) -> list[Teilsystem]:
+        return [t for name, g in _geschosse(liste).items() for t in _multi_teilsysteme(g, kat, projekt, name, True)]
+
+    def farbtreu(k: Konzept, liste: list[Bedarf], bauen) -> Konzept:
+        """Bleiben Farbwünsche im Multi-System offen (z. B. Farbgerät nur an kleinerer Außeneinheit),
+        erhalten diese Räume ein eigenes Set in Wunschfarbe – sofern das die Farbwünsche erfüllt."""
+        if not farbabweichungen(k):
+            return k
+        farbig = [b for b in liste if farbwunsch(b.raum)]
+        neu = Konzept(k.key, k.name, k.beschreibung if FARB_TEXT in k.beschreibung else k.beschreibung + FARB_TEXT)
+        neu.teilsysteme = bauen([b for b in liste if b not in farbig]) + farb_sets + [
+            single_system(b, kat, projekt) for b in farbig]
+        return neu if neu.gedeckt and farbabweichungen(neu) < farbabweichungen(k) else k
 
     if multi_moeglich and len(rest) > 1 and wunsch in ("auto", "multi"):
         k = Konzept("multi_gesamt", "Ein Multi-Split-System",
                     "Alle Räume an möglichst wenigen Außeneinheiten. Wenige Geräte an der Fassade, "
                     "längere Kältemittelleitungen.")
-        k.teilsysteme = _multi_teilsysteme(rest, kat, projekt, "Gebäude", mehrere=False) + farb_sets
+        k.teilsysteme = gesamt(rest) + farb_sets
         if farb_sets:
-            k.beschreibung += " Räume mit Wunschfarbe erhalten ein eigenes Set in dieser Farbe."
-        out.append(k)
+            k.beschreibung += FARB_TEXT
+        out.append(farbtreu(k, rest, gesamt))
 
         etagen = _geschosse(rest)
         if len(etagen) > 1 and any(len(g) > 1 for g in etagen.values()):
             k = Konzept("multi_geschoss", "Multi-Split je Geschoss",
                         "Je Geschoss ein eigenes System mit kurzen Leitungswegen; ein einzelner Raum auf einer "
                         "Etage erhält ein Single-Split-Set.")
-            for name, liste in etagen.items():
-                k.teilsysteme += _multi_teilsysteme(liste, kat, projekt, name, mehrere=True)
-            k.teilsysteme += farb_sets
-            out.append(k)
+            k.teilsysteme = je_geschoss(rest) + farb_sets
+            out.append(farbtreu(k, rest, je_geschoss))
 
     if wunsch in ("auto", "single") or not multi_moeglich or not out:
         k = Konzept("single", "Single-Split je Raum",
@@ -530,6 +565,19 @@ def konzepte(projekt: Projekt, kat: Katalog, wunsch: str = "auto") -> list[Konze
             k.teilsysteme = teile
             out.append(k)
 
+    geteilt = {}
+    for b in bed:
+        if " · Zone " in b.raum.name:
+            geteilt[b.raum.name.split(" · Zone ")[0]] = b
+    for r in projekt.raeume:
+        grenze = farbgrenze(r, kat)
+        if r.name in geteilt and grenze:
+            n = sum(1 for b in bed if b.raum.name.startswith(f"{r.name} · Zone "))
+            hinweis = (f"{r.name}: „{farbwunsch(r)}“ gibt es bis {grenze[0]:.1f} kW je Gerät – der Raum erhält "
+                       f"{n} Geräte in dieser Farbe. Für ein einzelnes Gerät die Farbe auf „Keine Präferenz“ "
+                       "stellen.").replace(".", ",", 1)
+            for k in out:
+                k.zusatzhinweise.append(hinweis)
     empfehlung_setzen(out, projekt.geraetelinie)
     return out
 
@@ -561,8 +609,9 @@ def empfehlung_setzen(liste: list[Konzept], linie: str = "") -> None:
 
 
 # ---------------------------------------------------------------- Optionale Leistungen
-def optionale_leistungen(konzept: Konzept, kat: Katalog, aufstellung: str = "") -> list[Position]:
-    """Inbetriebnahme durch den Bosch-Kundendienst, Förder- und Montage-Zubehör – nicht im Gerätepreis enthalten."""
+def optionale_leistungen(konzept: Konzept, kat: Katalog) -> list[Position]:
+    """Inbetriebnahme durch den Bosch-Kundendienst – nicht im Gerätepreis enthalten
+    (Zubehör und Montagematerial: siehe ``zubehoer.py``)."""
     pos: list[Position] = []
 
     def add(nr: str, menge: int, art: str = "leistung"):
@@ -573,10 +622,6 @@ def optionale_leistungen(konzept: Konzept, kat: Katalog, aufstellung: str = "") 
     add(NR_AUFTRAGSPAUSCHALE, 1)
     add(NR_INBETRIEBNAHME_AE, konzept.aussengeraete)
     add(NR_INBETRIEBNAHME_IE, konzept.innengeraete)
-    sets_7000i = sum(1 for t in konzept.teilsysteme if t.set and t.set.linie == "Climate 7000i")
-    add(NR_MSG1, sets_7000i, "zubehoer")
-    if aufstellung in AUFSTELLUNG_KONSOLE:
-        add(AUFSTELLUNG_KONSOLE[aufstellung], konzept.aussengeraete, "zubehoer")
     return pos
 
 
@@ -584,5 +629,5 @@ def aufstellungshinweise(projekt: Projekt, konzept: Konzept | None = None) -> li
     hinweise = list(AUFSTELLUNG_HINWEISE.get(projekt.aufstellung, []))
     if projekt.aufstellung in ("boden", "flachdach") and konzept and any(
             t.set and ist_large(t.set) for t in konzept.teilsysteme):
-        hinweise.append("Large-Split-Außeneinheiten: Traglast der Bodenkonsole gegen das Gerätegewicht prüfen.")
+        hinweise.append("Large-Split-Außeneinheiten: Traglast von Konsole bzw. Sockel gegen das Gerätegewicht prüfen.")
     return hinweise
