@@ -47,6 +47,20 @@ BILD_SEITEN = {  # Kapitel-Titelseite → Bildname (größtes Produktbild der Se
     62: "set_5000il_4cc_twin", 68: "set_5000il_4c_twin", 74: "set_5000il_cf_twin",
     80: "set_5000il_4cc_triple", 86: "set_5000il_4cc_double",
 }
+# Ersatz für die unscharfen Bilder aus dem Gesamtkatalog 03/2026 (dort nur ~150 px eingebettet):
+# Bildname → (Seite, xref) des hochaufgelösten Produktbilds im Ergänzungskatalog
+BILD_ERSATZ = {
+    "set_8000i_weiss": (4, 16), "ie_8000i_anthrazit": (4, 13), "ie_8000i_silber": (4, 14), "ie_8000i_rot": (4, 15),
+    "set_7000i_weiss": (12, 629), "ie_7000i_schwarz": (12, 632), "ie_7000i_silber": (12, 627),
+    "set_6000ip": (20, 95), "set_3200i": (28, 136), "ae_5000m": (92, 402), "ie_konsole_5000i": (92, 400),
+    "ie_wand_3200i": (92, 401), "ie_kassette_5000i": (92, 631), "ae_7000m": (114, 497),
+}
+# Farbvarianten der Sets: im Katalog nur in Weiß hochaufgelöst → weißes Set + farbiges Innengerät
+SET_FARBEN = {
+    "set_8000i_anthrazit": ("set_8000i_weiss", "ie_8000i_anthrazit"), "set_8000i_silber": ("set_8000i_weiss", "ie_8000i_silber"),
+    "set_8000i_rot": ("set_8000i_weiss", "ie_8000i_rot"),
+    "set_7000i_schwarz": ("set_7000i_weiss", "ie_7000i_schwarz"), "set_7000i_silber": ("set_7000i_weiss", "ie_7000i_silber"),
+}
 TYP_RE = re.compile(r"^CLC?\d{4}[A-Za-z]*(?:-Set)?\s+[\w ./-]+$")
 PREIS_RE = re.compile(r"(\d{10})\s*\|\s*([\d.]+,(?:\d\d|––|--))")
 
@@ -256,6 +270,90 @@ def bilder(doc) -> dict[str, str]:
     return out
 
 
+def _bild_weiss(doc, xref):
+    """Eingebettetes Bild inkl. Transparenzmaske auf weißem Grund, Ränder beschnitten."""
+    import pymupdf
+    from PIL import Image, ImageChops
+
+    pix = pymupdf.Pixmap(doc, xref)
+    smask = doc.extract_image(xref).get("smask")
+    if smask:
+        pix = pymupdf.Pixmap(pix, pymupdf.Pixmap(doc, smask))
+    if pix.colorspace and pix.colorspace.n != 3:
+        pix = pymupdf.Pixmap(pymupdf.csRGB, pix)
+    modus = "RGBA" if pix.alpha else "RGB"
+    bild = Image.frombytes(modus, (pix.width, pix.height), pix.samples)
+    if modus == "RGBA":
+        grund = Image.new("RGB", bild.size, "white")
+        grund.paste(bild, mask=bild.split()[3])
+        bild = grund
+    box = ImageChops.difference(bild, Image.new("RGB", bild.size, "white")).point(lambda v: 255 if v > 12 else 0).getbbox()
+    if box:
+        rand = 4
+        bild = bild.crop((max(box[0] - rand, 0), max(box[1] - rand, 0),
+                          min(box[2] + rand, bild.width), min(box[3] + rand, bild.height)))
+    return bild
+
+
+def bilder_ersetzen(doc) -> dict[str, str]:
+    """Ältere, unscharfe Produktbilder durch die Originale aus dem Ergänzungskatalog ersetzen."""
+    out = {}
+    for name, (seite, xref) in BILD_ERSATZ.items():
+        try:
+            bild = _bild_weiss(doc, xref)
+        except Exception as fehler:  # noqa: BLE001 – fehlendes Bild ist kein Abbruchgrund
+            print(f" ! {name}: {fehler}")
+            continue
+        if bild.width * bild.height < 15000:
+            continue
+        bild.save(BILDER / f"{name}.png", optimize=True)
+        out[name] = f"S. {seite}"
+    return out
+
+
+def _innengeraet_bereich(bild):
+    """Bereich des Innengeräts im Set-Bild: oberster Block bis zur ersten breiten Weißlücke."""
+    from PIL import Image, ImageChops
+
+    maske = ImageChops.difference(bild, Image.new("RGB", bild.size, "white")).convert("L").point(
+        lambda v: 255 if v > 12 else 0)
+    leer = [maske.crop((0, y, bild.width, y + 1)).getbbox() is None for y in range(bild.height)]
+    start = None
+    for y, frei in enumerate(leer):
+        if frei and start is None:
+            start = y
+        elif not frei and start is not None:
+            if y - start >= 10:
+                return maske.crop((0, 0, bild.width, start)).getbbox()
+            start = None
+    return None
+
+
+def set_farbvarianten() -> dict[str, str]:
+    """Farbige Sets aus dem scharfen weißen Set und dem farbigen Innengerät zusammensetzen."""
+    from PIL import Image
+
+    out = {}
+    for name, (basis, ie) in SET_FARBEN.items():
+        if not (BILDER / f"{basis}.png").exists() or not (BILDER / f"{ie}.png").exists():
+            continue
+        bild = Image.open(BILDER / f"{basis}.png").convert("RGB")
+        box = _innengeraet_bereich(bild)
+        if not box:
+            continue
+        geraet = Image.open(BILDER / f"{ie}.png").convert("RGB")
+        breite = box[2] - box[0]
+        geraet = geraet.resize((breite, round(geraet.height * breite / geraet.width)), Image.LANCZOS)
+        hoehe = box[3] - box[1]
+        if geraet.height > hoehe + 20:  # passt nicht in die Lücke → Variante nicht erzeugen
+            continue
+        bild.paste((255, 255, 255), box)
+        bild.paste(geraet, (box[0], box[1] + max(hoehe - geraet.height, 0) // 2))
+        bild.save(BILDER / f"{name}.png", optimize=True)
+        out[name] = f"zusammengesetzt aus {basis} + {ie}"
+    return out
+
+
 def main(pdf: str) -> None:
     import pymupdf
 
@@ -279,7 +377,7 @@ def main(pdf: str) -> None:
         "quelle": "Bosch Ergänzungskatalog Klima-, Lüftungs- und Wärmepumpen-Sortiment 09/2026",
         "preisbasis": "Unverbindliche Preisempfehlung netto, zzgl. MwSt., Montage und Material (09/2026)",
         "sets": sets, "aussen": aussen, "innen": innen, "kombinationen": kombis,
-        "preise": alle_preise, "bilder": bilder(doc), "pruefhinweise": hinweise,
+        "preise": alle_preise, "bilder": {**bilder(doc), **bilder_ersetzen(doc), **set_farbvarianten()}, "pruefhinweise": hinweise,
     }
     ZIEL.write_text(json.dumps(erg, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"{len(sets)} Large-Split-Sets, {len(aussen)} Außen-, {len(innen)} Inneneinheiten neu, "
