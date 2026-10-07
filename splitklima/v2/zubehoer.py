@@ -31,6 +31,10 @@ NR_MSG1 = "7733702555"
 NR_WANDKONSOLE, NR_BODENKONSOLE = "7747222358", "7716161065"
 NR_SOCKEL_450, NR_SOCKEL_600 = "7738347185", "7738347186"
 SOCKEL_600_FUER = ("CL7000M 79/3", "CL5000M 105/4", "CL5000M 125/5")
+ALTERNATIVE = {  # Hinweistext für Artikel, die nicht automatisch vorgeschlagen werden
+    NR_SOCKEL_450: "Alternative zur Bodenkonsole: direkt auf Betonfundament, schallentkoppelt",
+    NR_SOCKEL_600: "Alternative zur Bodenkonsole für CL7000M 79/3, CL5000M 105/4 und 125/5 auf Betonfundament",
+}
 # im Ergänzungskatalog 09/2026 ersetzt → nicht mehr anbieten
 ERSETZT = {"7733701903": "7733704064", "7738336975": "7738346711"}
 # Basispakete (Set + Montagematerial + Konsole): Set-Typ → {Aufstellung: Bestell-Nr.}
@@ -157,8 +161,7 @@ def vorschlag(projekt: Projekt, konzept: Konzept, kat: Katalog) -> tuple[dict[st
         elif projekt.aufstellung == "flachdach":
             add(NR_BODENKONSOLE, 1, "Flachdach: aufgeständert über Schnee/Wasser")
         elif projekt.aufstellung == "boden":
-            gross = any(ae.typ.startswith(t) for t in SOCKEL_600_FUER) or ist_large(ae) and (ae.kuehl or 0) > 8
-            add(NR_SOCKEL_600 if gross else NR_SOCKEL_450, 1, "Bodenaufstellung je Außeneinheit")
+            add(NR_BODENKONSOLE, 1, "Bodenaufstellung vor dem Haus je Außeneinheit")
 
     # Kältemittelleitung, Kommunikationskabel, Klemmringverschraubungen je Innengerät
     ohne_rohr = []
@@ -234,7 +237,7 @@ def tabelle(projekt: Projekt, konzept: Konzept, kat: Katalog) -> tuple[list[Zube
         v = mengen.get(z.bestellnr, 0)
         menge = projekt.zubehoer_mengen.get(z.bestellnr, v)
         zeilen.append(ZubehoerZeile(GRUPPEN[GRUPPE[z.bestellnr]], z.bestellnr, z.name, z.preis, v, max(int(menge), 0),
-                                    grund.get(z.bestellnr, z.passend or "")))
+                                    grund.get(z.bestellnr, ALTERNATIVE.get(z.bestellnr, z.passend or ""))))
     zeilen.sort(key=lambda x: (GRUPPEN.index(x.gruppe), -x.vorschlag, x.name))
     return zeilen, hinweise
 

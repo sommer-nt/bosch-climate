@@ -31,7 +31,8 @@ NR_MSG1 = "7733702555"
 AUFSTELLUNG = {"": "Noch offen", "wand": "Fassade / Wand", "boden": "Boden / Terrasse", "flachdach": "Flachdach"}
 AUFSTELLUNG_HINWEISE = {
     "wand": ["Wandmontage: Tragfähigkeit der Wand und Körperschall zu angrenzenden Schlafräumen prüfen."],
-    "boden": ["Bodenaufstellung: ebener, tragfähiger Untergrund, Kondensat- und Abtauwasser frostsicher ableiten."],
+    "boden": ["Bodenaufstellung vor dem Haus: Bodenkonsole mit Schwingungsdämpfern auf ebenem, tragfähigem Untergrund, "
+              "Kondensat- und Abtauwasser frostsicher ableiten. Alternative auf Betonfundament: Dämpfungssockel-Set."],
     "flachdach": [
         "Flachdach: Außeneinheit auf Bodenkonsole mit Schwingungsdämpfern, auf Bautenschutzmatte bzw. "
         "Lastverteilplatten – die Dachabdichtung nicht durchdringen; Dachlast und Windsog prüfen lassen.",

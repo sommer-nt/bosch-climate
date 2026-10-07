@@ -342,17 +342,15 @@ def test_flachdach_erhoeht_kuehllast():
 
 
 @pytest.mark.parametrize("aufstellung, konsole", [("flachdach", "Bodenkonsole"),
-                                                  ("boden", "Dämpfungssockel-Set 450 mm"),
+                                                  ("boden", "Bodenkonsole"),
                                                   ("wand", "Kleine Wandkonsole")])
 def test_aufstellung_konsole_und_hinweise(aufstellung, konsole):
     p = beispielprojekt()
     p.aufstellung = aufstellung
     k = next(k for k in A.konzepte(p, KAT) if k.empfohlen)
     zub = {z.name: z.menge for z in Z.gewaehlt(p, k, KAT)}
-    if aufstellung == "boden":  # große Außeneinheiten (CL5000M 105/4 …) bekommen den 600-mm-Sockel
-        assert zub.get(konsole, 0) + zub.get("Dämpfungssockel-Set 600 mm", 0) == k.aussengeraete
-    else:
-        assert zub[konsole] == k.aussengeraete
+    assert zub[konsole] == k.aussengeraete
+    assert not {"Dämpfungssockel-Set 450 mm", "Dämpfungssockel-Set 600 mm"} & set(zub)  # nur als Alternative
     hinweise = A.aufstellungshinweise(p, k)
     assert hinweise and (aufstellung != "flachdach" or any("Dachabdichtung" in h for h in hinweise))
     assert pdf_angebot_v2(p, k, KAT)[:4] == b"%PDF"

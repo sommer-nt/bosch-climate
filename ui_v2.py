@@ -71,7 +71,7 @@ DACHFORMEN = [("flat", "Flachdach", "dach_flach"), ("saddle_south", "Sattel&shy;
               ("saddle_north", "Sattel&shy;dach Nord", "dach_nord"),
               ("saddle_eastwest", "Sattel&shy;dach Ost/West", "dach_ow")]
 AUFSTELLUNG_UNTERTITEL = {"": "Entscheiden wir später.", "wand": "Wandkonsole an der Fassade.",
-                          "boden": "Bodenkonsole, z. B. Garten oder Terrasse.",
+                          "boden": "Bodenkonsole vor dem Haus, z. B. Garten oder Terrasse.",
                           "flachdach": "Bodenkonsole auf dem Flachdach, ohne Dachdurchdringung."}
 FARBCODE = {"weiß": "#f4f5f6", "silber": "#c3c8cd", "schwarz": "#1d1f22", "anthrazit": "#41464d", "rot": "#c8102e"}
 

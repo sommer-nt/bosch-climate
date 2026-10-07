@@ -63,8 +63,8 @@ Rechenkern und derselben KI-Planerkennung:
 - Auswahl nach den **zulässigen Kombinationen** des Katalogs, Bauart- und Farbwunsch je Raum,
   Lieferstatus; Empfehlung = günstigstes vollständiges Konzept.
 - **Zubehör und Montagematerial:** Vorschlag aus dem gewählten Konzept – Kältemittelleitungen (Doppelrohr-Pakete
-  nach Gerätegröße und Leitungslänge), Kommunikationskabel, Kondensatschlauch/-pumpen, Konsolen bzw.
-  Dämpfungssockel je Aufstellort, WLAN-Gateways (G 10-4, G 10 CLC/CLC-1), Smart-Grid-Modul MSG-1,
+  nach Gerätegröße und Leitungslänge), Kommunikationskabel, Kondensatschlauch/-pumpen, Wand- bzw.
+  Bodenkonsole je Aufstellort (Boden vor dem Haus und Flachdach: Bodenkonsole; Dämpfungssockel als Alternative), WLAN-Gateways (G 10-4, G 10 CLC/CLC-1), Smart-Grid-Modul MSG-1,
   Klemmringverschraubungen; Mengen frei änderbar, BOPA-Basispakete als Hinweis. Ersetzte Artikel (CRC R-1,
   Kondensatpumpe 7738336975) werden nicht mehr angeboten. Summe „Geräte + Zubehör“ im Ergebnis und im PDF.
 - **Farbwunsch:** geht vor der bevorzugten Gerätelinie; reicht das größte Gerät in Wunschfarbe nicht (schwarz/silber
