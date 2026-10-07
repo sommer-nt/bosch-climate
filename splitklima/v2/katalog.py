@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import copy
 import json
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, field, fields, replace
 from functools import lru_cache
 from pathlib import Path
 
@@ -57,9 +57,13 @@ class Artikel:
     phasen: int = 1  # 3 = Drehstrom 400 V
     max_abstand: float | None = None  # m zwischen Innen- und Außeneinheit
     bauart_code: str = ""  # 4CC, 4C, CF, CNE
+    auslauf: bool = False  # im Ergänzungskatalog 09/2026 nicht mehr enthalten
+    datenfehler: str = ""  # widersprüchliche Katalogdaten (nur Nennwerte verwendet)
 
     @property
     def lieferhinweis(self) -> str | None:
+        if self.auslauf:
+            return "Auslaufartikel – nicht mehr im Ergänzungskatalog 09/2026 (Preis 03/2026)"
         s = self.lieferstatus.lower()
         if "ab q3" in s:
             return "verfügbar ab Q3/2026"
@@ -100,6 +104,21 @@ class Katalog:
 
     def zubehoer_nr(self, bestellnr: str) -> Zubehoer | None:
         return next((z for z in self.zubehoer if z.bestellnr == bestellnr), None)
+
+    def ohne_auslauf(self) -> Katalog:
+        """Katalog ohne Auslaufartikel (Standard in der Oberfläche; Schalter „Auslaufartikel anzeigen“)."""
+        if id(self) not in _OHNE_AUSLAUF:
+            _OHNE_AUSLAUF[id(self)] = replace(self, sets=tuple(a for a in self.sets if not a.auslauf),
+                                              aussen=tuple(a for a in self.aussen if not a.auslauf),
+                                              innen=tuple(a for a in self.innen if not a.auslauf))
+        return _OHNE_AUSLAUF[id(self)]
+
+    @property
+    def auslaufartikel(self) -> tuple[Artikel, ...]:
+        return tuple(a for a in (*self.sets, *self.aussen, *self.innen) if a.auslauf)
+
+
+_OHNE_AUSLAUF: dict[int, Katalog] = {}
 
 
 def _artikel(d: dict) -> Artikel:
@@ -148,6 +167,11 @@ def zusammenfuehren(basis: dict, erg: dict) -> dict:
             if liste != "zubehoer" and (not a.get("verfuegbar") or "ab Q3" in (a.get("lieferstatus") or "")):
                 a["verfuegbar"] = True
                 a["lieferstatus"] = "lieferbar (Ergänzungskatalog 09/2026)"
+    if preise:  # im Ergänzungskatalog nicht mehr gelistet → Auslaufartikel (Preis 03/2026)
+        for liste in ("sets", "aussen", "innen"):
+            for a in d[liste]:
+                if a.get("bestellnr") and a["bestellnr"] not in preise:
+                    a["auslauf"] = True
     vorhanden = {a["typ"] for liste in ("sets", "aussen", "innen") for a in d[liste]}
     for liste in ("sets", "aussen", "innen"):
         d[liste] += [copy.deepcopy(a) for a in erg.get(liste, []) if a["typ"] not in vorhanden]

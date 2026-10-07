@@ -528,3 +528,80 @@ def test_oberflaeche_zubehoer_ohne_vorschlag(monkeypatch):
     assert any("keinen automatischen Zubehörvorschlag" in i.value for i in at.info)
     next(t for t in at.toggle if t.label == "Alle Zubehörartikel zeigen").set_value(True).run()
     assert not at.exception
+
+
+# ---------------------------------------------------------------- Wandlängen aus der Grundfläche
+def test_wandlaengen_aus_grundflaeche():
+    r = Raum(flaeche=200, lage="outside", waende=[Wand(laenge=4)], waende_auto=True)
+    r.wandlaengen_schaetzen()
+    assert [w.laenge for w in r.waende] == [14.1]
+    r.setze_lage("three")
+    r.wandlaengen_schaetzen()
+    assert [w.laenge for w in r.waende] == [14.1, 14.1, 14.1]
+
+
+def test_oberflaeche_wandlaengen_folgen_der_flaeche(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("APP_PASSWORT", raising=False)
+    at = AppTest.from_file(str(WURZEL / "app_v2.py"), default_timeout=60).run()
+    at.session_state.v2_seite = "raeume"
+    at.run()
+    next(b for b in at.button if b.label == "Raum hinzufügen").click().run()
+    next(n for n in at.number_input if n.label == "Grundfläche").set_value(200.0).run()
+    r = at.session_state.v2_projekt.raeume[-1]
+    assert r.waende_auto and [w.laenge for w in r.waende] == [14.1]
+    next(b for b in at.button if b.label == "3 Außenwände").click().run()
+    r = at.session_state.v2_projekt.raeume[-1]
+    assert [w.laenge for w in r.waende] == [14.1, 14.1, 14.1]
+    assert any("Wandlängen aus der Grundfläche geschätzt" in c.value for c in at.caption)
+    # von Hand gesetzte Längen (z. B. Beispielhaus, KI-Plan) werden nicht überschrieben
+    p = at.session_state.v2_projekt
+    r.waende_auto, r.waende[0].laenge = False, 25.0
+    next(n for n in at.number_input if n.label == "Grundfläche").set_value(300.0).run()
+    assert at.session_state.v2_projekt.raeume[-1].waende[0].laenge == 25.0
+    assert not at.exception and p is at.session_state.v2_projekt
+
+
+# ---------------------------------------------------------------- Freigabe-Punkte 10/2026
+def test_auslaufartikel_standardmaessig_ausgeblendet():
+    auslauf = {a.typ for a in KAT.auslaufartikel}
+    assert {"CL3000i-Set 26 WE", "CL3000iU W 20 E", "CLC8001i-Set 35 E"} <= auslauf
+    assert not any(a.auslauf for a in (*KAT.sets, *KAT.innen) if "3200i" in a.linie or "7000i" in a.linie)
+    ohne = KAT.ohne_auslauf()
+    p = beispielprojekt()
+    for k in A.konzepte(p, ohne):
+        assert not [a.typ for t in k.teilsysteme for a in t.artikel() if a.auslauf]
+    assert KAT.artikel("CL3000i-Set 26 WE").lieferhinweis.startswith("Auslaufartikel")
+
+
+def test_oberflaeche_auslaufartikel_schalter(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("APP_PASSWORT", raising=False)
+    at = AppTest.from_file(str(WURZEL / "app_v2.py"), default_timeout=60).run()
+    next(b for b in at.button if b.label == "Beispielhaus laden").click().run()
+    at.session_state.v2_seite = "ergebnis"
+    at.run()
+    assert not any("CL3000i" in c.value for c in at.caption)
+    at.session_state.v2_seite = "system"
+    at.run()
+    next(t for t in at.toggle if t.label == "Auslaufartikel anzeigen").set_value(True).run()
+    assert at.session_state.v2_projekt.auslaufartikel
+    at.session_state.v2_seite = "ergebnis"
+    at.run()
+    assert not at.exception
+
+
+def test_katalogfehler_und_hinweistexte():
+    a = KAT.artikel("CL5000iM 1C 53 E")
+    assert a.datenfehler.startswith("Katalogfehler") and a.kuehl_min is None and a.kuehl_max is None
+    assert "Q4/2026" in Z.G10_3_HINWEIS and "Q2/2026" not in Z.G10_3_HINWEIS
+    p = beispielprojekt()
+    p.aufstellung = "flachdach"
+    k = next(k for k in A.konzepte(p, KAT) if k.empfohlen)
+    assert A.aufstellungshinweise(p, k)[-1] == A.MONTAGE_HINWEIS
+    assert "VDI 2078" in P_GEWERBE_HINWEIS()
+
+
+def P_GEWERBE_HINWEIS():
+    from splitklima import parameter
+    return parameter.GEWERBE_HINWEIS

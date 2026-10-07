@@ -109,8 +109,7 @@ def pdf_angebot_v2(projekt: Projekt, konzept: Konzept, kat: Katalog, bestaetigt_
                     + [["Summe Zubehör", "", "", "", fmt_eur(zsumme)]]
                     + ([["Geräte + Zubehör", "", "", "", fmt_eur(preis + zsumme)]]
                        if preis is not None and zsumme is not None else []), [110, 45, 20, 49, 49])
-        pdf.text(f"Leitungslänge je Innengerät {projekt.leitungslaenge:g} m. Vorschlag als Planungshilfe – "
-                 "Mengen und Leitungswege bestimmt der Fachbetrieb vor Ort.", 8)
+        pdf.text(f"Leitungslänge je Innengerät {projekt.leitungslaenge:g} m. {Z.VORKALKULATION}", 8)
 
     optional = optionale_leistungen(konzept, kat)
     if optional:

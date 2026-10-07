@@ -133,9 +133,11 @@ LUFTWECHSEL.update({"Werkstatt": 0.5, "Halle / Lager": 0.3, "Verkaufsraum": 0.7}
 INTERN_GRUND.update({"Werkstatt": 300, "Halle / Lager": 0, "Verkaufsraum": 300})
 # Flächenbezogene innere Last [W/m²] (Beleuchtung, Maschinen, Personen); Standard 12 W/m²
 INTERN_W_M2_RAUMART = {"Werkstatt": 20, "Halle / Lager": 6, "Verkaufsraum": 25}
-GEWERBE_HINWEIS = ("Gewerbe-Raumarten: Luftwechsel und innere Lasten sind vorläufige Annahmen "
-                   "(Werkstatt 20 W/m², Halle/Lager 6 W/m², Verkaufsraum 25 W/m²) – Maschinenabwärme, "
-                   "Tore und Hallenhöhe (Temperaturschichtung) gesondert prüfen.")
+GEWERBE_HINWEIS = ("Gewerbe-Raumarten: innere Lasten als überschlägige Auslegungsannahmen – Werkstatt 20 W/m² "
+                   "(üblich 15–30 je nach Maschinen, Beleuchtung, Personen), Halle/Lager 6 W/m² (üblich 3–10), "
+                   "Verkaufsraum 25 W/m² (üblich 20–30 je nach Personenverkehr, Beleuchtung, Schaufenstern, "
+                   "Geräten). Diese Werte ersetzen keine detaillierte Kühllastberechnung nach VDI 2078 oder "
+                   "DIN EN 16798. Maschinenabwärme, Tore und Hallenhöhe (Temperaturschichtung) gesondert prüfen.")
 
 IG_BAUARTEN = ["auto", "Wandgerät", "Truhengerät", "Kassettengerät", "Kanalgerät"]
 

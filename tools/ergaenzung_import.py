@@ -439,12 +439,18 @@ def main(pdf: str, gesamt: str | None = None) -> None:
         if "kuehl" not in d:
             hinweise.append(f"{d['typ']}: keine technischen Daten gefunden.")
         elif d.get("heiz") is None and "heiz" not in [h for h in hinweise if d["typ"] in h]:
-            hinweise.append(f"{d['typ']}: keine Nennheizleistung im Katalog – nur für Kühlbetrieb verwendet.")
+            hinweise.append(f"{d['typ']}: Mangels belastbarer Heizleistungsdaten wird das Gerät ausschließlich "
+                            "für Kühlanwendungen berücksichtigt.")
         for art in ("kuehl", "heiz"):  # Datenblatt-Plausibilität: min ≤ nenn ≤ max
             lo, nenn, hi = d.get(f"{art}_min"), d.get(art), d.get(f"{art}_max")
             if None not in (lo, nenn, hi) and not lo <= nenn <= hi:
-                hinweise.append(f"{d['typ']}: Datenblatt widersprüchlich ({art} min {lo:g} / nenn {nenn:g} / "
-                                f"max {hi:g} kW) – Nennwert verwendet, bitte prüfen.")
+                # physikalisch unmöglich → Katalogfehler: Min./Max. verwerfen, nur Nennwert verwenden
+                d[f"{art}_min"] = d[f"{art}_max"] = None
+                d["datenfehler"] = (f"Katalogfehler ({'Kühl' if art == 'kuehl' else 'Heiz'}leistung min {lo:g} / "
+                                    f"nenn {nenn:g} / max {hi:g} kW) – nur Nennleistung verwendet")
+                hinweise.append(f"{d['typ']}: Datensatz als Katalogfehler markiert ({art} min {lo:g} / nenn {nenn:g} "
+                                f"/ max {hi:g} kW) – Min./Max.-Werte werden nicht für automatische "
+                                "Plausibilitätsprüfungen verwendet, nur der Nennwert.")
     erg = {
         "quelle": "Bosch Ergänzungskatalog Klima-, Lüftungs- und Wärmepumpen-Sortiment 09/2026",
         "preisbasis": "Unverbindliche Preisempfehlung netto, zzgl. MwSt., Montage und Material (09/2026)",

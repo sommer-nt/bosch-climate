@@ -60,6 +60,13 @@ class Raum(BaseModel):
     ig_id: str | None = None
     ig_manuell: bool = False
     farbe: str = ""  # Version 2: Farbwunsch Inneneinheit ("" = keine Präferenz)
+    waende_auto: bool = False  # Version 2: Wandlängen aus der Grundfläche schätzen, bis sie bearbeitet werden
+
+    def wandlaengen_schaetzen(self) -> None:
+        """Außenwandlängen aus der Grundfläche schätzen (quadratischer Grundriss: Seite ≈ √Fläche)."""
+        seite = round(max(self.flaeche, 1.0) ** 0.5, 1)
+        for w in self.waende:
+            w.laenge = seite
 
     def setze_lage(self, lage: Lage) -> None:
         """Wie ``setMode`` in v6.9.1: passt Dach, vertikale Lage und Wandanzahl an."""
@@ -130,6 +137,7 @@ class Projekt(BaseModel):
     klima_quelle: str = ""
     norm_aussen_manuell: bool = False
     geraetelinie: str = ""  # Version 2: Wunsch-Gerätelinie, z. B. "7000i" ("" = wirtschaftlichste)
+    auslaufartikel: bool = False  # Version 2: Artikel ohne Eintrag im Ergänzungskatalog 09/2026 zulassen
     aufstellung: Literal["", "wand", "boden", "flachdach"] = ""  # Version 2: Aufstellort der Außeneinheit(en)
     # Version 2: Zubehör und Montagematerial
     leitungslaenge: float = 5.0  # m Kältemittelleitung je Innengerät

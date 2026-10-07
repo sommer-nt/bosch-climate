@@ -73,6 +73,16 @@ Rechenkern und derselben KI-Planerkennung:
   im Menü), Auswahlkarten als umbrechendes Raster in Lesereihenfolge (Smartphone: 3 je Zeile, große Karten mit
   Symbol links), Einheiten neben den Eingabefeldern; auf dem Smartphone feste Preisleiste unten mit Konzept,
   Kühllast und Preis. Desktop unverändert.
+- **Wandlängen:** neue Räume schätzen die Außenwandlängen aus der Grundfläche (quadratischer Grundriss, Seite ≈ √A,
+  z. B. 200 m² → 14,1 m) und führen sie bei Flächen- und Lageänderung nach, bis sie von Hand geändert werden.
+- **Auslaufartikel:** Artikel ohne Eintrag im Ergänzungskatalog 09/2026 (Climate 3000i, CLC8001i-Set 35) sind
+  standardmäßig ausgeblendet; Schalter „Auslaufartikel anzeigen“ auf der System-Seite für Altprojekte.
+- **Katalogdaten:** CL5000iM 1C 53 E als Katalogfehler markiert (Min. > Max.), nur Nennleistung verwendet;
+  CL5000M 53/3 E mangels Heizleistungsdaten nur für Kühlanwendungen.
+- **Hinweise:** Gewerbe-Lasten als überschlägige Annahmen (kein Ersatz für VDI 2078 / DIN EN 16798),
+  Montagehinweise nach allgemeinen Fachregeln, Zubehörmengen als automatische Vorkalkulation.
+  Vor einer Veröffentlichung außerhalb der Bosch-Umgebung Nutzungsrechte an Preisen, Bestellnummern und
+  Katalogbildern prüfen.
 - **Konfiguration speichern/laden:** „Speichern (JSON)“ lädt Räume, Einstellungen, Gerätewünsche und Zubehörmengen
   als Datei herunter; „Laden“ stellt sie wieder her (Format `bosch-climate-konfiguration`, Version 1).
 - **Flachdach:** je Raum Dachform wählbar (Flachdach, Satteldach Süd/Nord/Ost-West – auch für Nicht-DG-Räume wie
