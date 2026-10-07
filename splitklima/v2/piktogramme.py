@@ -76,6 +76,8 @@ SYMBOLE: dict[str, str] = {
                       '<path d="M20 26l-6 10M44 26l6 10M28 26v14M36 26v14"/><path d="M14 52h36" stroke-dasharray="3 4"/>',
     "Konsole": '<path d="M6 56h52"/><rect x="16" y="24" width="32" height="30" rx="3"/>'
                '<path d="M22 32h20M22 38h20M22 44h20M24 18l-2-6M32 18v-6M40 18l2-6"/>',
+    "Truhe/Decke": '<path d="M6 10h52"/><path d="M14 10v4M50 10v4"/><rect x="10" y="14" width="44" height="12" rx="3"/>'
+                   '<path d="M16 26l-4 8M48 26l4 8M32 26v8"/><path d="M6 56h52" stroke-dasharray="3 4"/>',
     "egal": '<rect x="10" y="12" width="20" height="10" rx="3"/><rect x="34" y="12" width="20" height="10" rx="3"/>'
             '<rect x="10" y="30" width="20" height="22" rx="3"/><path d="M38 40l5 5 9-11"/>',
     # ---------------------------------------------------------- Lage (Grundriss, Außenwände fett)

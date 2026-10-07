@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
+import copy
 import json
 from dataclasses import dataclass, field, fields
 from functools import lru_cache
 from pathlib import Path
 
 KATALOG_JSON = Path(__file__).resolve().parent.parent / "daten" / "katalog.json"
+ERGAENZUNG_JSON = KATALOG_JSON.with_name("katalog_ergaenzung.json")
 
 FARBEN = ["weiß", "silber", "schwarz", "anthrazit", "rot"]
-BAUARTEN = ["Wandgerät", "Deckenkassette", "Konsole"]
+BAUARTEN = ["Wandgerät", "Deckenkassette", "Konsole", "Truhe/Decke"]
 
 
 @dataclass(frozen=True)
@@ -50,6 +52,11 @@ class Artikel:
     # Inneneinheit
     klasse: float | None = None
     aussen_kompatibel: tuple[str, ...] = ()
+    # Ergänzungskatalog (Large-Split)
+    anzahl_ie: int = 1  # Twin 2, Triple 3, Double Twin 4 – alle Geräte im selben Raum
+    phasen: int = 1  # 3 = Drehstrom 400 V
+    max_abstand: float | None = None  # m zwischen Innen- und Außeneinheit
+    bauart_code: str = ""  # 4CC, 4C, CF, CNE
 
     @property
     def lieferhinweis(self) -> str | None:
@@ -124,6 +131,44 @@ def aus_json(text: str | bytes) -> Katalog:
     )
 
 
+def zusammenfuehren(basis: dict, erg: dict) -> dict:
+    """Ergänzungskatalog in den Gesamtkatalog übernehmen: neue Geräte, Preise per Bestellnummer
+    (UVP 09/2026), Lieferstatus „ab Q3/2026“ → lieferbar, wenn der Artikel mit Preis gelistet ist."""
+    d = copy.deepcopy(basis)
+    preise = erg.get("preise", {})
+    aktualisiert = 0
+    for liste in ("sets", "aussen", "innen", "zubehoer"):
+        for a in d[liste]:
+            neu = preise.get(a.get("bestellnr"))
+            if neu is None:
+                continue
+            if a.get("preis") != neu:
+                a["preis"] = neu
+                aktualisiert += 1
+            if liste != "zubehoer" and (not a.get("verfuegbar") or "ab Q3" in (a.get("lieferstatus") or "")):
+                a["verfuegbar"] = True
+                a["lieferstatus"] = "lieferbar (Ergänzungskatalog 09/2026)"
+    vorhanden = {a["typ"] for liste in ("sets", "aussen", "innen") for a in d[liste]}
+    for liste in ("sets", "aussen", "innen"):
+        d[liste] += [copy.deepcopy(a) for a in erg.get(liste, []) if a["typ"] not in vorhanden]
+    for neu_ae in erg.get("aussen", []):  # neue Außeneinheit wie die bisherige kleinste derselben Reihe
+        if neu_ae["typ"] == "CL5000M 53/3 E":
+            for ie in d["innen"]:
+                komp = ie.setdefault("aussen_kompatibel", [])
+                if "CL5000M 53/2 E" in komp and neu_ae["typ"] not in komp:
+                    komp.append(neu_ae["typ"])
+    d["kombinationen"] = d["kombinationen"] + erg.get("kombinationen", [])
+    d["pruefhinweise"] = list(d.get("pruefhinweise", [])) + list(erg.get("pruefhinweise", []))
+    d["quelle"] = "Gesamtkatalog 03/2026 + Ergänzungskatalog 09/2026"
+    d["preisbasis"] = (f"{erg.get('preisbasis', '')}; Artikel ohne Eintrag im Ergänzungskatalog: Stand 03/2026"
+                       if erg.get("preisbasis") else d.get("preisbasis", ""))
+    d["preise_aktualisiert"] = aktualisiert
+    return d
+
+
 @lru_cache(maxsize=1)
 def standard() -> Katalog:
-    return aus_json(KATALOG_JSON.read_text(encoding="utf-8"))
+    basis = json.loads(KATALOG_JSON.read_text(encoding="utf-8"))
+    if ERGAENZUNG_JSON.exists():
+        basis = zusammenfuehren(basis, json.loads(ERGAENZUNG_JSON.read_text(encoding="utf-8")))
+    return aus_json(json.dumps(basis))

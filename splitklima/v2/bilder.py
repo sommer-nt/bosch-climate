@@ -15,6 +15,12 @@ def _farbe(a: Artikel) -> str:
 
 def _name(a: Artikel) -> str | None:
     linie = a.linie
+    if linie == "Climate 5000i L":  # Large-Split (Ergänzungskatalog)
+        basis = f"set_5000il_{(a.bauart_code or '4c').lower()}"
+        zusatz = {2: "_twin", 3: "_triple", 4: "_double"}.get(a.anzahl_ie, "")
+        if zusatz and (BILDER / f"{basis}{zusatz}.png").exists():
+            return basis + zusatz
+        return basis
     if a.aussen_typ:  # Set
         if "8000i" in linie:
             return f"set_8000i_{_farbe(a)}"
@@ -51,6 +57,8 @@ def bild(a: Artikel | None) -> Path | None:
 
 def bild_innen_set(a: Artikel) -> Path | None:
     """Nur die Inneneinheit eines Sets (für Raumkarten)."""
+    if a.linie == "Climate 5000i L":
+        return bild(a)
     linie, f = a.linie, _farbe(a)
     for name in ([f"ie_8000i_{f}"] if "8000i" in linie else [f"ie_7000i_{f}"] if "7000i" in linie
                  else ["ie_wand_3000i"] if "3000i" in linie else ["ie_wand_3200i"]):

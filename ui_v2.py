@@ -62,7 +62,8 @@ RAUMART_KURZ = {"Wohnzimmer": "Wohnen", "Schlafzimmer": "Schlafen", "Büro": "B�
 RAUMARTEN_ALLE = [*P.RAUMARTEN, *P.RAUMARTEN_GEWERBE]
 LINIEN_BILD = {"3200i": "set_3200i", "7000i": "set_7000i_weiss", "8000i": "set_8000i_weiss"}
 BAUART = [("", "Keine Präferenz", "egal"), ("Wandgerät", "Wandgerät", "Wandgerät"),
-          ("Deckenkassette", "Deckenkassette", "Deckenkassette"), ("Konsole", "Konsole", "Konsole")]
+          ("Deckenkassette", "Decken&shy;kassette", "Deckenkassette"), ("Konsole", "Konsole", "Konsole"),
+          ("Truhe/Decke", "Truhe / Decke", "Truhe/Decke")]
 FARBCODE = {"weiß": "#f4f5f6", "silber": "#c3c8cd", "schwarz": "#1d1f22", "anthrazit": "#41464d", "rot": "#c8102e"}
 
 CSS = f"""
@@ -592,7 +593,7 @@ def seite_raum(p: Projekt, i: int) -> None:
     st.markdown("##### Gerätewunsch")
     wunsch = A.bauart_wunsch(r)
     karten(f"bau{i}", [(v, t, "", s) for v, t, s in BAUART], wunsch,
-           lambda v: setattr(r, "ig_bauart", v or "auto"), spalten=4, klein=True, groesse=44)
+           lambda v: setattr(r, "ig_bauart", v or "auto"), spalten=5, klein=True, groesse=44)
     if wunsch in ("", "Wandgerät"):
         st.markdown("##### Farbe der Inneneinheit")
         farben = [("", "Keine Präferenz", "", '<span class="farbpunkt" style="background:linear-gradient('
@@ -603,8 +604,11 @@ def seite_raum(p: Projekt, i: int) -> None:
         if r.farbe and r.farbe != "weiß":
             st.caption("Farbige Inneneinheiten gibt es in den Serien Climate 7000i (silber, schwarz) und "
                        "Climate Class 8000i (anthrazit, silber, rot).")
+    elif wunsch == "Truhe/Decke":
+        st.caption("Ceiling/Floor-Truhengeräte (Climate 5000i L) – unter der Decke oder am Boden, 5,3 bis 16 kW, "
+                   "auch als Twin.")
     elif wunsch:
-        st.caption(f"{wunsch}n werden als Multi-Split-Inneneinheit eingesetzt (auch 1:1 an einer Außeneinheit).")
+        st.caption(f"{wunsch}n: als Large-Split-Set (Climate 5000i L) oder als Multi-Split-Inneneinheit.")
 
     st.write("")
     c1, c2, c3 = st.columns([1, 1, 2])
@@ -629,7 +633,11 @@ def _teilsystem_karte(t: A.Teilsystem, p: Projekt) -> None:
         if (pf := bild(haupt)) is not None:
             c1.image(str(pf), width=min(BILD_MAX, Image.open(pf).width))
         with c2:
-            st.markdown(f"**{t.bezeichnung}** · {'Single-Split-Set' if t.set else 'Multi-Split'}")
+            art = ("Multi-Split" if not t.set else "Large-Split" if t.set.linie == A.LARGE_SPLIT
+                   else "Single-Split-Set")
+            if t.set and t.set.anzahl_ie > 1:
+                art += f" mit {t.set.anzahl_ie} Innengeräten"
+            st.markdown(f"**{t.bezeichnung}** · {art}")
             st.caption(f"{haupt.typ if haupt else '–'} · Kühlen {de(t.leistung_kuehl, 1)} kW · "
                        f"Heizen {de(t.leistung_heiz, 1)} kW")
             geraete = [(r, t.set) for r in t.raeume] if t.set else t.innen
