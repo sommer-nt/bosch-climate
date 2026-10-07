@@ -507,3 +507,22 @@ def test_oberflaeche_speichern_laden_und_zubehoer(monkeypatch):
     assert at.session_state.v2_projekt.name == "Gespeichert" and at.session_state.v2_seite == "ergebnis"
     assert len(at.session_state.v2_projekt.raeume) == len(p.raeume)
     assert any(t.label == "App-Steuerung (WLAN)" for t in at.toggle)
+
+
+def test_oberflaeche_zubehoer_ohne_vorschlag(monkeypatch):
+    """Large-Split über 7 kW ohne Aufstellort: kein Zubehörvorschlag → Hinweis statt Absturz."""
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("APP_PASSWORT", raising=False)
+    at = AppTest.from_file(str(WURZEL / "app_v2.py"), default_timeout=60).run()
+    p = at.session_state.v2_projekt
+    p.raeume = [Raum(name="Halle", raumart="Halle / Lager", flaeche=200, hoehe=6, lage="three",
+                     ig_bauart="Deckenkassette", waende=[Wand(ausrichtung=a, laenge=14, fenster=4) for a in "SWO"])]
+    k = next(k for k in A.konzepte(p, KAT) if k.key == "large")
+    assert not [z for z in Z.tabelle(p, k, KAT)[0] if z.vorschlag]
+    at.session_state.v2_konzept = "large"
+    at.session_state.v2_seite = "ergebnis"
+    at.run()
+    assert not at.exception
+    assert any("keinen automatischen Zubehörvorschlag" in i.value for i in at.info)
+    next(t for t in at.toggle if t.label == "Alle Zubehörartikel zeigen").set_value(True).run()
+    assert not at.exception
