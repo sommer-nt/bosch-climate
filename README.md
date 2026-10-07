@@ -69,6 +69,22 @@ Rechenkern und derselben KI-Planerkennung:
 streamlit run app_v2.py
 ```
 
+### Ergänzungskatalog 09/2026 (Version 2)
+
+`splitklima/daten/katalog_ergaenzung.json` ergänzt das Sortiment um die **Large-Split-Anlagen
+Climate 5000i L** (2,6–16 kW; Kompakt-/Deckenkassette, Ceiling/Floor-Truhengerät, Konsole; auch Twin,
+Triple, Double Twin), die **CL5000M 53/3 E**, die **Ein-Wege-Kassetten CL5000iM 1C** und aktualisiert alle
+dort gelisteten **Preise (UVP 09/2026)** per Bestellnummer. In der Auswahl erscheint für große Räume bzw.
+Kassetten-/Truhenwunsch das Konzept „Large-Split für große Räume“ (Hinweis bei 400-V-Drehstromgeräten).
+
+```bash
+pip install pymupdf
+python tools/ergaenzung_import.py Ergaenzungskatalog_2026-09.pdf
+```
+
+Das PDF enthält Schriften ohne Zeichentabelle; das Werkzeug liest den Text über die Glyph-Nummern
+(siehe Kopf von `tools/ergaenzung_import.py`) und meldet Datenblatt-Widersprüche als Prüfhinweise.
+
 ### Gewerbe, große Räume und Gerätelinie (Version 2)
 
 - **Raumarten** zusätzlich *Werkstatt*, *Halle / Lager*, *Verkaufsraum* – Luftwechsel und innere Lasten

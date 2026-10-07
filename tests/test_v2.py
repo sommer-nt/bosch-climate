@@ -27,7 +27,8 @@ def beispielprojekt() -> Projekt:
 
 
 def test_katalog_gesamtsortiment():
-    assert (len(KAT.sets), len(KAT.aussen), len(KAT.innen)) == (26, 6, 29)
+    # Gesamtkatalog 03/2026 (26/6/29) + Ergänzungskatalog 09/2026 (26 Large-Split, CL5000M 53/3, 4× 1C)
+    assert (len(KAT.sets), len(KAT.aussen), len(KAT.innen)) == (52, 7, 33)
     assert KAT.preise_freigegeben
     for a in (*KAT.sets, *KAT.aussen, *KAT.innen):
         assert a.preis and a.preis > 0, a.typ
@@ -108,8 +109,9 @@ def test_farb_und_bauartwunsch():
     p.raeume[0].ig_bauart = "Deckenkassette"
     for k in A.konzepte(p, KAT):
         assert k.gedeckt
-        geraete = [u for t in k.teilsysteme for r, u in t.innen if r is p.raeume[0]]
-        assert geraete and geraete[0].bauart == "Deckenkassette"
+        geraete = [u for t in k.teilsysteme for r, u in ([(x, t.set) for x in t.raeume] if t.set else t.innen)
+                   if r is p.raeume[0]]
+        assert geraete and geraete[0].bauart == "Deckenkassette", k.key
 
 
 def test_optionale_leistungen_und_pdf():
@@ -218,7 +220,7 @@ def test_grosse_raeume_werden_in_zonen_geteilt(art, flaeche, hoehe):
     assert any(k.gedeckt for k in liste)
     for k in liste:
         _pruefe_konzept(k, p)
-        if k.gedeckt:
+        if k.gedeckt and k.key != "large":  # Large-Split teilt mit größeren Geräten seltener auf
             assert k.innengeraete == len(bed)
 
 
@@ -264,3 +266,61 @@ def test_oberflaeche_geraetelinie_und_hoehe(monkeypatch):
     at.run()
     assert not at.exception
     assert any("CL7000" in c.value for c in at.caption)
+
+
+# ---------------------------------------------------------------- Ergänzungskatalog 09/2026
+import json  # noqa: E402
+
+from splitklima.v2 import katalog as KATMOD  # noqa: E402
+
+
+def test_ergaenzung_daten_vollstaendig():
+    erg = json.loads(KATMOD.ERGAENZUNG_JSON.read_text(encoding="utf-8"))
+    assert len(erg["sets"]) == 26 and len(erg["preise"]) > 100
+    for s in erg["sets"]:
+        assert s["preis"] > 0 and len(s["bestellnr"]) == 10 and s["kuehl"] and s["heiz"], s["typ"]
+        assert s["bauart"] in ("Deckenkassette", "Truhe/Decke", "Konsole"), s["typ"]
+        assert s["anzahl_ie"] == (4 if "Double" in s["typ"] else 3 if "Triple" in s["typ"]
+                                  else 2 if "Twin" in s["typ"] else 1)
+        assert s["phasen"] in (1, 3)
+    # Stichproben gegen den Katalog (S. 38, 44, 64)
+    preise = {s["typ"]: s["preis"] for s in erg["sets"]}
+    assert preise["CL5001iL-Set 26 4CC"] == 2136.40
+    assert preise["CL5001iL-Set 160 4C-3"] == 6250.0
+    assert preise["CL5001iL-Set 53 4CC Twin"] == 3464.60
+
+
+def test_ergaenzung_preise_und_lieferstatus_uebernommen():
+    basis = json.loads(KATMOD.KATALOG_JSON.read_text(encoding="utf-8"))
+    alt = {a["typ"]: a["preis"] for a in basis["sets"]}
+    neu = {a.typ: a.preis for a in KAT.sets}
+    assert alt["CL3200i-Set 26 WE"] == 1351.0 and neu["CL3200i-Set 26 WE"] == 1378.02  # UVP 09/2026
+    assert neu["CL3000i-Set 26 WE"] == alt["CL3000i-Set 26 WE"]  # nicht im Ergänzungskatalog → 03/2026
+    assert all(a.verfuegbar for a in KAT.innen if a.typ.startswith("CL5001iU 4CC"))
+    assert "CL5000M 53/3 E" in KAT.kombinationen
+    assert all("CL5000M 53/3 E" in u.aussen_kompatibel for u in KAT.innen if "CL5000M 53/2 E" in u.aussen_kompatibel)
+
+
+@pytest.mark.parametrize("art,flaeche,hoehe,bauart", [("Halle / Lager", 800, 8.0, "Truhe/Decke"),
+                                                      ("Verkaufsraum", 120, 3.0, "Deckenkassette"),
+                                                      ("Werkstatt", 200, 6.0, "auto")])
+def test_large_split_fuer_hallen(art, flaeche, hoehe, bauart):
+    p = _halle(art, flaeche, hoehe)
+    p.raeume[0].ig_bauart = bauart
+    liste = A.konzepte(p, KAT)
+    large = next(k for k in liste if k.key == "large")
+    assert large.gedeckt
+    for k in liste:
+        _pruefe_konzept(k, p)
+    for t in large.teilsysteme:
+        assert t.set.linie == "Climate 5000i L"
+        if bauart != "auto":
+            assert t.set.bauart == bauart
+        if t.set.phasen == 3:
+            assert any("400 V" in h for h in t.hinweise)
+    assert large.innengeraete == sum(t.set.anzahl_ie for t in large.teilsysteme)
+
+
+def test_wohnhaus_ohne_large_split():
+    """Ohne Bauartwunsch ist für normale Wohnräume kein Large-Split nötig."""
+    assert all(k.key != "large" for k in A.konzepte(beispielprojekt(), KAT))

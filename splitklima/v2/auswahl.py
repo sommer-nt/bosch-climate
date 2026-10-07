@@ -58,7 +58,9 @@ def linie_passt(a: Artikel, linie: str) -> bool:
     """Passt der Artikel zur Wunsch-Gerätelinie? Kassetten/Konsolen gibt es nur als 5000i – immer erlaubt."""
     if not linie:
         return True
-    if a.bauart in ("Deckenkassette", "Konsole"):
+    if a.aussen_typ:  # komplettes Set: muss zur Linie gehören
+        return linie in a.linie
+    if a.bauart in ("Deckenkassette", "Konsole", "Truhe/Decke"):  # Multi-Inneneinheiten nur als 5000i
         return True
     if a.anschluesse:  # Multi-Außeneinheit
         return {"7000i": "7000 M", "3200i": "5000 M"}.get(linie, "§") in a.linie
@@ -78,17 +80,29 @@ def _teilraum(r: Raum, k: int, i: int) -> Raum:
     return t
 
 
-def _max_einheit(r: Raum, kat: Katalog, linie: str) -> tuple[float, float]:
-    """Größte Kühl-/Heizleistung, die ein einzelnes Gerät in diesem Raum haben kann (Bauartwunsch, Linie)."""
+LARGE_SPLIT = "Climate 5000i L"
+
+
+def ist_large(a: Artikel) -> bool:
+    return a.linie == LARGE_SPLIT
+
+
+def set_bauart(s: Artikel) -> str:
+    return s.bauart or "Wandgerät"
+
+
+def _max_einheit(r: Raum, kat: Katalog, linie: str, mit_large: bool = True) -> tuple[float, float]:
+    """Größte Kühl-/Heizleistung, die ein einzelnes Gerät/Set in diesem Raum haben kann (Bauartwunsch, Linie)."""
     wunsch = bauart_wunsch(r)
     geraete = [u for u in kat.innen if not wunsch or u.bauart == wunsch]
-    if wunsch in ("", "Wandgerät"):
-        geraete += list(kat.sets)
+    geraete += [s for s in kat.sets if (not wunsch or set_bauart(s) == wunsch) and (mit_large or not ist_large(s))]
     passend = [u for u in geraete if linie_passt(u, linie)] or geraete
+    if not passend:
+        return 0.0, 0.0
     return (max((u.kuehl or 0) for u in passend), max((u.heiz or 0) for u in passend))
 
 
-def bedarfe(projekt: Projekt, kat: Katalog | None = None) -> list[Bedarf]:
+def bedarfe(projekt: Projekt, kat: Katalog | None = None, mit_large: bool = False) -> list[Bedarf]:
     """Lasten je Raum aus dem Rechenkern. Mit Katalog: Räume, die kein einzelnes Gerät decken kann
     (z. B. Werkstatt, Halle), werden in Zonen mit je einem Innengerät aufgeteilt."""
     e = projekt.einstellungen
@@ -99,7 +113,10 @@ def bedarfe(projekt: Projekt, kat: Katalog | None = None) -> list[Bedarf]:
         if kat is None:
             out.append(Bedarf(r, l.cool, l.heat))
             continue
-        k_max, h_max = _max_einheit(r, kat, projekt.geraetelinie)
+        k_max, h_max = _max_einheit(r, kat, projekt.geraetelinie, mit_large)
+        if k_max <= 0:
+            out.append(Bedarf(r, l.cool, l.heat))
+            continue
         k = 1
         while k < MAX_ZONEN:
             teil = l if k == 1 else raum_last(_teilraum(r, k, 1), e)
@@ -178,12 +195,11 @@ class Teilsystem:
 
 
 # ---------------------------------------------------------------- Single-Split
-def single_set(b: Bedarf, kat: Katalog, projekt: Projekt) -> tuple[Artikel | None, list[str]]:
-    """Günstigstes Set für einen Raum (nur wandhängende Inneneinheiten)."""
+def single_set(b: Bedarf, kat: Katalog, projekt: Projekt, mit_large: bool = False
+               ) -> tuple[Artikel | None, list[str]]:
+    """Günstigstes Set für einen Raum (Bauartwunsch beachtet; Large-Split nur, wenn erlaubt)."""
     kuehl_rel, heiz_rel = _relevant(projekt)
     wunsch = bauart_wunsch(b.raum)
-    if wunsch and wunsch != "Wandgerät":
-        return None, [f"{b.raum.name}: Single-Split gibt es nur mit wandhängender Inneneinheit."]
 
     def deckt(s: Artikel) -> bool:
         if kuehl_rel and (s.kuehl is None or s.kuehl < b.kuehl):
@@ -192,7 +208,12 @@ def single_set(b: Bedarf, kat: Katalog, projekt: Projekt) -> tuple[Artikel | Non
             return False
         return True
 
-    alle = [s for s in kat.sets if deckt(s)]
+    alle = [s for s in kat.sets if deckt(s) and (not wunsch or set_bauart(s) == wunsch)
+            and (mit_large or not ist_large(s))]
+    if not alle:
+        art = f" als {wunsch}" if wunsch else ""
+        return None, [f"{b.raum.name}: Kein Single-Split-Set{art} deckt {b.kuehl:.2f} kW Kühl-/"
+                      f"{b.heiz:.2f} kW Heizlast."]
     linie = projekt.geraetelinie
     kandidaten = [s for s in alle if linie_passt(s, linie)]
     linien_hinweis = []
@@ -211,17 +232,25 @@ def single_set(b: Bedarf, kat: Katalog, projekt: Projekt) -> tuple[Artikel | Non
         if liste:
             best = min(liste, key=lambda s: (s.preis or math.inf, s.kuehl or 0))
             notizen = [hinweis] if hinweis and (farbe or "lieferbar" in hinweis) else []
+            if best.phasen == 3:
+                notizen.append(f"{b.raum.name}: {best.typ} benötigt einen Drehstromanschluss (400 V).")
+            if best.anzahl_ie > 1:
+                notizen.append(f"{b.raum.name}: {best.anzahl_ie} Innengeräte an einer Außeneinheit "
+                               f"({best.typ}).")
             return best, linien_hinweis + notizen
     return None, [f"{b.raum.name}: Kein Single-Split-Set deckt {b.kuehl:.2f} kW Kühl-/"
                   f"{b.heiz:.2f} kW Heizlast."]
 
 
-def single_system(b: Bedarf, kat: Katalog, projekt: Projekt, bezeichnung: str | None = None) -> Teilsystem:
+def single_system(b: Bedarf, kat: Katalog, projekt: Projekt, bezeichnung: str | None = None,
+                  mit_large: bool = False) -> Teilsystem:
+    s, notizen = single_set(b, kat, projekt, mit_large)
     wunsch = bauart_wunsch(b.raum)
-    if wunsch and wunsch != "Wandgerät":
-        # Sets gibt es nur als Wandgerät – Kassette/Konsole als 1:1-System mit Multi-Außeneinheit
-        return multi_system([b], kat, projekt, bezeichnung or b.raum.name)
-    s, notizen = single_set(b, kat, projekt)
+    if s is None and wunsch and wunsch != "Wandgerät":
+        # kein passendes Set dieser Bauart – Kassette/Konsole als 1:1-System mit Multi-Außeneinheit
+        ts = multi_system([b], kat, projekt, bezeichnung or b.raum.name)
+        if ts.gedeckt:
+            return ts
     return Teilsystem(bezeichnung or b.raum.name, "single", [b.raum], b.kuehl, b.heiz, set=s, hinweise=notizen)
 
 
@@ -357,7 +386,7 @@ class Konzept:
 
     @property
     def innengeraete(self) -> int:
-        return sum(len(t.raeume) for t in self.teilsysteme if t.gedeckt)
+        return sum((t.set.anzahl_ie if t.set else len(t.raeume)) for t in self.teilsysteme if t.gedeckt)
 
     def stueckliste(self) -> list[Position]:
         return stueckliste_zusammenfassen([p for t in self.teilsysteme for p in t.positionen()])
@@ -469,6 +498,18 @@ def konzepte(projekt: Projekt, kat: Katalog, wunsch: str = "auto") -> list[Konze
             k.beschreibung = ("Die gewünschte Farbe gibt es nur als Single-Split-Set – deshalb erhält jeder Raum "
                               "ein eigenes Set.")
         out.append(k)
+
+    # Large-Split (Ergänzungskatalog): große Räume mit wenigen leistungsstarken Anlagen bis 16 kW
+    if wunsch in ("auto", "single") and any(ist_large(s) for s in kat.sets):
+        bed_gross = bedarfe(projekt, kat, mit_large=True)
+        teile = [single_system(b, kat, projekt, mit_large=True) for b in bed_gross]
+        if any(t.set is not None and ist_large(t.set) for t in teile):
+            k = Konzept("large", "Large-Split für große Räume",
+                        "Leistungsstarke Einzelanlagen bis 16 kW mit Decken-, Truhen- oder Konsolengeräten – "
+                        "auch als Twin/Triple mit mehreren Innengeräten an einer Außeneinheit. Weniger Geräte, "
+                        "ideal für Werkstatt, Halle und Laden.")
+            k.teilsysteme = teile
+            out.append(k)
 
     empfehlung_setzen(out, projekt.geraetelinie)
     return out
