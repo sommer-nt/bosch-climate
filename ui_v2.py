@@ -407,6 +407,14 @@ def seite_system(p: Projekt) -> None:
                   "8000i": "Design-Linie, anthrazit/silber/rot – nur als Set."}
     karten("linie", [(v, t, untertitel[v], linien_ikon(v)) for v, t in A.GERAETELINIEN.items()], p.geraetelinie,
            lambda v: (setattr(p, "geraetelinie", v), _ss().pop("v2_konzept", None)), spalten=4, klein=True)
+    auslauf = st.toggle("Auslaufartikel anzeigen", p.auslaufartikel, key=_k("auslauf"),
+                        help="Geräte, die im Ergänzungskatalog 09/2026 nicht mehr enthalten sind: "
+                             "Climate 3000i (Sets und Multi-Inneneinheiten) und CLC8001i-Set 35. "
+                             "Für Altprojekte; Preise Stand 03/2026.")
+    if auslauf != p.auslaufartikel:
+        p.auslaufartikel = auslauf
+        _ss().pop("v2_konzept", None)
+        st.rerun()
     st.markdown("#### Wo steht die Außeneinheit?")
     karten("aufst", [(v, t, AUFSTELLUNG_UNTERTITEL[v], f"ae_{v}" if v else "egal") for v, t in A.AUFSTELLUNG.items()],
            p.aufstellung, lambda v: setattr(p, "aufstellung", v), spalten=4, klein=True)
@@ -583,7 +591,8 @@ def seite_gebaeude(p: Projekt) -> None:
 
 def _raum_neu(p: Projekt) -> None:
     neu = Raum(name=f"Raum {len(p.raeume) + 1}", lage="outside", waende=[Wand(ausrichtung="S", laenge=4, fenster=2)],
-               geschoss=p.raeume[-1].geschoss if p.raeume else "EG")
+               geschoss=p.raeume[-1].geschoss if p.raeume else "EG", waende_auto=True)
+    neu.wandlaengen_schaetzen()
     neu.baualter = baualter_aus_baujahr(p.baujahr) if p.baujahr else ""
     p.raeume.append(neu)
     _ss().v2_rev += 1
@@ -641,7 +650,11 @@ def seite_raum(p: Projekt, i: int, kat: Katalog | None = None) -> None:
 
     st.markdown("##### Größe")
     c1, c2, _ = st.columns([1, 1, 1])
-    r.flaeche = zahl(c1, "Grundfläche", "m²", r.flaeche or 1, 1.0, 500.0, 0.5, f"rf{i}")
+    flaeche = zahl(c1, "Grundfläche", "m²", r.flaeche or 1, 1.0, 500.0, 0.5, f"rf{i}")
+    if flaeche != r.flaeche:
+        r.flaeche = flaeche
+        if r.waende_auto:
+            r.wandlaengen_schaetzen()
     r.hoehe = zahl(c2, "Raumhöhe", "m", r.hoehe or 2.5, 1.8, 10.0, 0.05, f"rh{i}", "%.2f")
 
     st.markdown("##### Lage im Gebäude")
@@ -649,6 +662,8 @@ def seite_raum(p: Projekt, i: int, kat: Katalog | None = None) -> None:
     def lage_setzen(v: str) -> None:
         flachdach = r.dach and r.lage not in DG_LAGEN  # gewähltes Dach über Nicht-DG-Raum behalten
         r.setze_lage(v)
+        if r.waende_auto:
+            r.wandlaengen_schaetzen()
         if flachdach and v not in DG_LAGEN:
             r.dach = True
         _ss().v2_rev += 1
@@ -666,7 +681,19 @@ def seite_raum(p: Projekt, i: int, kat: Katalog | None = None) -> None:
                 "fenster": st.column_config.NumberColumn("Fensterfläche (m²)", min_value=0.0, step=0.1,
                                                          required=True, format="%.1f m²"),
             })
-        r.waende = [Wand(**z) for z in wdf.to_dict("records")]
+        neu_waende = [Wand(**z) for z in wdf.to_dict("records")]
+        if r.waende_auto and [w.laenge for w in neu_waende] != [w.laenge for w in r.waende]:
+            r.waende_auto = False  # Länge von Hand geändert → nicht mehr automatisch nachführen
+        r.waende = neu_waende
+        if r.waende_auto:
+            st.caption(f"Wandlängen aus der Grundfläche geschätzt (≈ √{de(r.flaeche)} m² = {de(r.waende[0].laenge)} m) "
+                       "– bitte an den Grundriss anpassen. Nach einer Änderung bleiben Ihre Werte stehen.")
+        elif st.button("Wandlängen aus Grundfläche schätzen", icon=":material/straighten:", type="tertiary",
+                       key=_k(f"wschaetz{i}")):
+            r.waende_auto = True
+            r.wandlaengen_schaetzen()
+            _ss().v2_rev += 1
+            st.rerun()
     else:
         st.caption("Innenliegender Raum – keine Außenwände.")
 
@@ -810,8 +837,8 @@ def zubehoer_bereich(p: Projekt, k: A.Konzept, kat: Katalog) -> None:
         st.markdown(f"**Summe Zubehör: {fmt_eur(summe)}**" + (
             f" · Geräte + Zubehör: **{fmt_eur(geraete + summe)}**" if geraete is not None and summe is not None else ""))
         c1, c2 = st.columns([3, 1], vertical_alignment="center")
-        c1.caption("Vorschlag aus Konzept, Aufstellort und Leitungslänge – Mengen in der Spalte „Menge“ anpassen. "
-                   f"{kat.preisbasis}.")
+        c1.caption(f"{Z.VORKALKULATION} Vorschlag aus Konzept, Aufstellort und Leitungslänge – Mengen in der "
+                   f"Spalte „Menge“ anpassen. {kat.preisbasis}.")
         if p.zubehoer_mengen and c2.button("Vorschlag wiederherstellen", icon=":material/restart_alt:",
                                            type="tertiary"):
             p.zubehoer_mengen = {}
@@ -1134,6 +1161,8 @@ def app_v2(kat: Katalog) -> None:
     if msg := _ss().pop("v2_toast", None):
         st.toast(msg, icon="✅")
 
+    if not p.auslaufartikel:  # Standard: nur Artikel des aktuellen Katalogs 09/2026
+        kat = kat.ohne_auslauf()
     links, mitte, rechts = st.columns([1.05, 3, 1.35], gap="medium")
     seite = _ss().v2_seite
     with mitte:

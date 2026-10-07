@@ -41,6 +41,10 @@ ERSETZT = {"7733701903": "7733704064", "7738336975": "7738346711"}
 BOPA = {"CL7000i-Set 26 E": {"boden": "7739625892", "wand": "7739624113"},
         "CL3200i-Set 26 WE": {"boden": "7739625891", "wand": "7739625457"}}
 
+G10_3_HINWEIS = ("G 10-3 laut aktuellem Katalog bis Q4/2026 verfügbar. Nachfolgeprodukt für die verbleibenden "
+                 "Gerätefamilien derzeit nicht eindeutig dokumentiert.")
+VORKALKULATION = ("Zubehörmengen dienen als automatische Vorkalkulation und müssen projektbezogen geprüft werden.")
+
 GRUPPEN = ["Aufstellung Außeneinheit", "Kältemittelleitung", "Elektrik und Kommunikation", "Kondensat",
            "Steuerung und App", "Förderung", "Adapter und Verschraubungen", "Pakete"]
 GRUPPE = {
@@ -131,10 +135,10 @@ def _gateway(ie: _Ie) -> list[tuple[str, str]]:
         extra = [(NR_G10_CLC1, "CF-Gerät: Gateway-Anschluss nötig")] if ie.bauart == "Truhe/Decke" else []
         return [(NR_G10_4, "")] + extra
     if typ.startswith("CL5000iM 4CC"):
-        return [(NR_G10_3, "G 10-3 laut Katalog nur bis Q2/2026 – Nachfolger beim Vertrieb klären"),
+        return [(NR_G10_3, G10_3_HINWEIS),
                 (NR_G10_CLC, "Kassette CL5000iM 4CC: Gateway-Anschluss nötig")]
     if "3000i" in a.linie:
-        return [(NR_G10_3, "G 10-3 laut Katalog nur bis Q2/2026 – Nachfolger beim Vertrieb klären")]
+        return [(NR_G10_3, G10_3_HINWEIS)]
     return [(NR_G10_4, "")]
 
 

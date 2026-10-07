@@ -27,6 +27,8 @@ NR_INBETRIEBNAHME_IE = "8737804260"
 NR_AUFTRAGSPAUSCHALE = "7739607426"
 NR_MSG1 = "7733702555"
 
+MONTAGE_HINWEIS = ("Montagehinweise beruhen auf allgemeinen Fachregeln und dienen der überschlägigen Planung. "
+                   "Maßgeblich sind die jeweils gültigen Montageanleitungen des Herstellers.")
 # Aufstellort der Außeneinheit → Montagehinweise (Konsolen/Sockel: zubehoer.py)
 AUFSTELLUNG = {"": "Noch offen", "wand": "Fassade / Wand", "boden": "Boden / Terrasse", "flachdach": "Flachdach"}
 AUFSTELLUNG_HINWEISE = {
@@ -450,7 +452,8 @@ class Konzept:
     @property
     def lieferhinweise(self) -> list[str]:
         return sorted({f"{a.typ}: {a.lieferhinweis}" for t in self.teilsysteme for a in t.artikel()
-                       if a.lieferhinweis})
+                       if a.lieferhinweis} | {f"{a.typ}: {a.datenfehler}" for t in self.teilsysteme
+                                              for a in t.artikel() if a.datenfehler})
 
     @property
     def geraete_text(self) -> str:
@@ -631,4 +634,6 @@ def aufstellungshinweise(projekt: Projekt, konzept: Konzept | None = None) -> li
     if projekt.aufstellung in ("boden", "flachdach") and konzept and any(
             t.set and ist_large(t.set) for t in konzept.teilsysteme):
         hinweise.append("Large-Split-Außeneinheiten: Traglast von Konsole bzw. Sockel gegen das Gerätegewicht prüfen.")
+    if hinweise:
+        hinweise.append(MONTAGE_HINWEIS)
     return hinweise

@@ -801,11 +801,12 @@
    ],
    "datenquelle": "Ergänzungskatalog 09/2026",
    "kuehl": 5.2,
-   "kuehl_min": 5.8,
-   "kuehl_max": 4.7,
+   "kuehl_min": null,
+   "kuehl_max": null,
    "heiz": 5.5,
    "heiz_min": 1.5,
-   "heiz_max": 6.3
+   "heiz_max": 6.3,
+   "datenfehler": "Katalogfehler (Kühlleistung min 5.8 / nenn 5.2 / max 4.7 kW) – nur Nennleistung verwendet"
   },
   {
    "typ": "CL5000iM 1C 70 E",
@@ -1253,7 +1254,7 @@
   "set_7000i_silber": "zusammengesetzt aus set_7000i_weiss + ie_7000i_silber"
  },
  "pruefhinweise": [
-  "CL5000M 53/3 E: keine Nennheizleistung im Katalog – nur für Kühlbetrieb verwendet.",
-  "CL5000iM 1C 53 E: Datenblatt widersprüchlich (kuehl min 5.8 / nenn 5.2 / max 4.7 kW) – Nennwert verwendet, bitte prüfen."
+  "CL5000M 53/3 E: Mangels belastbarer Heizleistungsdaten wird das Gerät ausschließlich für Kühlanwendungen berücksichtigt.",
+  "CL5000iM 1C 53 E: Datensatz als Katalogfehler markiert (kuehl min 5.8 / nenn 5.2 / max 4.7 kW) – Min./Max.-Werte werden nicht für automatische Plausibilitätsprüfungen verwendet, nur der Nennwert."
  ]
 }
