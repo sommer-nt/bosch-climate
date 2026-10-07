@@ -55,6 +55,13 @@ BILD_ERSATZ = {
     "set_6000ip": (20, 95), "set_3200i": (28, 136), "ae_5000m": (92, 402), "ie_konsole_5000i": (92, 400),
     "ie_wand_3200i": (92, 401), "ie_kassette_5000i": (92, 631), "ae_7000m": (114, 497),
 }
+# Noch schärfer aus dem Gesamtkatalog 03/2026 (Acrobat-Fassung "_edit"): Bildname → (Seite, xref)
+BILD_GESAMT = {
+    "ae_5000m": (1, 23872), "ie_konsole_5000i": (1, 23878), "ie_wand_3200i": (1, 23879),
+    "ie_kassette_5000i": (1, 23880), "set_7000i_weiss": (1, 23874), "ie_7000i_weiss": (50, 247),
+}
+# Innengerät aus dem scharfen Set ausschneiden (kein eigenes hochaufgelöstes Einzelbild im Katalog)
+IE_AUS_SET = {"ie_8000i_weiss": "set_8000i_weiss"}
 # Farbvarianten der Sets: im Katalog nur in Weiß hochaufgelöst → weißes Set + farbiges Innengerät
 SET_FARBEN = {
     "set_8000i_anthrazit": ("set_8000i_weiss", "ie_8000i_anthrazit"), "set_8000i_silber": ("set_8000i_weiss", "ie_8000i_silber"),
@@ -295,10 +302,10 @@ def _bild_weiss(doc, xref):
     return bild
 
 
-def bilder_ersetzen(doc) -> dict[str, str]:
-    """Ältere, unscharfe Produktbilder durch die Originale aus dem Ergänzungskatalog ersetzen."""
+def bilder_ersetzen(doc, tabelle: dict | None = None) -> dict[str, str]:
+    """Ältere, unscharfe Produktbilder durch die hochaufgelösten Originale ersetzen."""
     out = {}
-    for name, (seite, xref) in BILD_ERSATZ.items():
+    for name, (seite, xref) in (BILD_ERSATZ if tabelle is None else tabelle).items():
         try:
             bild = _bild_weiss(doc, xref)
         except Exception as fehler:  # noqa: BLE001 – fehlendes Bild ist kein Abbruchgrund
@@ -329,6 +336,23 @@ def _innengeraet_bereich(bild):
     return None
 
 
+def ie_aus_set() -> dict[str, str]:
+    from PIL import Image
+
+    out = {}
+    for name, basis in IE_AUS_SET.items():
+        if not (BILDER / f"{basis}.png").exists():
+            continue
+        bild = Image.open(BILDER / f"{basis}.png").convert("RGB")
+        box = _innengeraet_bereich(bild)
+        if box:
+            rand = 4
+            bild.crop((max(box[0] - rand, 0), max(box[1] - rand, 0), min(box[2] + rand, bild.width),
+                       min(box[3] + rand, bild.height))).save(BILDER / f"{name}.png", optimize=True)
+            out[name] = f"ausgeschnitten aus {basis}"
+    return out
+
+
 def set_farbvarianten() -> dict[str, str]:
     """Farbige Sets aus dem scharfen weißen Set und dem farbigen Innengerät zusammensetzen."""
     from PIL import Image
@@ -354,7 +378,15 @@ def set_farbvarianten() -> dict[str, str]:
     return out
 
 
-def main(pdf: str) -> None:
+def _gesamt_bilder(gesamt: str | None) -> dict[str, str]:
+    if not gesamt:
+        return {}
+    import pymupdf
+
+    return {k: f"Gesamtkatalog {v}" for k, v in bilder_ersetzen(pymupdf.open(gesamt), BILD_GESAMT).items()}
+
+
+def main(pdf: str, gesamt: str | None = None) -> None:
     import pymupdf
 
     doc = pymupdf.open(pdf)
@@ -377,7 +409,8 @@ def main(pdf: str) -> None:
         "quelle": "Bosch Ergänzungskatalog Klima-, Lüftungs- und Wärmepumpen-Sortiment 09/2026",
         "preisbasis": "Unverbindliche Preisempfehlung netto, zzgl. MwSt., Montage und Material (09/2026)",
         "sets": sets, "aussen": aussen, "innen": innen, "kombinationen": kombis,
-        "preise": alle_preise, "bilder": {**bilder(doc), **bilder_ersetzen(doc), **set_farbvarianten()}, "pruefhinweise": hinweise,
+        "preise": alle_preise, "bilder": {**bilder(doc), **bilder_ersetzen(doc), **_gesamt_bilder(gesamt), **ie_aus_set(),
+                   **set_farbvarianten()}, "pruefhinweise": hinweise,
     }
     ZIEL.write_text(json.dumps(erg, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"{len(sets)} Large-Split-Sets, {len(aussen)} Außen-, {len(innen)} Inneneinheiten neu, "
@@ -387,4 +420,5 @@ def main(pdf: str) -> None:
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    # Aufruf: ergaenzung_import.py Ergaenzungskatalog.pdf [Gesamtkatalog_edit.pdf]
+    main(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)

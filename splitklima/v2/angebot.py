@@ -7,7 +7,7 @@ from ..berechnung import raum_last
 from ..bericht import BOSCH_BLAU, BOSCH_ROT, GRAU, _Bericht
 from ..modell import Projekt
 from ..preise import fmt_eur, gesamtpreis
-from .auswahl import Konzept, optionale_leistungen
+from .auswahl import AUFSTELLUNG, Konzept, aufstellungshinweise, optionale_leistungen
 from .bilder import bild
 from .katalog import Katalog
 
@@ -52,6 +52,7 @@ def pdf_angebot_v2(projekt: Projekt, konzept: Konzept, kat: Katalog, bestaetigt_
     e = projekt.einstellungen
     pdf.text(f"Projekt: {projekt.name} · Standort: {projekt.ort} · Datum: {projekt.datum.strftime('%d.%m.%Y')} · "
              f"Baujahr: {projekt.baujahr or '-'} · Betrieb: {BETRIEB[e.betriebsart]} · "
+             + (f"Aufstellung Außeneinheit: {AUFSTELLUNG[projekt.aufstellung]} · " if projekt.aufstellung else "") +
              f"Konfigurations-ID: {projekt.config_id}")
 
     preis = konzept.preis
@@ -96,16 +97,16 @@ def pdf_angebot_v2(projekt: Projekt, konzept: Konzept, kat: Katalog, bestaetigt_
                 [[x.name, x.artikel, x.menge, fmt_eur(x.einzelpreis), fmt_eur(x.summe)] for x in liste]
                 + [["Summe Geräte", "", "", "", fmt_eur(preis)]], [110, 45, 20, 49, 49])
 
-    optional = optionale_leistungen(konzept, kat)
+    optional = optionale_leistungen(konzept, kat, projekt.aufstellung)
     if optional:
         pdf.abschnitt("Optional: Inbetriebnahme durch den Bosch-Kundendienst und Zubehör")
         pdf.tabelle(["Leistung", "Bestell-Nr.", "Menge", "Einzelpreis", "Summe"],
                     [[x.name, x.artikel, x.menge, fmt_eur(x.einzelpreis), fmt_eur(x.summe)] for x in optional]
                     + [["Summe optional", "", "", "", fmt_eur(gesamtpreis(optional))]], [110, 45, 20, 49, 49])
 
-    hinweise = konzept.lieferhinweise + konzept.hinweise
+    hinweise = konzept.lieferhinweise + konzept.hinweise + aufstellungshinweise(projekt, konzept)
     if hinweise:
-        pdf.abschnitt("Hinweise zur Lieferbarkeit und Auswahl")
+        pdf.abschnitt("Hinweise zu Lieferbarkeit, Auswahl und Aufstellung")
         pdf.text("\n".join(f"- {h}" for h in hinweise), 8)
 
     pdf.abschnitt("Auslegungsgrundlagen")

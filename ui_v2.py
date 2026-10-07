@@ -56,6 +56,7 @@ SONNENSCHUTZ = [("0.45", "Außen", "Rollladen, Raffstore", "0.45"), ("0.8", "Inn
 LAGE = [("outside", "1 Außen&shy;wand"), ("corner", "Eckraum"), ("three", "3 Außen&shy;wände"),
         ("inside", "Innen&shy;liegend"), ("attic", "Dach&shy;geschoss"), ("attic_corner", "DG-Eck&shy;raum"),
         ("basement", "Über Keller")]
+DG_LAGEN = ("attic", "attic_corner")
 RAUMART_KURZ = {"Wohnzimmer": "Wohnen", "Schlafzimmer": "Schlafen", "Büro": "Büro", "Küche": "Küche",
                 "Kinderzimmer": "Kinder", "Badezimmer": "Bad", "Werkstatt": "Werkstatt",
                 "Halle / Lager": "Halle / Lager", "Verkaufsraum": "Laden"}
@@ -64,6 +65,12 @@ LINIEN_BILD = {"3200i": "set_3200i", "7000i": "set_7000i_weiss", "8000i": "set_8
 BAUART = [("", "Keine Präferenz", "egal"), ("Wandgerät", "Wandgerät", "Wandgerät"),
           ("Deckenkassette", "Decken&shy;kassette", "Deckenkassette"), ("Konsole", "Konsole", "Konsole"),
           ("Truhe/Decke", "Truhe / Decke", "Truhe/Decke")]
+DACHFORMEN = [("flat", "Flachdach", "dach_flach"), ("saddle_south", "Sattel&shy;dach Süd", "dach_sued"),
+              ("saddle_north", "Sattel&shy;dach Nord", "dach_nord"),
+              ("saddle_eastwest", "Sattel&shy;dach Ost/West", "dach_ow")]
+AUFSTELLUNG_UNTERTITEL = {"": "Entscheiden wir später.", "wand": "Wandkonsole an der Fassade.",
+                          "boden": "Bodenkonsole, z. B. Garten oder Terrasse.",
+                          "flachdach": "Bodenkonsole auf dem Flachdach, ohne Dachdurchdringung."}
 FARBCODE = {"weiß": "#f4f5f6", "silber": "#c3c8cd", "schwarz": "#1d1f22", "anthrazit": "#41464d", "rot": "#c8102e"}
 
 CSS = f"""
@@ -323,6 +330,9 @@ def seite_system(p: Projekt) -> None:
                   "8000i": "Design-Linie, anthrazit/silber/rot – nur als Set."}
     karten("linie", [(v, t, untertitel[v], linien_ikon(v)) for v, t in A.GERAETELINIEN.items()], p.geraetelinie,
            lambda v: (setattr(p, "geraetelinie", v), _ss().pop("v2_konzept", None)), spalten=4, klein=True)
+    st.markdown("#### Wo steht die Außeneinheit?")
+    karten("aufst", [(v, t, AUFSTELLUNG_UNTERTITEL[v], f"ae_{v}" if v else "egal") for v, t in A.AUFSTELLUNG.items()],
+           p.aufstellung, lambda v: setattr(p, "aufstellung", v), spalten=4, klein=True)
     _weiter_zurueck(None, ("gebaeude", "Weiter zum Gebäude"), "system")
 
 
@@ -562,7 +572,10 @@ def seite_raum(p: Projekt, i: int) -> None:
     st.markdown("##### Lage im Gebäude")
 
     def lage_setzen(v: str) -> None:
+        flachdach = r.dach and r.lage not in DG_LAGEN  # gewähltes Dach über Nicht-DG-Raum behalten
         r.setze_lage(v)
+        if flachdach and v not in DG_LAGEN:
+            r.dach = True
         _ss().v2_rev += 1
 
     karten(f"lage{i}", [(v, t, "", v) for v, t in LAGE], r.lage, lage_setzen, spalten=7, klein=True, groesse=40)
@@ -581,10 +594,26 @@ def seite_raum(p: Projekt, i: int) -> None:
         r.waende = [Wand(**z) for z in wdf.to_dict("records")]
     else:
         st.caption("Innenliegender Raum – keine Außenwände.")
+
+    st.markdown("##### Dach über dem Raum")
+    dg = r.lage in DG_LAGEN
+
+    def dach_setzen(v: str) -> None:
+        r.dach = bool(v) or dg
+        if v:
+            r.dachform = v
+        _ss().v2_rev += 1
+
+    dach_optionen = ([] if dg else [("", "Geschoss darüber", "dach_nein")]) + DACHFORMEN
+    karten(f"dach{i}", [(v, t, "", s) for v, t, s in dach_optionen], r.dachform if r.dach else "", dach_setzen,
+           spalten=5, klein=True, groesse=40)
+    if r.dach and r.dachform == "flat":
+        st.caption("Flachdach: Die Dachfläche ist den ganzen Tag besonnt – die Kühllast steigt deutlich "
+                   "(Dachfläche = Grundfläche). Lichtkuppeln unten als Dachfenster eintragen.")
     if r.dach:
         df = sum(g.flaeche for g in r.fenstergruppen if g.dachfenster)
         c1, _ = st.columns([1, 2])
-        neu = zahl(c1, "Dachfenster", "m²", df, 0.0, 50.0, 0.1, f"rdf{i}")
+        neu = zahl(c1, "Dachfenster / Lichtkuppeln", "m²", df, 0.0, 50.0, 0.1, f"rdf{i}")
         if neu != df:
             r.fenstergruppen = [g for g in r.fenstergruppen if not g.dachfenster]
             if neu > 0:
@@ -718,9 +747,9 @@ def seite_ergebnis(p: Projekt, kat: Katalog) -> None:
             "Summe": fmt_eur(x.summe)} for x in gewaehlt.stueckliste()]), hide_index=True, width="stretch")
         st.markdown(f"**Summe Geräte: {fmt_eur(preis)}**")
         st.caption(f"{kat.preisbasis} · {kat.quelle}")
-    optional = A.optionale_leistungen(gewaehlt, kat)
+    optional = A.optionale_leistungen(gewaehlt, kat, p.aufstellung)
     if optional:
-        with st.expander("Optional: Inbetriebnahme durch den Bosch-Kundendienst", icon=":material/build:"):
+        with st.expander("Optional: Inbetriebnahme und Montagezubehör", icon=":material/build:"):
             st.dataframe(pdx.DataFrame([{
                 "Leistung": x.name, "Bestell-Nr.": x.artikel, "Menge": x.menge,
                 "Einzelpreis": fmt_eur(x.einzelpreis), "Summe": fmt_eur(x.summe)} for x in optional]),
@@ -734,7 +763,7 @@ def seite_ergebnis(p: Projekt, kat: Katalog) -> None:
         st.dataframe(pdx.DataFrame(zeilen), hide_index=True, width="stretch")
         st.caption(f"Gebäude gesamt: Kühlen {de(last.cool, 2)} kW · Heizen {de(last.heat, 2)} kW "
                    "(Rechenkern CALC-0.4, in Anlehnung an VDI 2078 / DIN EN 12831-1)")
-    hinweise = gewaehlt.lieferhinweise + gewaehlt.hinweise
+    hinweise = gewaehlt.lieferhinweise + gewaehlt.hinweise + A.aufstellungshinweise(p, gewaehlt)
     if hinweise:
         with st.expander(f"Hinweise ({len(hinweise)})", icon=":material/info:"):
             for h in hinweise:
@@ -831,6 +860,7 @@ def zusammenfassung(p: Projekt, kat: Katalog) -> None:
         zeilen = [("System", dict((v, t) for v, t, _ in SYSTEME)[p.systemwunsch]),
                   ("Betrieb", dict((v, t) for v, t, _ in BETRIEB)[e.betriebsart]),
                   *([("Gerätelinie", A.GERAETELINIEN[p.geraetelinie])] if p.geraetelinie else []),
+                  *([("Außeneinheit", A.AUFSTELLUNG[p.aufstellung])] if p.aufstellung else []),
                   ("Standort", p.ort), ("Norm-Außentemp.", grad(e.norm_aussen)),
                   ("Baujahr", str(p.baujahr or "–"))]
         if p.raeume:

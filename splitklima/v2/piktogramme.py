@@ -37,6 +37,19 @@ def _sonne(cx: float, cy: float) -> str:
     return f'<circle cx="{cx}" cy="{cy}" r="5.5"/>{strahlen}'
 
 
+def _sonne_klein(cx: float, cy: float) -> str:
+    strahlen = "".join(
+        f'<path d="M{cx + dx * 6:.1f} {cy + dy * 6:.1f}L{cx + dx * 9:.1f} {cy + dy * 9:.1f}"/>'
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1), (0.71, 0.71), (-0.71, 0.71), (0.71, -0.71), (-0.71, -0.71)))
+    return f'<circle cx="{cx}" cy="{cy}" r="3.5"/>{strahlen}'
+
+
+def _satteldach(text: str) -> str:
+    return ('<path d="M6 36L32 14l26 22"/><path d="M12 31v23h40V31"/>'
+            f'<text x="32" y="49" font-size="{13 if len(text) == 1 else 10}" font-family="sans-serif" font-weight="700" '
+            f'text-anchor="middle" fill="currentColor" stroke="none">{text}</text>')
+
+
 SYMBOLE: dict[str, str] = {
     # ---------------------------------------------------------- System
     "multi": _aussen(6, 40) + '<path d="M26 48h8M34 48V12M34 12h6M34 30h6M34 48h6"/>'
@@ -94,6 +107,20 @@ SYMBOLE: dict[str, str] = {
     # ---------------------------------------------------------- Dach
     "dach_ja": '<path d="M6 34L32 12l26 22"/><path d="M14 28v24h36V28"/><rect x="38" y="20" width="8" height="6"/>',
     "dach_nein": '<rect x="12" y="10" width="40" height="16"/><rect x="12" y="30" width="40" height="22" stroke-width="3.5"/>',
+    # ---------------------------------------------------------- Dachform über dem Raum
+    "dach_flach": '<path d="M6 28h52" stroke-width="5"/><path d="M10 30v24h44V30"/>'
+                  '<path d="M18 38h8v8h-8zM38 38h8v8h-8z"/>' + _sonne_klein(48, 12),
+    "dach_sued": _satteldach("S"),
+    "dach_nord": _satteldach("N"),
+    "dach_ow": _satteldach("O/W"),
+    # ---------------------------------------------------------- Aufstellung Außeneinheit
+    "ae_wand": '<path d="M10 6v52" stroke-width="4"/><rect x="18" y="16" width="36" height="24" rx="2"/>'
+               '<circle cx="30" cy="28" r="7"/><path d="M44 22v12M10 44h40M12 56l18-12"/>',
+    "ae_boden": '<path d="M4 56h56" stroke-width="4"/><rect x="14" y="18" width="36" height="24" rx="2"/>'
+                '<circle cx="26" cy="30" r="7"/><path d="M40 24v12M10 48h44M18 42v6M46 42v6M18 48v8M46 48v8"/>',
+    "ae_flachdach": '<path d="M4 34h56" stroke-width="5"/><path d="M8 36v20h48V36"/>'
+                    '<rect x="16" y="12" width="26" height="16" rx="2"/><circle cx="25" cy="20" r="5"/>'
+                    '<path d="M35 16v8M14 31h30M18 28v3M40 28v3M16 44h8v6h-8zM40 44h8v6h-8z"/>',
     # ---------------------------------------------------------- Sonnenschutz
     "0.45": '<rect x="12" y="10" width="40" height="44" rx="2"/><path d="M12 18h40M12 24h40M12 30h40M12 36h40"/>',
     "0.8": '<rect x="12" y="10" width="40" height="44" rx="2"/><path d="M16 10c-2 14 2 30 0 44M48 10c2 14-2 30 0 44"/>'

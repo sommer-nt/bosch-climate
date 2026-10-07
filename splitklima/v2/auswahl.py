@@ -26,6 +26,25 @@ NR_INBETRIEBNAHME_AE = "8737804256"
 NR_INBETRIEBNAHME_IE = "8737804260"
 NR_AUFTRAGSPAUSCHALE = "7739607426"
 NR_MSG1 = "7733702555"
+NR_BODENKONSOLE = "7716161065"
+NR_WANDKONSOLE = "7747222358"
+
+# Aufstellort der Außeneinheit → Konsole aus dem Zubehör (je Außeneinheit) und Montagehinweise
+AUFSTELLUNG = {"": "Noch offen", "wand": "Fassade / Wand", "boden": "Boden / Terrasse", "flachdach": "Flachdach"}
+AUFSTELLUNG_KONSOLE = {"wand": NR_WANDKONSOLE, "boden": NR_BODENKONSOLE, "flachdach": NR_BODENKONSOLE}
+AUFSTELLUNG_HINWEISE = {
+    "wand": ["Wandmontage: Tragfähigkeit der Wand und Körperschall zu angrenzenden Schlafräumen prüfen."],
+    "boden": ["Bodenaufstellung: ebener, tragfähiger Untergrund, Kondensat- und Abtauwasser frostsicher ableiten."],
+    "flachdach": [
+        "Flachdach: Außeneinheit auf Bodenkonsole mit Schwingungsdämpfern, auf Bautenschutzmatte bzw. "
+        "Lastverteilplatten – die Dachabdichtung nicht durchdringen; Dachlast und Windsog prüfen lassen.",
+        "Flachdach: Kondensat- und Abtauwasser zum Dachablauf führen, Vereisung der Dachfläche vermeiden; "
+        "Mindestabstände zur Attika und zu Lichtkuppeln nach Montageanleitung einhalten.",
+        "Flachdach: Leitungsführung durch die Dachhaut nur über Dachdurchführung oder Fassade; "
+        "maximale Leitungslänge und Höhendifferenz der Außeneinheit beachten.",
+        "Flachdach: sicheren Zugang für Wartung einplanen (Absturzsicherung nach DGUV/ASR A2.1).",
+    ],
+}
 
 
 def bauart_wunsch(raum: Raum) -> str:
@@ -542,8 +561,8 @@ def empfehlung_setzen(liste: list[Konzept], linie: str = "") -> None:
 
 
 # ---------------------------------------------------------------- Optionale Leistungen
-def optionale_leistungen(konzept: Konzept, kat: Katalog) -> list[Position]:
-    """Inbetriebnahme durch den Bosch-Kundendienst und Förder-Zubehör – nicht im Gerätepreis enthalten."""
+def optionale_leistungen(konzept: Konzept, kat: Katalog, aufstellung: str = "") -> list[Position]:
+    """Inbetriebnahme durch den Bosch-Kundendienst, Förder- und Montage-Zubehör – nicht im Gerätepreis enthalten."""
     pos: list[Position] = []
 
     def add(nr: str, menge: int, art: str = "leistung"):
@@ -556,4 +575,14 @@ def optionale_leistungen(konzept: Konzept, kat: Katalog) -> list[Position]:
     add(NR_INBETRIEBNAHME_IE, konzept.innengeraete)
     sets_7000i = sum(1 for t in konzept.teilsysteme if t.set and t.set.linie == "Climate 7000i")
     add(NR_MSG1, sets_7000i, "zubehoer")
+    if aufstellung in AUFSTELLUNG_KONSOLE:
+        add(AUFSTELLUNG_KONSOLE[aufstellung], konzept.aussengeraete, "zubehoer")
     return pos
+
+
+def aufstellungshinweise(projekt: Projekt, konzept: Konzept | None = None) -> list[str]:
+    hinweise = list(AUFSTELLUNG_HINWEISE.get(projekt.aufstellung, []))
+    if projekt.aufstellung in ("boden", "flachdach") and konzept and any(
+            t.set and ist_large(t.set) for t in konzept.teilsysteme):
+        hinweise.append("Large-Split-Außeneinheiten: Traglast der Bodenkonsole gegen das Gerätegewicht prüfen.")
+    return hinweise

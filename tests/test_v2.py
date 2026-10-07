@@ -324,3 +324,59 @@ def test_large_split_fuer_hallen(art, flaeche, hoehe, bauart):
 def test_wohnhaus_ohne_large_split():
     """Ohne Bauartwunsch ist für normale Wohnräume kein Large-Split nötig."""
     assert all(k.key != "large" for k in A.konzepte(beispielprojekt(), KAT))
+
+
+# ---------------------------------------------------------------- Flachdach
+def test_flachdach_erhoeht_kuehllast():
+    p = beispielprojekt()
+    r = Raum(name="Halle", raumart="Halle / Lager", flaeche=120, hoehe=6, lage="three",
+             waende=[Wand(ausrichtung=a, laenge=10, fenster=2) for a in ("S", "W", "O")])
+    ohne = raum_last(r, p.einstellungen).cool
+    r.dach, r.dachform = True, "flat"
+    flach = raum_last(r, p.einstellungen).cool
+    r.dachform = "saddle_north"
+    nord = raum_last(r, p.einstellungen).cool
+    assert flach > nord > ohne
+
+
+@pytest.mark.parametrize("aufstellung, konsole", [("flachdach", "Bodenkonsole"), ("boden", "Bodenkonsole"),
+                                                  ("wand", "Kleine Wandkonsole")])
+def test_aufstellung_konsole_und_hinweise(aufstellung, konsole):
+    p = beispielprojekt()
+    p.aufstellung = aufstellung
+    k = next(k for k in A.konzepte(p, KAT) if k.empfohlen)
+    opt = {x.name: x.menge for x in A.optionale_leistungen(k, KAT, p.aufstellung)}
+    assert opt[konsole] == k.aussengeraete
+    hinweise = A.aufstellungshinweise(p, k)
+    assert hinweise and (aufstellung != "flachdach" or any("Dachabdichtung" in h for h in hinweise))
+    assert pdf_angebot_v2(p, k, KAT)[:4] == b"%PDF"
+
+
+def test_ohne_aufstellung_keine_konsole():
+    p = beispielprojekt()
+    k = next(k for k in A.konzepte(p, KAT) if k.empfohlen)
+    namen = {x.name for x in A.optionale_leistungen(k, KAT)}
+    assert not namen & {"Bodenkonsole", "Kleine Wandkonsole"} and not A.aufstellungshinweise(p, k)
+
+
+def test_oberflaeche_flachdach(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("APP_PASSWORT", raising=False)
+    at = AppTest.from_file(str(WURZEL / "app_v2.py"), default_timeout=60).run()
+    next(b for b in at.button if b.label == "Flachdach").click().run()
+    assert at.session_state.v2_projekt.aufstellung == "flachdach"
+    next(b for b in at.button if b.label == "Beispielhaus laden").click().run()
+    next(b for b in at.button if b.label == "Küche bearbeiten").click().run()
+    next(b for b in at.button if b.label == "Flachdach").click().run()
+    p = at.session_state.v2_projekt
+    r = p.raeume[at.session_state.v2_raum]
+    assert (r.dach, r.dachform) == (True, "flat")
+    next(b for b in at.button if b.label == "3 Außenwände").click().run()  # Lagewechsel behält das Dach
+    r = at.session_state.v2_projekt.raeume[at.session_state.v2_raum]
+    assert r.dach and r.lage == "three"
+    next(b for b in at.button if b.label == "Geschoss darüber").click().run()
+    assert not at.session_state.v2_projekt.raeume[at.session_state.v2_raum].dach
+    at.session_state.v2_seite = "ergebnis"
+    at.run()
+    assert not at.exception
+    assert any("Flachdach" in m.value for m in at.markdown)
