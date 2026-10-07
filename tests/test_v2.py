@@ -13,6 +13,8 @@ from splitklima.modell import Projekt, Raum, Wand
 from splitklima.v2 import auswahl as A
 from splitklima.v2.angebot import pdf_angebot_v2
 from splitklima.v2.bilder import bild
+from splitklima.v2 import speichern as SP
+from splitklima.v2 import zubehoer as Z
 from splitklima.v2.katalog import FARBEN, standard
 
 WURZEL = Path(__file__).parent.parent
@@ -148,7 +150,7 @@ def test_oberflaeche_v2_durchlauf(monkeypatch):
     assert not at.exception
     assert any("preis" in m.value and "€" in m.value for m in at.markdown)
     at.checkbox[0].check().run()
-    assert [d.label for d in at.get("download_button")] == ["Angebotsübersicht (PDF)"]
+    assert sorted(d.label for d in at.get("download_button")) == ["Angebotsübersicht (PDF)", "Speichern (JSON)"]
     for seite in ("system", "gebaeude", "raeume"):
         at.session_state.v2_seite = seite
         at.run()
@@ -339,14 +341,18 @@ def test_flachdach_erhoeht_kuehllast():
     assert flach > nord > ohne
 
 
-@pytest.mark.parametrize("aufstellung, konsole", [("flachdach", "Bodenkonsole"), ("boden", "Bodenkonsole"),
+@pytest.mark.parametrize("aufstellung, konsole", [("flachdach", "Bodenkonsole"),
+                                                  ("boden", "Dämpfungssockel-Set 450 mm"),
                                                   ("wand", "Kleine Wandkonsole")])
 def test_aufstellung_konsole_und_hinweise(aufstellung, konsole):
     p = beispielprojekt()
     p.aufstellung = aufstellung
     k = next(k for k in A.konzepte(p, KAT) if k.empfohlen)
-    opt = {x.name: x.menge for x in A.optionale_leistungen(k, KAT, p.aufstellung)}
-    assert opt[konsole] == k.aussengeraete
+    zub = {z.name: z.menge for z in Z.gewaehlt(p, k, KAT)}
+    if aufstellung == "boden":  # große Außeneinheiten (CL5000M 105/4 …) bekommen den 600-mm-Sockel
+        assert zub.get(konsole, 0) + zub.get("Dämpfungssockel-Set 600 mm", 0) == k.aussengeraete
+    else:
+        assert zub[konsole] == k.aussengeraete
     hinweise = A.aufstellungshinweise(p, k)
     assert hinweise and (aufstellung != "flachdach" or any("Dachabdichtung" in h for h in hinweise))
     assert pdf_angebot_v2(p, k, KAT)[:4] == b"%PDF"
@@ -355,7 +361,7 @@ def test_aufstellung_konsole_und_hinweise(aufstellung, konsole):
 def test_ohne_aufstellung_keine_konsole():
     p = beispielprojekt()
     k = next(k for k in A.konzepte(p, KAT) if k.empfohlen)
-    namen = {x.name for x in A.optionale_leistungen(k, KAT)}
+    namen = {x.name for x in Z.gewaehlt(p, k, KAT)}
     assert not namen & {"Bodenkonsole", "Kleine Wandkonsole"} and not A.aufstellungshinweise(p, k)
 
 
@@ -380,3 +386,126 @@ def test_oberflaeche_flachdach(monkeypatch):
     at.run()
     assert not at.exception
     assert any("Flachdach" in m.value for m in at.markdown)
+
+
+# ---------------------------------------------------------------- Farbwunsch über Leistungsgrenze/Linie
+def _geraete_im_raum(k, name):
+    return [u for t in k.teilsysteme for r, u in ([(x, t.set) for x in t.raeume] if t.set else t.innen)
+            if r.name == name or r.name.startswith(f"{name} · Zone ")]
+
+
+@pytest.mark.parametrize("linie", ["", "3200i", "8000i"])
+@pytest.mark.parametrize("wunsch", ["auto", "multi"])
+@pytest.mark.parametrize("flaeche", [38.4, 55, 70])
+def test_schwarz_wird_immer_schwarz(flaeche, wunsch, linie):
+    p = beispielprojekt()
+    p.geraetelinie = linie
+    r = p.raeume[0]
+    r.flaeche, r.farbe = flaeche, "schwarz"
+    k = next(k for k in A.konzepte(p, KAT, wunsch) if k.empfohlen)
+    geraete = _geraete_im_raum(k, r.name)
+    assert geraete and all(u.farbe == "schwarz" for u in geraete), [u.typ for u in geraete]
+    assert A.farbabweichungen(k) == 0
+    if raum_last(r, p.einstellungen).cool > A.farbgrenze(r, KAT)[0]:
+        assert len(geraete) > 1 and any("je Gerät" in h for h in k.hinweise)
+
+
+# ---------------------------------------------------------------- Zubehör
+def test_zubehoer_vorschlag_vollstaendig():
+    p = beispielprojekt()
+    p.aufstellung, p.leitungslaenge, p.app_steuerung, p.boerdelfrei = "wand", 8, True, True
+    k = next(k for k in A.konzepte(p, KAT, "single"))
+    zub = {z.bestellnr: z for z in Z.gewaehlt(p, k, KAT)}
+    ies = k.innengeraete
+    rohre = sum(z.menge for nr, z in zub.items() if nr in {n for d in Z.ROHRE.values() for n in d.values()})
+    assert rohre == ies  # 8 m → je Innengerät ein 10-m-Paket
+    assert zub[Z.ROHRE['3/8"'][10]].menge + zub.get(Z.ROHRE['1/2"'][10], Z.ZubehoerZeile("", "", "", 0, 0, 0)).menge == ies
+    assert zub[Z.NR_KABEL_KLEIN].menge == 2 * ies  # 8 m Kabel → 2 × 5,5 m
+    assert zub[Z.NR_SPIRALSCHLAUCH].menge >= 1
+    assert zub[Z.NR_WANDKONSOLE].menge == k.aussengeraete
+    assert zub[Z.KLEMMRING['1/4"']].menge == 2 * ies
+    assert Z.NR_G10_4 in zub or Z.NR_G10_3 in zub
+    assert Z.summe(list(zub.values())) > 0
+    # ersetzte Artikel werden nicht mehr angeboten
+    alle = {z.bestellnr for z in Z.tabelle(p, k, KAT)[0]}
+    assert not alle & set(Z.ERSETZT) and "7733704064" in alle and "7738347186" in alle
+
+
+def test_zubehoer_manuelle_mengen_und_7000i():
+    p = beispielprojekt()
+    p.geraetelinie = "7000i"
+    k = next(k for k in A.konzepte(p, KAT, "single"))
+    zub = {z.bestellnr: z.menge for z in Z.gewaehlt(p, k, KAT)}
+    assert zub[Z.NR_MSG1] == len(k.teilsysteme)  # BEG-Förderung
+    p.app_steuerung = True
+    assert not {Z.NR_G10_3, Z.NR_G10_4} & {z.bestellnr for z in Z.gewaehlt(p, k, KAT)}  # WLAN integriert
+    p.zubehoer_mengen = {Z.NR_MSG1: 0, Z.NR_PUMPE_WAND: 2}
+    zub = {z.bestellnr: z.menge for z in Z.gewaehlt(p, k, KAT)}
+    assert Z.NR_MSG1 not in zub and zub[Z.NR_PUMPE_WAND] == 2
+
+
+def test_rohrpakete_wenige_stuecke():
+    assert Z.rohr_pakete(5, KAT, '3/8"') == [5]
+    assert Z.rohr_pakete(12, KAT, '3/8"') == [20]
+    assert sum(Z.rohr_pakete(35, KAT, '1/2"')) >= 35
+    assert Z.rohrklasse(3.5) == '3/8"' and Z.rohrklasse(5.3) == '1/2"' and Z.rohrklasse(14) is None
+
+
+def test_bopa_paket_hinweis():
+    p = beispielprojekt()
+    p.aufstellung = "wand"
+    k = next(k for k in A.konzepte(p, KAT, "single"))
+    _, hinweise = Z.tabelle(p, k, KAT)
+    assert any("BOPA CL322" in h for h in hinweise)
+
+
+def test_pdf_mit_zubehoer():
+    p = beispielprojekt()
+    p.aufstellung = "flachdach"
+    k = next(k for k in A.konzepte(p, KAT) if k.empfohlen)
+    assert pdf_angebot_v2(p, k, KAT)[:4] == b"%PDF"
+
+
+# ---------------------------------------------------------------- Speichern / Laden
+def test_konfiguration_json_rundreise():
+    p = beispielprojekt()
+    p.name, p.aufstellung, p.geraetelinie = "Haus Müller", "flachdach", "7000i"
+    p.raeume[0].farbe, p.raeume[0].dach, p.raeume[0].dachform = "schwarz", True, "flat"
+    p.zubehoer_mengen = {Z.NR_PUMPE_WAND: 3}
+    text = SP.exportieren(p, {"konzept": "single", "seite": "ergebnis"})
+    q, auswahl = SP.importieren(text.encode())
+    assert q.model_dump() == p.model_dump() and auswahl["konzept"] == "single"
+    assert SP.dateiname(p).startswith("Klima_Haus_Müller_") and SP.dateiname(p).endswith(".json")
+
+
+@pytest.mark.parametrize("daten, meldung", [
+    (b"kein json", "Kein gültiges JSON"),
+    (b'{"a": 1}', "keine gespeicherte Konfiguration"),
+    (b'{"format": "bosch-climate-konfiguration", "version": 99, "projekt": {}}', "neueren"),
+    (b'{"format": "bosch-climate-konfiguration", "version": 1, "projekt": {"raeume": [{"flaeche": "x"}]}}',
+     "ungültige Werte"),
+])
+def test_konfiguration_fehlerhafte_datei(daten, meldung):
+    with pytest.raises(SP.LadeFehler, match=meldung):
+        SP.importieren(daten)
+
+
+def test_oberflaeche_speichern_laden_und_zubehoer(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("APP_PASSWORT", raising=False)
+    at = AppTest.from_file(str(WURZEL / "app_v2.py"), default_timeout=60).run()
+    next(b for b in at.button if b.label == "Beispielhaus laden").click().run()
+    p = at.session_state.v2_projekt
+    p.name = "Gespeichert"
+    text = SP.exportieren(p, {"seite": "ergebnis", "erledigt": ["system", "gebaeude", "raeume"]})
+    at.session_state.v2_projekt = Projekt(raeume=[])
+    at.run()
+    at.session_state.v2_import = b"kaputt"  # wie über den Upload-Dialog
+    at.run()
+    assert "Kein gültiges JSON" in at.session_state.v2_import_fehler
+    at.session_state.v2_import = text.encode()
+    at.run()
+    assert not at.exception
+    assert at.session_state.v2_projekt.name == "Gespeichert" and at.session_state.v2_seite == "ergebnis"
+    assert len(at.session_state.v2_projekt.raeume) == len(p.raeume)
+    assert any(t.label == "App-Steuerung (WLAN)" for t in at.toggle)

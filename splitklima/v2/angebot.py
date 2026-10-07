@@ -97,14 +97,29 @@ def pdf_angebot_v2(projekt: Projekt, konzept: Konzept, kat: Katalog, bestaetigt_
                 [[x.name, x.artikel, x.menge, fmt_eur(x.einzelpreis), fmt_eur(x.summe)] for x in liste]
                 + [["Summe Geräte", "", "", "", fmt_eur(preis)]], [110, 45, 20, 49, 49])
 
-    optional = optionale_leistungen(konzept, kat, projekt.aufstellung)
+    from . import zubehoer as Z
+
+    zub_zeilen, zub_hinweise = Z.tabelle(projekt, konzept, kat)
+    zub = [z for z in zub_zeilen if z.menge]
+    if zub:
+        zsumme = Z.summe(zub)
+        pdf.abschnitt("Zubehör und Montagematerial")
+        pdf.tabelle(["Artikel", "Bestell-Nr.", "Menge", "Einzelpreis", "Summe"],
+                    [[z.name, z.bestellnr, z.menge, fmt_eur(z.einzelpreis), fmt_eur(z.summe)] for z in zub]
+                    + [["Summe Zubehör", "", "", "", fmt_eur(zsumme)]]
+                    + ([["Geräte + Zubehör", "", "", "", fmt_eur(preis + zsumme)]]
+                       if preis is not None and zsumme is not None else []), [110, 45, 20, 49, 49])
+        pdf.text(f"Leitungslänge je Innengerät {projekt.leitungslaenge:g} m. Vorschlag als Planungshilfe – "
+                 "Mengen und Leitungswege bestimmt der Fachbetrieb vor Ort.", 8)
+
+    optional = optionale_leistungen(konzept, kat)
     if optional:
         pdf.abschnitt("Optional: Inbetriebnahme durch den Bosch-Kundendienst und Zubehör")
         pdf.tabelle(["Leistung", "Bestell-Nr.", "Menge", "Einzelpreis", "Summe"],
                     [[x.name, x.artikel, x.menge, fmt_eur(x.einzelpreis), fmt_eur(x.summe)] for x in optional]
                     + [["Summe optional", "", "", "", fmt_eur(gesamtpreis(optional))]], [110, 45, 20, 49, 49])
 
-    hinweise = konzept.lieferhinweise + konzept.hinweise + aufstellungshinweise(projekt, konzept)
+    hinweise = konzept.lieferhinweise + konzept.hinweise + aufstellungshinweise(projekt, konzept) + zub_hinweise
     if hinweise:
         pdf.abschnitt("Hinweise zu Lieferbarkeit, Auswahl und Aufstellung")
         pdf.text("\n".join(f"- {h}" for h in hinweise), 8)

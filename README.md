@@ -62,6 +62,15 @@ Rechenkern und derselben KI-Planerkennung:
   29 Inneneinheiten) mit **freigegebenen Katalogpreisen** (UVP netto, März 2026).
 - Auswahl nach den **zulässigen Kombinationen** des Katalogs, Bauart- und Farbwunsch je Raum,
   Lieferstatus; Empfehlung = günstigstes vollständiges Konzept.
+- **Zubehör und Montagematerial:** Vorschlag aus dem gewählten Konzept – Kältemittelleitungen (Doppelrohr-Pakete
+  nach Gerätegröße und Leitungslänge), Kommunikationskabel, Kondensatschlauch/-pumpen, Konsolen bzw.
+  Dämpfungssockel je Aufstellort, WLAN-Gateways (G 10-4, G 10 CLC/CLC-1), Smart-Grid-Modul MSG-1,
+  Klemmringverschraubungen; Mengen frei änderbar, BOPA-Basispakete als Hinweis. Ersetzte Artikel (CRC R-1,
+  Kondensatpumpe 7738336975) werden nicht mehr angeboten. Summe „Geräte + Zubehör“ im Ergebnis und im PDF.
+- **Farbwunsch:** geht vor der bevorzugten Gerätelinie; reicht das größte Gerät in Wunschfarbe nicht (schwarz/silber
+  bis 3,4 kW), erhält der Raum mehrere Geräte in dieser Farbe – mit Hinweis.
+- **Konfiguration speichern/laden:** „Speichern (JSON)“ lädt Räume, Einstellungen, Gerätewünsche und Zubehörmengen
+  als Datei herunter; „Laden“ stellt sie wieder her (Format `bosch-climate-konfiguration`, Version 1).
 - **Flachdach:** je Raum Dachform wählbar (Flachdach, Satteldach Süd/Nord/Ost-West – auch für Nicht-DG-Räume wie
   Hallen); Aufstellort der Außeneinheit (Wand, Boden, Flachdach) mit passender Konsole als optionales Zubehör
   und Montagehinweisen im Ergebnis und im Angebots-PDF.

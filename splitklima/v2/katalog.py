@@ -157,6 +157,8 @@ def zusammenfuehren(basis: dict, erg: dict) -> dict:
                 komp = ie.setdefault("aussen_kompatibel", [])
                 if "CL5000M 53/2 E" in komp and neu_ae["typ"] not in komp:
                     komp.append(neu_ae["typ"])
+    bekannt = {z["bestellnr"] for z in d["zubehoer"]}
+    d["zubehoer"] += [copy.deepcopy(z) for z in erg.get("zubehoer", []) if z["bestellnr"] not in bekannt]
     d["kombinationen"] = d["kombinationen"] + erg.get("kombinationen", [])
     d["pruefhinweise"] = list(d.get("pruefhinweise", [])) + list(erg.get("pruefhinweise", []))
     d["quelle"] = "Gesamtkatalog 03/2026 + Ergänzungskatalog 09/2026"

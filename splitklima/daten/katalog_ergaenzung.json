@@ -1013,6 +1013,89 @@
    "seite": 111
   }
  ],
+ "zubehoer": [
+  {
+   "kategorie": "Allgemein",
+   "name": "Kabelregler CRC R-3",
+   "bestellnr": "7733704064",
+   "beschreibung": "Kabelgebundener Raumregler, Wochenprogramm, Betriebsmodi, Temperaturbegrenzung; Wandgeräte: MC R nötig (Nachfolger CRC R-1)",
+   "preis": 137.0,
+   "passend": "Climate Split-Klimageräte",
+   "seite": 129
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Dämpfungssockel-Set 450 mm",
+   "bestellnr": "7738347185",
+   "beschreibung": "Schallentkoppelte Aufstellung der Außeneinheit auf festem Untergrund, UV-beständiger Recycling-Gummi mit Aluschiene, 450×160×90 mm, max. 260 kg je Sockel",
+   "preis": 133.0,
+   "passend": "Climate Außeneinheiten",
+   "seite": 129
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Dämpfungssockel-Set 600 mm",
+   "bestellnr": "7738347186",
+   "beschreibung": "Schallentkoppelte Aufstellung großer Außeneinheiten, 600×160×90 mm, max. 470 kg je Sockel",
+   "preis": 163.0,
+   "passend": "CL7000M 79/3, CL5000M 105/4, CL5000M 125/5",
+   "seite": 129
+  },
+  {
+   "kategorie": "Allgemein",
+   "name": "Kondensatpumpe Geräteeinbau",
+   "bestellnr": "7738346711",
+   "beschreibung": "Einbau in die Inneneinheit, max. 35 l/h, Förderhöhe 10 m (Nachfolger 7738336975)",
+   "preis": 229.5,
+   "passend": "Climate Geräteserie (R32)",
+   "seite": 131
+  },
+  {
+   "kategorie": "Gerätespezifisch",
+   "name": "G 10 CLC-1 Gateway-Anschluss",
+   "bestellnr": "7733704066",
+   "beschreibung": "Verbindet CL5000iL CF mit Internet-Gateway G 10-4 und optional Kabelregler CRC R",
+   "preis": 85.0,
+   "passend": "CL5000iL CF",
+   "seite": 55
+  },
+  {
+   "kategorie": "Paket",
+   "name": "Basispaket BOPA CL701 (Bodenkonsole)",
+   "bestellnr": "7739625892",
+   "beschreibung": "CL7000i-Set 26 E + Spiralschlauch 30 m, Doppelrohr 1/4\"+3/8\" 5 m, 4 Klemmringverschraubungen, Kommunikationskabel 5,5 m, Bodenkonsole",
+   "preis": 2666.68,
+   "passend": "CL7000i-Set 26 E",
+   "seite": 133
+  },
+  {
+   "kategorie": "Paket",
+   "name": "Basispaket BOPA CL702 (Wandkonsole)",
+   "bestellnr": "7739624113",
+   "beschreibung": "CL7000i-Set 26 E + Spiralschlauch 30 m, Doppelrohr 1/4\"+3/8\" 5 m, 4 Klemmringverschraubungen, Kommunikationskabel 5,5 m, Wandkonsole",
+   "preis": 2821.32,
+   "passend": "CL7000i-Set 26 E",
+   "seite": 133
+  },
+  {
+   "kategorie": "Paket",
+   "name": "Basispaket BOPA CL321 (Bodenkonsole)",
+   "bestellnr": "7739625891",
+   "beschreibung": "CL3200i-Set 26 WE + Spiralschlauch 30 m, Doppelrohr 1/4\"+3/8\" 5 m, 4 Klemmringverschraubungen, Kommunikationskabel 5,5 m, Bodenkonsole",
+   "preis": 1799.68,
+   "passend": "CL3200i-Set 26 WE",
+   "seite": 134
+  },
+  {
+   "kategorie": "Paket",
+   "name": "Basispaket BOPA CL322 (Wandkonsole)",
+   "bestellnr": "7739625457",
+   "beschreibung": "CL3200i-Set 26 WE + Spiralschlauch 30 m, Doppelrohr 1/4\"+3/8\" 5 m, 4 Klemmringverschraubungen, Kommunikationskabel 5,5 m, Wandkonsole",
+   "preis": 1954.32,
+   "passend": "CL3200i-Set 26 WE",
+   "seite": 134
+  }
+ ],
  "preise": {
   "7733701688": 2701.98,
   "7733701689": 2920.26,

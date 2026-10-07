@@ -131,3 +131,9 @@ class Projekt(BaseModel):
     norm_aussen_manuell: bool = False
     geraetelinie: str = ""  # Version 2: Wunsch-Gerätelinie, z. B. "7000i" ("" = wirtschaftlichste)
     aufstellung: Literal["", "wand", "boden", "flachdach"] = ""  # Version 2: Aufstellort der Außeneinheit(en)
+    # Version 2: Zubehör und Montagematerial
+    leitungslaenge: float = 5.0  # m Kältemittelleitung je Innengerät
+    app_steuerung: bool = False  # WLAN-Gateways, wo nicht integriert
+    boerdelfrei: bool = False  # SAE-Klemmringverschraubungen statt Bördeln
+    kondensatpumpe: bool = False  # Kondensat ohne natürliches Gefälle
+    zubehoer_mengen: dict[str, int] = Field(default_factory=dict)  # manuelle Mengen je Bestell-Nr.
