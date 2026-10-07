@@ -134,6 +134,11 @@ python tools/katalog_import.py [Excel-Datei]   # → splitklima/daten/katalog.js
 python tools/katalog_bilder.py Katalog.pdf   # Produktbilder → splitklima/daten/bilder/
 ```
 
+Der Gesamtkatalog 03/2026 enthält nur ~150 px kleine Bilder. `tools/ergaenzung_import.py` ersetzt sie durch die
+hochaufgelösten Originale aus dem Ergänzungskatalog 09/2026 (`BILD_ERSATZ`); die farbigen 8000i- und 7000i-Sets
+werden aus dem scharfen weißen Set und dem farbigen Innengerät zusammengesetzt (`SET_FARBEN`). Nicht ersetzt
+(keine bessere Quelle): Climate 3000i, Kassette 5001iU, Innengeräte 7000i/8000i weiß.
+
 ## Start
 
 ```bash
