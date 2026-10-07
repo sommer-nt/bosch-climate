@@ -83,6 +83,8 @@ Rechenkern und derselben KI-Planerkennung:
   Montagehinweise nach allgemeinen Fachregeln, Zubehörmengen als automatische Vorkalkulation.
   Vor einer Veröffentlichung außerhalb der Bosch-Umgebung Nutzungsrechte an Preisen, Bestellnummern und
   Katalogbildern prüfen.
+- **Neu beginnen:** setzt die Planung nach Sicherheitsabfrage komplett zurück (Navigation links, Smartphone-Menü,
+  Ende der Ergebnisseite); vorher optional als JSON speichern.
 - **Konfiguration speichern/laden:** „Speichern (JSON)“ lädt Räume, Einstellungen, Gerätewünsche und Zubehörmengen
   als Datei herunter; „Laden“ stellt sie wieder her (Format `bosch-climate-konfiguration`, Version 1).
 - **Flachdach:** je Raum Dachform wählbar (Flachdach, Satteldach Süd/Nord/Ost-West – auch für Nicht-DG-Räume wie
