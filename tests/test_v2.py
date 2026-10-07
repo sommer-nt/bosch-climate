@@ -150,9 +150,9 @@ def test_oberflaeche_v2_durchlauf(monkeypatch):
     assert not at.exception
     assert any("preis" in m.value and "€" in m.value for m in at.markdown)
     at.checkbox[0].check().run()
-    # Speichern gibt es zweimal: Desktop-Navigation und Smartphone-Schrittleiste
-    assert sorted(d.label for d in at.get("download_button")) == ["Angebotsübersicht (PDF)", "Speichern (JSON)",
-                                                                  "Speichern (JSON)"]
+    # Speichern gibt es mehrfach: Desktop-Navigation, Smartphone-Schrittleiste, „Neu beginnen“-Abfrage
+    assert {d.label for d in at.get("download_button")} == {"Angebotsübersicht (PDF)", "Speichern (JSON)",
+                                                            "Vorher speichern (JSON)"}
     for seite in ("system", "gebaeude", "raeume"):
         at.session_state.v2_seite = seite
         at.run()
@@ -605,3 +605,20 @@ def test_katalogfehler_und_hinweistexte():
 def P_GEWERBE_HINWEIS():
     from splitklima import parameter
     return parameter.GEWERBE_HINWEIS
+
+
+def test_oberflaeche_planung_zuruecksetzen(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("APP_PASSWORT", raising=False)
+    at = AppTest.from_file(str(WURZEL / "app_v2.py"), default_timeout=60).run()
+    next(b for b in at.button if b.label == "Beispielhaus laden").click().run()
+    p = at.session_state.v2_projekt
+    p.aufstellung, p.zubehoer_mengen = "flachdach", {Z.NR_PUMPE_WAND: 2}
+    at.session_state.v2_seite = "ergebnis"
+    at.run()
+    assert len(at.session_state.v2_projekt.raeume) == 7
+    next(b for b in at.button if b.key == "reset-ja-nav").click().run()
+    assert not at.exception
+    q = at.session_state.v2_projekt
+    assert q.raeume == [] and q.aufstellung == "" and q.zubehoer_mengen == {}
+    assert at.session_state.v2_seite == "system" and q.config_id != p.config_id

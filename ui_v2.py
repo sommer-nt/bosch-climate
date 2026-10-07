@@ -968,9 +968,8 @@ def seite_ergebnis(p: Projekt, kat: Katalog) -> None:
     c1, c2, _ = st.columns([1, 1, 2])
     if c1.button("Zurück", icon=":material/arrow_back:", width="stretch"):
         gehe("raeume")
-    if c2.button("Neues Projekt", icon=":material/restart_alt:", width="stretch"):
-        neues_projekt()
-        st.rerun()
+    with c2:
+        planung_zuruecksetzen(p, "ende")
 
 
 def _weiter_zurueck(zurueck: tuple[str, str] | None, weiter: tuple[str, str] | None, hier: str) -> None:
@@ -1059,6 +1058,25 @@ def konfiguration_speichern_laden(p: Projekt, mobil: bool = False) -> None:
                 st.error(fehler)
             st.caption("Lädt Räume, Einstellungen, Gerätewünsche und Zubehörmengen. Die aktuelle Konfiguration "
                        "wird ersetzt – vorher speichern.")
+        planung_zuruecksetzen(p, "m" if mobil else "nav")
+
+
+def planung_zuruecksetzen(p: Projekt, ort: str) -> None:
+    """„Neu beginnen“ mit Sicherheitsabfrage – löscht Räume, Einstellungen und Zubehörmengen."""
+    with st.popover("Neu beginnen", icon=":material/restart_alt:", width="stretch"):
+        st.markdown("**Planung zurücksetzen?**")
+        st.caption("Alle Räume, Einstellungen, Gerätewünsche und Zubehörmengen werden gelöscht. "
+                   "Wer die aktuelle Planung behalten möchte, speichert sie vorher als JSON.")
+        if p.raeume:
+            st.download_button("Vorher speichern (JSON)", SP.exportieren(p), file_name=SP.dateiname(p),
+                               mime="application/json", icon=":material/download:", width="stretch",
+                               key=f"reset-speichern-{ort}")
+        if st.button("Ja, alles zurücksetzen", type="primary", icon=":material/delete_sweep:", width="stretch",
+                     key=f"reset-ja-{ort}"):
+            neues_projekt()
+            _ss().v2_import_fehler = ""
+            _ss().v2_toast = "Neue Planung gestartet."
+            st.rerun()
 
 
 def konfiguration_importieren() -> None:
