@@ -125,6 +125,18 @@ INTERN_W_M2 = 12
 INTERN_GRUND = {"Küche": 320, "Badezimmer": 240, "Büro": 220, "Schlafzimmer": 120}
 INTERN_GRUND_DEFAULT = 180
 
+# Gewerbe (Version 2): Werkstatt, Halle/Lager, Verkaufsraum.
+# VORLÄUFIGE ANNAHMEN für die überschlägige Auslegung – fachlich freizugeben.
+# Wohn-Raumarten bleiben unverändert (v6.9.1), daher hier eigene Einträge.
+RAUMARTEN_GEWERBE = ["Werkstatt", "Halle / Lager", "Verkaufsraum"]
+LUFTWECHSEL.update({"Werkstatt": 0.5, "Halle / Lager": 0.3, "Verkaufsraum": 0.7})
+INTERN_GRUND.update({"Werkstatt": 300, "Halle / Lager": 0, "Verkaufsraum": 300})
+# Flächenbezogene innere Last [W/m²] (Beleuchtung, Maschinen, Personen); Standard 12 W/m²
+INTERN_W_M2_RAUMART = {"Werkstatt": 20, "Halle / Lager": 6, "Verkaufsraum": 25}
+GEWERBE_HINWEIS = ("Gewerbe-Raumarten: Luftwechsel und innere Lasten sind vorläufige Annahmen "
+                   "(Werkstatt 20 W/m², Halle/Lager 6 W/m², Verkaufsraum 25 W/m²) – Maschinenabwärme, "
+                   "Tore und Hallenhöhe (Temperaturschichtung) gesondert prüfen.")
+
 IG_BAUARTEN = ["auto", "Wandgerät", "Truhengerät", "Kassettengerät", "Kanalgerät"]
 
 FORMELN = {

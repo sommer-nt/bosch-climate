@@ -57,7 +57,10 @@ LAGE = [("outside", "1 Außen&shy;wand"), ("corner", "Eckraum"), ("three", "3 Au
         ("inside", "Innen&shy;liegend"), ("attic", "Dach&shy;geschoss"), ("attic_corner", "DG-Eck&shy;raum"),
         ("basement", "Über Keller")]
 RAUMART_KURZ = {"Wohnzimmer": "Wohnen", "Schlafzimmer": "Schlafen", "Büro": "Büro", "Küche": "Küche",
-                "Kinderzimmer": "Kinder", "Badezimmer": "Bad"}
+                "Kinderzimmer": "Kinder", "Badezimmer": "Bad", "Werkstatt": "Werkstatt",
+                "Halle / Lager": "Halle / Lager", "Verkaufsraum": "Laden"}
+RAUMARTEN_ALLE = [*P.RAUMARTEN, *P.RAUMARTEN_GEWERBE]
+LINIEN_BILD = {"3200i": "set_3200i", "7000i": "set_7000i_weiss", "8000i": "set_8000i_weiss"}
 BAUART = [("", "Keine Präferenz", "egal"), ("Wandgerät", "Wandgerät", "Wandgerät"),
           ("Deckenkassette", "Deckenkassette", "Deckenkassette"), ("Konsole", "Konsole", "Konsole")]
 FARBCODE = {"weiß": "#f4f5f6", "silber": "#c3c8cd", "schwarz": "#1d1f22", "anthrazit": "#41464d", "rot": "#c8102e"}
@@ -306,6 +309,19 @@ def seite_system(p: Projekt) -> None:
     st.markdown("#### Was soll die Anlage leisten?")
     karten("ba", [(v, t, s, v) for v, t, s in BETRIEB], p.einstellungen.betriebsart,
            lambda v: setattr(p.einstellungen, "betriebsart", v))
+    st.markdown("#### Bevorzugte Gerätelinie")
+
+    def linien_ikon(v: str) -> str:
+        if v not in LINIEN_BILD:
+            return svg("auto", 56)
+        pfad = Path(__file__).parent / "splitklima" / "daten" / "bilder" / f"{LINIEN_BILD[v]}.png"
+        return f'<img src="data:image/png;base64,{_b64(pfad)}" style="height:56px">'
+
+    untertitel = {"": "Wir wählen die günstigste passende Lösung.", "3200i": "Solide Wandgeräte, günstig.",
+                  "7000i": "Leise, BEG-förderfähig mit MSG-1, auch silber/schwarz.",
+                  "8000i": "Design-Linie, anthrazit/silber/rot – nur als Set."}
+    karten("linie", [(v, t, untertitel[v], linien_ikon(v)) for v, t in A.GERAETELINIEN.items()], p.geraetelinie,
+           lambda v: (setattr(p, "geraetelinie", v), _ss().pop("v2_konzept", None)), spalten=4, klein=True)
     _weiter_zurueck(None, ("gebaeude", "Weiter zum Gebäude"), "system")
 
 
@@ -532,13 +548,15 @@ def seite_raum(p: Projekt, i: int) -> None:
     r.geschoss = c2.text_input("Geschoss", r.geschoss, key=_k(f"rg{i}"), placeholder="EG, OG, DG …")
 
     st.markdown("##### Nutzung")
-    karten(f"ra{i}", [(v, RAUMART_KURZ[v], "", v) for v in P.RAUMARTEN], r.raumart, lambda v: setattr(r, "raumart", v),
-           spalten=6, klein=True, groesse=40)
+    karten(f"ra{i}", [(v, RAUMART_KURZ[v], "", v) for v in RAUMARTEN_ALLE], r.raumart,
+           lambda v: setattr(r, "raumart", v), spalten=5, klein=True, groesse=40)
+    if r.raumart in P.RAUMARTEN_GEWERBE:
+        st.caption(P.GEWERBE_HINWEIS)
 
     st.markdown("##### Größe")
     c1, c2, _ = st.columns([1, 1, 1])
     r.flaeche = zahl(c1, "Grundfläche", "m²", r.flaeche or 1, 1.0, 500.0, 0.5, f"rf{i}")
-    r.hoehe = zahl(c2, "Raumhöhe", "m", r.hoehe or 2.5, 1.8, 6.0, 0.05, f"rh{i}", "%.2f")
+    r.hoehe = zahl(c2, "Raumhöhe", "m", r.hoehe or 2.5, 1.8, 10.0, 0.05, f"rh{i}", "%.2f")
 
     st.markdown("##### Lage im Gebäude")
 
@@ -804,6 +822,7 @@ def zusammenfassung(p: Projekt, kat: Katalog) -> None:
 
         zeilen = [("System", dict((v, t) for v, t, _ in SYSTEME)[p.systemwunsch]),
                   ("Betrieb", dict((v, t) for v, t, _ in BETRIEB)[e.betriebsart]),
+                  *([("Gerätelinie", A.GERAETELINIEN[p.geraetelinie])] if p.geraetelinie else []),
                   ("Standort", p.ort), ("Norm-Außentemp.", grad(e.norm_aussen)),
                   ("Baujahr", str(p.baujahr or "–"))]
         if p.raeume:
@@ -823,13 +842,16 @@ def zusammenfassung(p: Projekt, kat: Katalog) -> None:
             c1.metric("Kühllast", f"{de(l.cool, 2)} kW")
             c2.metric("Heizlast", f"{de(l.heat, 2)} kW")
             if gewaehlt:
-                for t in gewaehlt.teilsysteme:
-                    for rr, u in ([(x, t.set) for x in t.raeume] if t.set else t.innen):
-                        if rr is r and u is not None:
-                            pf = bild_innen_set(u) if t.set else bild(u)
-                            if pf:
-                                _bild_mittig(pf, 220)
-                            st.caption(f"Vorschlag: {u.typ}")
+                treffer = [(u, bool(t.set)) for t in gewaehlt.teilsysteme
+                           for rr, u in ([(x, t.set) for x in t.raeume] if t.set else t.innen)
+                           if u is not None and (rr is r or rr.name.startswith(f"{r.name} · Zone "))]
+                if treffer:
+                    u, ist_set = treffer[0]
+                    if pf := (bild_innen_set(u) if ist_set else bild(u)):
+                        _bild_mittig(pf, 220)
+                    typen = list(dict.fromkeys(x.typ for x, _ in treffer))
+                    st.caption("Vorschlag: " + (f"{len(treffer)} Geräte – " if len(treffer) > 1 else "")
+                               + ", ".join(typen))
 
 
 # ====================================================================== Einstieg

@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from .. import parameter as P
+from ..berechnung import raum_last
 from ..bericht import BOSCH_BLAU, BOSCH_ROT, GRAU, _Bericht
 from ..modell import Projekt
 from ..preise import fmt_eur, gesamtpreis
-from .auswahl import Konzept, bedarfe, optionale_leistungen
+from .auswahl import Konzept, optionale_leistungen
 from .bilder import bild
 from .katalog import Katalog
 
@@ -78,14 +79,13 @@ def pdf_angebot_v2(projekt: Projekt, konzept: Konzept, kat: Katalog, bestaetigt_
                 [28, 62, 93, 22, 22, 22, 24])
 
     pdf.abschnitt("Räume und Inneneinheiten")
-    last = {id(b.raum): b for b in bedarfe(projekt)}
     zeilen = []
     for t in konzept.teilsysteme:
         geraete = [(r, t.set) for r in t.raeume] if t.set else t.innen
         for r, u in geraete:
-            b = last.get(id(r))
-            zeilen.append([f"{r.geschoss} {r.name}".strip(), r.raumart, f"{r.flaeche:g} m²",
-                           f"{b.kuehl:.2f} kW" if b else "-", f"{b.heiz:.2f} kW" if b else "-",
+            b = raum_last(r, e)
+            zeilen.append([f"{r.geschoss} {r.name}".strip(), r.raumart, f"{r.flaeche:.1f} m²".replace(".", ","),
+                           f"{b.cool:.2f} kW", f"{b.heat:.2f} kW",
                            u.typ if u else "-", (u.bauart or "Wandgerät") if u else "-", (u.farbe or "-") if u else "-"])
     pdf.tabelle(["Raum", "Nutzung", "Fläche", "Kühllast", "Heizlast", "Gerät", "Bauart", "Farbe"], zeilen,
                 [48, 28, 20, 22, 22, 63, 35, 35])

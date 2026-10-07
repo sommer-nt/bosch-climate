@@ -62,6 +62,13 @@ SYMBOLE: dict[str, str] = {
                     '<path d="M28 41a6 4 0 0 0 8 0"/>',
     "Badezimmer": '<path d="M6 32h52v6a12 12 0 0 1-12 12H18A12 12 0 0 1 6 38z"/><path d="M18 50l-3 6M46 50l3 6"/>'
                   '<path d="M14 32V14a5 5 0 0 1 10 0"/><path d="M21 18h6"/>',
+    "Werkstatt": '<path d="M8 54h48M12 54V30l20-12 20 12v24"/><path d="M24 54V40h16v14"/>'
+                 '<path d="M44 12l8 8-4 4-8-8z"/><path d="M40 16L28 28"/><circle cx="26" cy="30" r="3"/>',
+    "Halle / Lager": '<path d="M6 54h52M8 54V24L32 10l24 14v30"/><path d="M16 54V32h32v22"/>'
+                     '<path d="M16 39h32M16 46h32M24 32v22M40 32v22"/>',
+    "Verkaufsraum": '<path d="M10 26h44v28H10z"/><path d="M8 26l4-12h40l4 12"/>'
+                    '<path d="M8 26c0 4 6 4 6 0c0 4 6 4 6 0c0 4 6 4 6 0c0 4 6 4 6 0c0 4 6 4 6 0c0 4 6 4 6 0c0 4 6 4 6 0'
+                    'c0 4 6 4 6 0"/><path d="M18 54V38h10v16M34 38h12v8H34z"/>',
     # ---------------------------------------------------------- Bauart
     "Wandgerät": '<path d="M8 10v44"/><rect x="12" y="20" width="44" height="16" rx="4"/>'
                  '<path d="M18 30h32M22 42l-2 6M34 42v6M46 42l2 6"/>',

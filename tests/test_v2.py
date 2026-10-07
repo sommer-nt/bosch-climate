@@ -185,3 +185,82 @@ def test_farbe_bei_kassette_ignoriert():
     p.raeume[0].ig_bauart = "Deckenkassette"
     for k in A.konzepte(p, KAT):
         assert A.farbabweichungen(k) == 0 and not any("Wunschfarbe" in h for h in k.hinweise)
+
+
+# ---------------------------------------------------------------- Gewerbe, Zonen, Gerätelinie
+from splitklima import parameter as P  # noqa: E402
+
+
+def _halle(art="Werkstatt", flaeche=200.0, hoehe=6.0) -> Projekt:
+    r = Raum(name=art, raumart=art, flaeche=flaeche, hoehe=hoehe, lage="corner",
+             waende=[Wand(ausrichtung="S", laenge=20, fenster=12), Wand(ausrichtung="W", laenge=10, fenster=4)])
+    return Projekt(raeume=[r])
+
+
+def test_gewerbe_raumarten_im_rechenkern():
+    p = _halle()
+    werkstatt = raum_last(p.raeume[0], p.einstellungen)
+    p.raeume[0].raumart = "Halle / Lager"
+    lager = raum_last(p.raeume[0], p.einstellungen)
+    assert werkstatt.cool > lager.cool  # mehr innere Last in der Werkstatt
+    assert set(P.RAUMARTEN_GEWERBE) <= set(P.LUFTWECHSEL) and len(P.RAUMARTEN) == 6  # v1-Liste unverändert
+
+
+@pytest.mark.parametrize("art,flaeche,hoehe", [("Werkstatt", 200, 6.0), ("Halle / Lager", 400, 10.0),
+                                               ("Verkaufsraum", 120, 3.0)])
+def test_grosse_raeume_werden_in_zonen_geteilt(art, flaeche, hoehe):
+    p = _halle(art, flaeche, hoehe)
+    bed = A.bedarfe(p, KAT)
+    assert len(bed) > 1
+    assert abs(sum(b.raum.flaeche for b in bed) - flaeche) < 1e-6
+    assert all(b.raum.name.startswith(f"{art} · Zone ") for b in bed)
+    liste = A.konzepte(p, KAT)
+    assert any(k.gedeckt for k in liste)
+    for k in liste:
+        _pruefe_konzept(k, p)
+        if k.gedeckt:
+            assert k.innengeraete == len(bed)
+
+
+def test_kleine_raeume_bleiben_ganz():
+    p = beispielprojekt()
+    assert len(A.bedarfe(p, KAT)) == len(p.raeume)
+
+
+def test_gruppen_beachten_last_der_aussengeraete():
+    bed = [A.Bedarf(Raum(name=f"R{i}"), 5.0, 5.0) for i in range(6)]
+    for g in A.gruppen(bed, max_groesse=5, max_kuehl=12.3, max_heiz=12.3):
+        assert sum(b.kuehl for b in g) <= 12.3 and len(g) <= 5
+
+
+@pytest.mark.parametrize("linie", ["7000i", "8000i", "3200i"])
+def test_geraetelinie_wird_empfohlen(linie):
+    p = beispielprojekt()
+    p.geraetelinie = linie
+    liste = A.konzepte(p, KAT)
+    empf = next(k for k in liste if k.empfohlen)
+    assert A.linienabweichungen(empf, linie) == 0, empf.geraete_text
+    for k in liste:
+        _pruefe_konzept(k, p)
+    if linie == "8000i":  # gibt es nur als Set
+        assert empf.key == "single"
+
+
+def test_oberflaeche_geraetelinie_und_hoehe(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("APP_PASSWORT", raising=False)
+    at = AppTest.from_file(str(WURZEL / "app_v2.py"), default_timeout=60).run()
+    next(b for b in at.button if b.label == "Climate 7000i").click().run()
+    assert at.session_state.v2_projekt.geraetelinie == "7000i"
+    next(b for b in at.button if b.label == "Beispielhaus laden").click().run()
+    next(b for b in at.button if b.label == "Küche bearbeiten").click().run()
+    next(b for b in at.button if b.label == "Werkstatt").click().run()
+    hoehe = next(n for n in at.number_input if n.label == "Raumhöhe")
+    hoehe.set_value(9.5).run()
+    assert not at.exception
+    r = at.session_state.v2_projekt.raeume[at.session_state.v2_raum]
+    assert (r.raumart, r.hoehe) == ("Werkstatt", 9.5)
+    at.session_state.v2_seite = "ergebnis"
+    at.run()
+    assert not at.exception
+    assert any("CL7000" in c.value for c in at.caption)

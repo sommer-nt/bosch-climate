@@ -69,6 +69,17 @@ Rechenkern und derselben KI-Planerkennung:
 streamlit run app_v2.py
 ```
 
+### Gewerbe, große Räume und Gerätelinie (Version 2)
+
+- **Raumarten** zusätzlich *Werkstatt*, *Halle / Lager*, *Verkaufsraum* – Luftwechsel und innere Lasten
+  sind vorläufige Annahmen (`splitklima/parameter.py`, fachlich freizugeben); die Wohn-Raumarten und
+  damit alle Ergebnisse aus v6.9.1 bleiben unverändert.
+- **Raumhöhe bis 10 m.**
+- **Große Räume** (z. B. Werkstatt 200 m²), die kein einzelnes Gerät decken kann, werden automatisch in
+  Zonen mit je einem Innengerät aufgeteilt; Multi-Split-Gruppen beachten die Leistung der Außeneinheit.
+- **Bevorzugte Gerätelinie** (Climate 3200i, 7000i, Class 8000i): geht in der Empfehlung vor dem Preis;
+  ist sie für einen Raum nicht möglich, wird eine andere Linie gewählt und darauf hingewiesen.
+
 ### Norm-Außentemperatur über die PLZ (Version 2)
 
 Auf der Seite „Gebäude“ genügt die PLZ oder der Ort. Die App prüft die Eingabe gegen das
