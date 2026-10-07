@@ -150,7 +150,9 @@ def test_oberflaeche_v2_durchlauf(monkeypatch):
     assert not at.exception
     assert any("preis" in m.value and "€" in m.value for m in at.markdown)
     at.checkbox[0].check().run()
-    assert sorted(d.label for d in at.get("download_button")) == ["Angebotsübersicht (PDF)", "Speichern (JSON)"]
+    # Speichern gibt es zweimal: Desktop-Navigation und Smartphone-Schrittleiste
+    assert sorted(d.label for d in at.get("download_button")) == ["Angebotsübersicht (PDF)", "Speichern (JSON)",
+                                                                  "Speichern (JSON)"]
     for seite in ("system", "gebaeude", "raeume"):
         at.session_state.v2_seite = seite
         at.run()
