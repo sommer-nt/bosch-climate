@@ -704,10 +704,16 @@ def zubehoer_bereich(p: Projekt, k: A.Konzept, kat: Katalog) -> None:
             st.rerun()
         alle = st.toggle("Alle Zubehörartikel zeigen", key=_k("zalle"))
         sichtbar = [z for z in zeilen if alle or z.vorschlag or z.menge]
+        if not sichtbar:
+            st.info("Für diese Lösung gibt es keinen automatischen Zubehörvorschlag – z. B. Large-Split über 7 kW "
+                    "(Kältemittelleitung bauseits) ohne gewählten Aufstellort. Über „Alle Zubehörartikel zeigen“ "
+                    "können Sie Artikel manuell ergänzen.", icon=":material/info:")
+            return
+        spalten = ["Menge", "Artikel", "Bestell-Nr.", "Einzelpreis", "Summe", "Gruppe", "Vorschlag", "Hinweis"]
         df = st.data_editor(
             pdx.DataFrame([{"Menge": z.menge, "Artikel": z.name, "Bestell-Nr.": z.bestellnr,
                             "Einzelpreis": z.einzelpreis, "Summe": z.summe, "Gruppe": z.gruppe,
-                            "Vorschlag": z.vorschlag, "Hinweis": z.grund} for z in sichtbar]),
+                            "Vorschlag": z.vorschlag, "Hinweis": z.grund} for z in sichtbar], columns=spalten),
             hide_index=True, width="stretch", num_rows="fixed", key=_k(f"zub-{k.key}-{alle}"),
             disabled=["Artikel", "Bestell-Nr.", "Einzelpreis", "Summe", "Gruppe", "Vorschlag", "Hinweis"],
             column_config={
