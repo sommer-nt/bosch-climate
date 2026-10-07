@@ -111,7 +111,8 @@ def raum_last(raum: Raum, e: Einstellungen) -> RaumLast:
     V = A * h
     n = luftwechsel(raum)
     vent_c = 0.34 * n * V * dtC
-    internal = A * P.INTERN_W_M2 + P.INTERN_GRUND.get(raum.raumart, P.INTERN_GRUND_DEFAULT)
+    internal = (A * P.INTERN_W_M2_RAUMART.get(raum.raumart, P.INTERN_W_M2)
+                + P.INTERN_GRUND.get(raum.raumart, P.INTERN_GRUND_DEFAULT))
     solar = solar_win + solar_roof
     cool_gross = solar + trans_c + vent_c + internal
     damp = speicher_daempfung(raum, e)

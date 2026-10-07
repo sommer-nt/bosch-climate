@@ -44,12 +44,75 @@ class Bedarf:
     heiz: float
 
 
-def bedarfe(projekt: Projekt) -> list[Bedarf]:
+# Gerätelinien, die der Anwender bevorzugen kann ("" = wirtschaftlichste Lösung)
+GERAETELINIEN = {
+    "": "Wirtschaftlichste Lösung",
+    "3200i": "Climate 3200i",
+    "7000i": "Climate 7000i",
+    "8000i": "Climate Class 8000i",
+}
+MAX_ZONEN = 12
+
+
+def linie_passt(a: Artikel, linie: str) -> bool:
+    """Passt der Artikel zur Wunsch-Gerätelinie? Kassetten/Konsolen gibt es nur als 5000i – immer erlaubt."""
+    if not linie:
+        return True
+    if a.bauart in ("Deckenkassette", "Konsole"):
+        return True
+    if a.anschluesse:  # Multi-Außeneinheit
+        return {"7000i": "7000 M", "3200i": "5000 M"}.get(linie, "§") in a.linie
+    return linie in a.linie
+
+
+def _teilraum(r: Raum, k: int, i: int) -> Raum:
+    """Raum in k gleich große Zonen teilen (Fläche, Wände, Fenster, Dach anteilig)."""
+    t = r.model_copy(deep=True)
+    t.name = f"{r.name} · Zone {i}/{k}"
+    t.flaeche = r.flaeche / k
+    t.dachflaeche = (r.dachflaeche or 0) / k
+    for w in t.waende:
+        w.laenge, w.fenster = w.laenge / k, w.fenster / k
+    for g in t.fenstergruppen:
+        g.flaeche = g.flaeche / k
+    return t
+
+
+def _max_einheit(r: Raum, kat: Katalog, linie: str) -> tuple[float, float]:
+    """Größte Kühl-/Heizleistung, die ein einzelnes Gerät in diesem Raum haben kann (Bauartwunsch, Linie)."""
+    wunsch = bauart_wunsch(r)
+    geraete = [u for u in kat.innen if not wunsch or u.bauart == wunsch]
+    if wunsch in ("", "Wandgerät"):
+        geraete += list(kat.sets)
+    passend = [u for u in geraete if linie_passt(u, linie)] or geraete
+    return (max((u.kuehl or 0) for u in passend), max((u.heiz or 0) for u in passend))
+
+
+def bedarfe(projekt: Projekt, kat: Katalog | None = None) -> list[Bedarf]:
+    """Lasten je Raum aus dem Rechenkern. Mit Katalog: Räume, die kein einzelnes Gerät decken kann
+    (z. B. Werkstatt, Halle), werden in Zonen mit je einem Innengerät aufgeteilt."""
     e = projekt.einstellungen
+    kuehl_rel, heiz_rel = _relevant(projekt)
     out = []
     for r in projekt.raeume:
         l = raum_last(r, e)
-        out.append(Bedarf(r, l.cool, l.heat))
+        if kat is None:
+            out.append(Bedarf(r, l.cool, l.heat))
+            continue
+        k_max, h_max = _max_einheit(r, kat, projekt.geraetelinie)
+        k = 1
+        while k < MAX_ZONEN:
+            teil = l if k == 1 else raum_last(_teilraum(r, k, 1), e)
+            if not ((kuehl_rel and teil.cool > k_max) or (heiz_rel and teil.heat > h_max)):
+                break
+            k += 1
+        if k == 1:
+            out.append(Bedarf(r, l.cool, l.heat))
+        else:
+            for i in range(1, k + 1):
+                t = _teilraum(r, k, i)
+                lt = raum_last(t, e)
+                out.append(Bedarf(t, lt.cool, lt.heat))
     return out
 
 
@@ -129,7 +192,14 @@ def single_set(b: Bedarf, kat: Katalog, projekt: Projekt) -> tuple[Artikel | Non
             return False
         return True
 
-    kandidaten = [s for s in kat.sets if deckt(s)]
+    alle = [s for s in kat.sets if deckt(s)]
+    linie = projekt.geraetelinie
+    kandidaten = [s for s in alle if linie_passt(s, linie)]
+    linien_hinweis = []
+    if linie and not kandidaten and alle:
+        kandidaten = alle
+        linien_hinweis = [f"{b.raum.name}: {GERAETELINIEN.get(linie, linie)} deckt die Last nicht – "
+                          "andere Gerätelinie gewählt."]
     farbe = farbwunsch(b.raum)
     stufen = [
         ([s for s in kandidaten if s.verfuegbar and (not farbe or s.farbe == farbe)], None),
@@ -141,7 +211,7 @@ def single_set(b: Bedarf, kat: Katalog, projekt: Projekt) -> tuple[Artikel | Non
         if liste:
             best = min(liste, key=lambda s: (s.preis or math.inf, s.kuehl or 0))
             notizen = [hinweis] if hinweis and (farbe or "lieferbar" in hinweis) else []
-            return best, notizen
+            return best, linien_hinweis + notizen
     return None, [f"{b.raum.name}: Kein Single-Split-Set deckt {b.kuehl:.2f} kW Kühl-/"
                   f"{b.heiz:.2f} kW Heizlast."]
 
@@ -157,7 +227,7 @@ def single_system(b: Bedarf, kat: Katalog, projekt: Projekt, bezeichnung: str | 
 
 # ---------------------------------------------------------------- Multi-Split
 def _innen_optionen(b: Bedarf, ae: Artikel, kat: Katalog, projekt: Projekt, nur_verfuegbar: bool,
-                    farbe_streng: bool) -> list[Artikel]:
+                    farbe_streng: bool, linie: str = "") -> list[Artikel]:
     _, heiz_rel = _relevant(projekt)
     nur_heizen = projekt.einstellungen.betriebsart == "heat"
     wunsch = bauart_wunsch(b.raum)
@@ -166,6 +236,8 @@ def _innen_optionen(b: Bedarf, ae: Artikel, kat: Katalog, projekt: Projekt, nur_
         if ae.typ not in u.aussen_kompatibel:
             continue
         if nur_verfuegbar and not u.verfuegbar:
+            continue
+        if not linie_passt(u, linie):
             continue
         if wunsch and u.bauart != wunsch:
             continue
@@ -195,63 +267,75 @@ def multi_system(gruppe: list[Bedarf], kat: Katalog, projekt: Projekt, bezeichnu
     last_k, last_h = _gruppenlast([b.raum for b in gruppe], projekt)
     ts = Teilsystem(bezeichnung, "multi", [b.raum for b in gruppe], last_k, last_h)
 
-    for nur_verfuegbar in (True, False):
-        bestes = None
-        for ae in kat.aussen:
-            if nur_verfuegbar and not ae.verfuegbar:
-                continue
-            if not (ae.min_ie <= n <= (ae.anschluesse or 0)):
-                continue
-            if kuehl_rel and (ae.kuehl or 0) < last_k:
-                continue
-            if heiz_rel and (ae.heiz or 0) < last_h:
-                continue
-            optionen = []
-            farbe_gelockert = []
-            for b in gruppe:
-                opt = _innen_optionen(b, ae, kat, projekt, nur_verfuegbar, farbe_streng=True)
-                if not opt and farbwunsch(b.raum):
-                    opt = _innen_optionen(b, ae, kat, projekt, nur_verfuegbar, farbe_streng=False)
-                    farbe_gelockert.append(b.raum.name)
-                optionen.append(opt)
-            if any(not o for o in optionen):
-                continue
-            for kombi in kat.kombinationen.get(ae.typ, ()):
-                if len(kombi) != n:
+    linien = [projekt.geraetelinie, ""] if projekt.geraetelinie else [""]
+    for linie in linien:
+        for nur_verfuegbar in (True, False):
+            bestes = None
+            for ae in kat.aussen:
+                if nur_verfuegbar and not ae.verfuegbar:
                     continue
-                for perm in set(permutations(kombi)):
-                    wahl = []
-                    for opt, klasse in zip(optionen, perm):
-                        passend = [u for u in opt if u.klasse == klasse]
-                        if not passend:
-                            break
-                        wahl.append(min(passend, key=lambda u: u.preis or math.inf))
-                    else:
-                        preis = (ae.preis or 0) + sum(u.preis or 0 for u in wahl)
-                        schluessel = (len(farbe_gelockert), preis, ae.kuehl or 0)
-                        if bestes is None or schluessel < bestes[0]:
-                            bestes = (schluessel, ae, wahl, list(farbe_gelockert))
-        if bestes:
-            _, ae, wahl, gelockert = bestes
-            ts.aussen = ae
-            ts.innen = [(b.raum, u) for b, u in zip(gruppe, wahl)]
-            ts.hinweise += [f"{name}: Wunschfarbe nicht verfügbar – Standardfarbe gewählt." for name in gelockert]
-            if not nur_verfuegbar:
-                ts.hinweise.append("Enthält noch nicht lieferbare Geräte.")
-            return ts
+                if not linie_passt(ae, linie):
+                    continue
+                if not (ae.min_ie <= n <= (ae.anschluesse or 0)):
+                    continue
+                if kuehl_rel and (ae.kuehl or 0) < last_k:
+                    continue
+                if heiz_rel and (ae.heiz or 0) < last_h:
+                    continue
+                optionen = []
+                farbe_gelockert = []
+                for b in gruppe:
+                    opt = _innen_optionen(b, ae, kat, projekt, nur_verfuegbar, farbe_streng=True, linie=linie)
+                    if not opt and farbwunsch(b.raum):
+                        opt = _innen_optionen(b, ae, kat, projekt, nur_verfuegbar, farbe_streng=False, linie=linie)
+                        farbe_gelockert.append(b.raum.name)
+                    optionen.append(opt)
+                if any(not o for o in optionen):
+                    continue
+                for kombi in kat.kombinationen.get(ae.typ, ()):
+                    if len(kombi) != n:
+                        continue
+                    for perm in set(permutations(kombi)):
+                        wahl = []
+                        for opt, klasse in zip(optionen, perm):
+                            passend = [u for u in opt if u.klasse == klasse]
+                            if not passend:
+                                break
+                            wahl.append(min(passend, key=lambda u: u.preis or math.inf))
+                        else:
+                            preis = (ae.preis or 0) + sum(u.preis or 0 for u in wahl)
+                            schluessel = (len(farbe_gelockert), preis, ae.kuehl or 0)
+                            if bestes is None or schluessel < bestes[0]:
+                                bestes = (schluessel, ae, wahl, list(farbe_gelockert))
+            if bestes:
+                _, ae, wahl, gelockert = bestes
+                ts.aussen = ae
+                ts.innen = [(b.raum, u) for b, u in zip(gruppe, wahl)]
+                if linie != projekt.geraetelinie:
+                    ts.hinweise.append(f"{GERAETELINIEN.get(projekt.geraetelinie, projekt.geraetelinie)} "
+                                       "als Multi-Split hier nicht möglich – andere Gerätelinie gewählt.")
+                ts.hinweise += [f"{name}: Wunschfarbe nicht verfügbar – Standardfarbe gewählt."
+                                for name in gelockert]
+                if not nur_verfuegbar:
+                    ts.hinweise.append("Enthält noch nicht lieferbare Geräte.")
+                return ts
     ts.hinweise.append(f"Keine zulässige Multi-Split-Kombination für {n} Räume "
                        f"({last_k:.2f} kW Kühl-/{last_h:.2f} kW Heizlast).")
     return ts
 
 
-def gruppen(bed: list[Bedarf], max_groesse: int = 5) -> list[list[Bedarf]]:
-    """Teilt Räume (nach Geschoss geordnet) in möglichst gleich große Gruppen ≤ max_groesse."""
-    if len(bed) <= max_groesse:
-        return [bed]
+def gruppen(bed: list[Bedarf], max_groesse: int = 5, max_kuehl: float = math.inf,
+            max_heiz: float = math.inf) -> list[list[Bedarf]]:
+    """Teilt Räume (nach Geschoss geordnet) in möglichst wenige, gleich große Gruppen mit höchstens
+    ``max_groesse`` Innengeräten, deren Summenlast eine Außeneinheit noch decken kann."""
     geordnet = sorted(bed, key=lambda b: b.raum.geschoss)
-    k = math.ceil(len(geordnet) / max_groesse)
-    groesse = math.ceil(len(geordnet) / k)
-    return [geordnet[i:i + groesse] for i in range(0, len(geordnet), groesse)]
+    n = len(geordnet)
+    for k in range(max(1, math.ceil(n / max_groesse)), n + 1):
+        groesse = math.ceil(n / k)
+        teile = [geordnet[i:i + groesse] for i in range(0, n, groesse)]
+        if all(sum(b.kuehl for b in t) <= max_kuehl and sum(b.heiz for b in t) <= max_heiz for t in teile):
+            return teile
+    return [[b] for b in geordnet]
 
 
 # ---------------------------------------------------------------- Konzepte
@@ -336,7 +420,10 @@ def nur_als_set(b: Bedarf, kat: Katalog) -> bool:
 def _multi_teilsysteme(bed: list[Bedarf], kat: Katalog, projekt: Projekt, name: str,
                        mehrere: bool) -> list[Teilsystem]:
     out = []
-    gs = gruppen(bed)
+    kuehl_rel, heiz_rel = _relevant(projekt)
+    aes = [ae for ae in kat.aussen if linie_passt(ae, projekt.geraetelinie)] or list(kat.aussen)
+    gs = gruppen(bed, max_groesse=max(ae.anschluesse or 1 for ae in aes), max_kuehl=max(ae.kuehl or 0 for ae in aes) if kuehl_rel else math.inf,
+                 max_heiz=max(ae.heiz or 0 for ae in aes) if heiz_rel else math.inf)
     for j, g in enumerate(gs, 1):
         bez = name if len(gs) == 1 else (f"{name} ({j})" if mehrere else f"System {j}")
         out.append(single_system(g[0], kat, projekt, bez) if len(g) == 1 else multi_system(g, kat, projekt, bez))
@@ -344,7 +431,7 @@ def _multi_teilsysteme(bed: list[Bedarf], kat: Katalog, projekt: Projekt, name: 
 
 
 def konzepte(projekt: Projekt, kat: Katalog, wunsch: str = "auto") -> list[Konzept]:
-    bed = bedarfe(projekt)
+    bed = bedarfe(projekt, kat)
     if not bed:
         return []
     out: list[Konzept] = []
@@ -383,7 +470,7 @@ def konzepte(projekt: Projekt, kat: Katalog, wunsch: str = "auto") -> list[Konze
                               "ein eigenes Set.")
         out.append(k)
 
-    empfehlung_setzen(out)
+    empfehlung_setzen(out, projekt.geraetelinie)
     return out
 
 
@@ -396,14 +483,20 @@ def farbabweichungen(k: Konzept) -> int:
     return n
 
 
-def empfehlung_setzen(liste: list[Konzept]) -> None:
-    """Erfüllte Farbwünsche zuerst, dann das wirtschaftlichste vollständige Konzept,
-    bei Gleichstand weniger Außengeräte."""
+def linienabweichungen(k: Konzept, linie: str) -> int:
+    """Anzahl Geräte, die nicht zur Wunsch-Gerätelinie gehören."""
+    return sum(1 for t in k.teilsysteme for a in t.artikel() if not linie_passt(a, linie)) if linie else 0
+
+
+def empfehlung_setzen(liste: list[Konzept], linie: str = "") -> None:
+    """Erfüllte Farbwünsche und Wunsch-Gerätelinie zuerst, dann das wirtschaftlichste vollständige
+    Konzept, bei Gleichstand weniger Außengeräte."""
     for k in liste:
         k.empfohlen = False
     kandidaten = [k for k in liste if k.gedeckt]
     if kandidaten:
-        min(kandidaten, key=lambda k: (farbabweichungen(k), k.preis if k.preis is not None else math.inf,
+        min(kandidaten, key=lambda k: (farbabweichungen(k), linienabweichungen(k, linie),
+                                       k.preis if k.preis is not None else math.inf,
                                        k.aussengeraete)).empfohlen = True
 
 

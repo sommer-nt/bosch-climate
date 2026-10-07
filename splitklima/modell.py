@@ -15,7 +15,8 @@ from pydantic import BaseModel, Field
 from .parameter import MODE_WALLS
 
 Ausrichtung = Literal["N", "NO", "O", "SO", "S", "SW", "W", "NW"]
-Raumart = Literal["Wohnzimmer", "Schlafzimmer", "Büro", "Küche", "Kinderzimmer", "Badezimmer"]
+Raumart = Literal["Wohnzimmer", "Schlafzimmer", "Büro", "Küche", "Kinderzimmer", "Badezimmer",
+                  "Werkstatt", "Halle / Lager", "Verkaufsraum"]  # die letzten drei: Version 2 (Gewerbe)
 Lage = Literal["inside", "outside", "corner", "three", "attic", "attic_corner", "basement"]
 Dachform = Literal["flat", "saddle_south", "saddle_north", "saddle_eastwest"]
 Vertikal = Literal[
@@ -128,3 +129,4 @@ class Projekt(BaseModel):
     # Version 2: Herkunft der Norm-Außentemperatur (DIN/TS 12831-1, Nachbar-PLZ, Richtwert, manuell)
     klima_quelle: str = ""
     norm_aussen_manuell: bool = False
+    geraetelinie: str = ""  # Version 2: Wunsch-Gerätelinie, z. B. "7000i" ("" = wirtschaftlichste)
