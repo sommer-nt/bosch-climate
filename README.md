@@ -85,6 +85,15 @@ Rechenkern und derselben KI-Planerkennung:
   Katalogbildern prüfen.
 - **Neu beginnen:** setzt die Planung nach Sicherheitsabfrage komplett zurück (Navigation links, Smartphone-Menü,
   Ende der Ergebnisseite); vorher optional als JSON speichern.
+- **Planungs-Assistent (Beta):** Chat-Blase unten rechts (Smartphone: Panel von unten). Änderungen an der Planung
+  per Text, z. B. „Der Plan hat keinen Nordpfeil – das Wohnzimmer liegt im Norden“ (dreht den ganzen Grundriss) oder
+  „Haus von 1958, Fassade 1990 gedämmt“. Claude (`claude-opus-5-5`) arbeitet nur über feste Werkzeuge auf der
+  Planung der eigenen Sitzung (`splitklima/v2/assistent.py`): kein Zugriff auf Code, Dateien, Server oder Katalog;
+  jede Eingabe wird wie per Klick geprüft; Ergebnis mit vorher/nachher und „Rückgängig“. Benötigt
+  `ANTHROPIC_API_KEY` (wie die Grundriss-Erkennung); `ASSISTENT=0` blendet den Chat aus. Kostenbremse: 40
+  Nachrichten je Sitzung – zusätzlich in der Anthropic Console ein monatliches Ausgabenlimit für den Schlüssel setzen.
+- **Nachträgliche Dämmung:** Gebäude-Seite „Außenwände nachträglich gedämmt“ mit Stufen nach Sanierungsjahr
+  (vor 1995 U≈0,50, 1995–2008 U≈0,35, ab 2009 U≈0,28, Kern-/Innendämmung).
 - **Konfiguration speichern/laden:** „Speichern (JSON)“ lädt Räume, Einstellungen, Gerätewünsche und Zubehörmengen
   als Datei herunter; „Laden“ stellt sie wieder her (Format `bosch-climate-konfiguration`, Version 1).
 - **Flachdach:** je Raum Dachform wählbar (Flachdach, Satteldach Süd/Nord/Ost-West – auch für Nicht-DG-Räume wie

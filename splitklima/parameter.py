@@ -84,6 +84,20 @@ RETROFIT = {
     "interior": {"label": "Innendämmung (U≈0,40)", "u": 0.40},
 }
 
+# Version 2: nachträgliche Fassadendämmung nach Sanierungsjahr (v1-Auswahl bleibt unverändert)
+RETROFIT_ZUSATZ = {
+    "facade_1990": {"label": "Fassadendämmung vor 1995, ca. 4–6 cm (U≈0,50)", "u": 0.50},
+    "facade_2000": {"label": "Fassadendämmung 1995–2008, ca. 8–10 cm (U≈0,35)", "u": 0.35},
+}
+NACHDAEMMUNG_V2 = {
+    "none": "keine",
+    "facade_1990": RETROFIT_ZUSATZ["facade_1990"]["label"],
+    "facade_2000": RETROFIT_ZUSATZ["facade_2000"]["label"],
+    "facade": "Fassadendämmung ab 2009, ca. 12–16 cm (U≈0,28)",
+    "core": RETROFIT["core"]["label"],
+    "interior": RETROFIT["interior"]["label"],
+}
+
 # Vertikale Lage: U-Faktoren und Kühl-/Heiz-Gewichtung für Boden/Decke
 VERTICAL = {
     "between_heated": {"floorU": 0, "floorC": 0, "floorH": 0, "ceilU": 0, "ceilC": 0, "ceilH": 0},
