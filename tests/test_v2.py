@@ -818,3 +818,12 @@ def test_g10_3_als_alternative_bei_3200i():
     gew = {x.bestellnr: x.menge for x in Z.gewaehlt(p, k, KAT)}
     assert gew.get(Z.NR_G10_3) == k.innengeraete and Z.NR_G10_4 not in gew
     assert any("alternativ G 10-3" in t for t in Z.wlan_uebersicht(k))
+
+
+@pytest.mark.parametrize("bauart, passend", [("Deckenkassette", {Z.NR_G10_4}),
+                                              ("Konsole", {Z.NR_G10_4, Z.NR_G10_3}),
+                                              ("Truhe/Decke", {Z.NR_G10_4, Z.NR_G10_CLC1})])
+def test_large_split_ohne_wlan_gateways_laut_katalog(bauart, passend):
+    s = next(a for a in KAT.sets if a.linie == "Climate 5000i L" and A.set_bauart(a) == bauart)
+    ie = Z._Ie("Halle", s, s.kuehl or 0, bauart)
+    assert Z._gateway_passend(ie) == passend  # kein WLAN integriert

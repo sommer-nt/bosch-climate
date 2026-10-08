@@ -186,8 +186,10 @@ def _gateway_passend(ie: _Ie) -> set[str]:
     a, typ = ie.geraet, ie.geraet.typ
     if "7000i" in a.linie or "8000i" in a.linie:
         return set()
-    if a.linie == "Climate 5000i L":
-        return {NR_G10_4} | ({NR_G10_CLC1} if ie.bauart == "Truhe/Decke" else set())
+    if a.linie == "Climate 5000i L":  # Ergänzungskatalog S. 38/44/50/58/64/70/76/82/88
+        if ie.bauart == "Truhe/Decke":
+            return {NR_G10_4, NR_G10_CLC1}
+        return {NR_G10_4, NR_G10_3} if ie.bauart == "Konsole" else {NR_G10_4}
     if typ.startswith("CL5000iM 4CC"):
         return {NR_G10_3, NR_G10_CLC}
     if typ.startswith(("CL5000iU 4CC", "CL5001iU 4CC")):
