@@ -59,6 +59,7 @@ LAGE = [("outside", "1 Außen&shy;wand"), ("corner", "Eckraum"), ("three", "3 Au
         ("inside", "Innen&shy;liegend"), ("attic", "Dach&shy;geschoss"), ("attic_corner", "DG-Eck&shy;raum"),
         ("basement", "Über Keller")]
 DG_LAGEN = ("attic", "attic_corner")
+ENTWICKLER = "Entwickelt von Daniel Sommer (HC/SDE3-PSD)"
 RAUMART_KURZ = {"Wohnzimmer": "Wohnen", "Schlafzimmer": "Schlafen", "Büro": "Büro", "Küche": "Küche",
                 "Kinderzimmer": "Kinder", "Badezimmer": "Bad", "Werkstatt": "Werkstatt",
                 "Halle / Lager": "Halle / Lager", "Verkaufsraum": "Laden"}
@@ -96,6 +97,11 @@ div[class*="st-key-kbtn-"] {{position:absolute !important; inset:0 !important; w
 div[class*="st-key-kbtn-"] * {{width:100% !important; height:100% !important; max-width:none !important}}
 div[class*="st-key-kbtn-"] button {{opacity:0; cursor:pointer}}
 .karte {{text-align:center; color:{BLAU}; padding:.2rem 0}}
+/* Streamlit setzt -1rem unter Textblöcke – in Karten würde der Inhalt sonst über den Rand rutschen */
+div[class*="st-key-karte-"] [data-testid="stMarkdownContainer"] {{margin-bottom:0 !important}}
+.karte .sub, .karte .titel {{hyphens:manual; -webkit-hyphens:manual; overflow-wrap:normal; word-break:normal}}
+.entwickler {{text-align:center; color:#8a949e; font-size:.78rem; padding:1.6rem 0 .4rem;
+              border-top:1px solid #eef1f4; margin-top:1rem}}
 .karte .titel {{color:#1d2834; font-weight:600; margin-top:.25rem}}
 .karte .sub {{color:#5c6773; font-size:.8rem; line-height:1.25; margin-top:.15rem}}
 .karte.klein .titel {{font-size:.85rem; font-weight:500; overflow-wrap:normal; word-break:normal; hyphens:manual}}
@@ -161,7 +167,6 @@ div[class*="st-key-navr-"] button p {{font-size:.86rem}}
       max-height:140px; width:auto !important; max-width:100%; object-fit:contain}}
   .st-key-zusammenfassung img {{display:none}}  /* Preis steht in der festen Leiste unten */
   [class*="st-key-kgrid-"]:has(.karte.klein .sub) {{grid-template-columns:repeat(2, minmax(0, 1fr))}}
-  .karte .sub {{hyphens:auto}}
   .marke {{font-size:1.15rem}}
   /* große Karten: Symbol links, Text rechts */
   [class*="st-key-kgrid-"]:has(.karte:not(.klein)) {{grid-template-columns:1fr}}
@@ -1200,3 +1205,4 @@ def app_v2(kat: Katalog) -> None:
         navigation(p)
     with rechts:
         zusammenfassung(p, kat)
+    st.markdown(f'<div class="entwickler">{ENTWICKLER}</div>', unsafe_allow_html=True)
