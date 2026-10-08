@@ -827,3 +827,12 @@ def test_large_split_ohne_wlan_gateways_laut_katalog(bauart, passend):
     s = next(a for a in KAT.sets if a.linie == "Climate 5000i L" and A.set_bauart(a) == bauart)
     ie = Z._Ie("Halle", s, s.kuehl or 0, bauart)
     assert Z._gateway_passend(ie) == passend  # kein WLAN integriert
+
+
+def test_oberflaeche_auslaufartikel_liste_sichtbar(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("APP_PASSWORT", raising=False)
+    at = AppTest.from_file(str(WURZEL / "app_v2.py"), default_timeout=60).run()
+    assert any("13 Artikel sind ausgeblendet" in m.value and "CL3000i-Set 26 WE" in m.value for m in at.markdown)
+    next(t for t in at.toggle if t.label == "Auslaufartikel anzeigen").set_value(True).run()
+    assert any("werden bei der Auswahl berücksichtigt" in m.value for m in at.markdown)
