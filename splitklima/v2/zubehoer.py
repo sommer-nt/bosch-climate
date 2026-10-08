@@ -10,6 +10,7 @@ from __future__ import annotations
 import itertools
 import math
 from dataclasses import dataclass
+from pathlib import Path
 
 from ..modell import Projekt
 from ..preise import fmt_eur
@@ -45,6 +46,32 @@ G10_3_HINWEIS = ("G 10-3 laut aktuellem Katalog bis Q4/2026 verfügbar. Nachfolg
                  "Gerätefamilien derzeit nicht eindeutig dokumentiert.")
 VORKALKULATION = ("Zubehörmengen dienen als automatische Vorkalkulation und müssen projektbezogen geprüft werden.")
 
+GATEWAYS = {NR_G10_3, NR_G10_4, NR_G10_CLC, NR_G10_CLC1}
+BOPA_NRS = {nr for d in BOPA.values() for nr in d.values()}
+# Produktbild je Bestell-Nr. (daten/bilder/zubehoer/<name>.png, aus den Katalogen exportiert)
+BILD = {
+    **{nr: "doppelrohr" for d in ROHRE.values() for nr in d.values()},
+    **{nr: "klemmring" for nr in KLEMMRING.values()},
+    **{nr: "adapter" for nr in ("7733703606", "7733703603", "7733703604", "7733703607", "7733703605")},
+    NR_KABEL_KLEIN: "kabel", NR_KABEL_GROSS: "kabel", "7733701597": "mcr", "7733704064": "regler",
+    NR_SPIRALSCHLAUCH: "spiralschlauch", NR_PUMPE_WAND: "pumpe_mini", NR_PUMPE_EINBAU: "pumpe_einbau",
+    "7738345958": "pumpe_kanal", NR_G10_3: "g10_3", NR_G10_4: "g10_4", NR_G10_CLC: "g10_clc", NR_G10_CLC1: "g10_clc",
+    NR_MSG1: "msg1", NR_WANDKONSOLE: "wandkonsole", NR_BODENKONSOLE: "bodenkonsole",
+    NR_SOCKEL_450: "sockel_450", NR_SOCKEL_600: "sockel_600",
+}
+BILD_ORDNER = Path(__file__).resolve().parent.parent / "daten" / "bilder" / "zubehoer"
+
+
+def bild(bestellnr: str) -> Path | None:
+    """Produktbild eines Zubehörartikels (Basispakete: Bild des Sets)."""
+    if bestellnr in BOPA_NRS:
+        name = "../set_7000i_weiss" if bestellnr in BOPA["CL7000i-Set 26 E"].values() else "../set_3200i"
+    else:
+        name = BILD.get(bestellnr)
+    pfad = BILD_ORDNER / f"{name}.png" if name else None
+    return pfad if pfad and pfad.exists() else None
+
+
 GRUPPEN = ["Aufstellung Außeneinheit", "Kältemittelleitung", "Elektrik und Kommunikation", "Kondensat",
            "Steuerung und App", "Förderung", "Adapter und Verschraubungen", "Pakete"]
 GRUPPE = {
@@ -69,6 +96,7 @@ class ZubehoerZeile:
     vorschlag: int
     menge: int
     grund: str = ""
+    gesperrt: str = ""  # Grund, warum der Artikel für dieses Konzept nicht in Frage kommt (z. B. WLAN integriert)
 
     @property
     def summe(self) -> float | None:
@@ -231,17 +259,44 @@ def vorschlag(projekt: Projekt, konzept: Konzept, kat: Katalog) -> tuple[dict[st
     return mengen, {nr: "; ".join(t) for nr, t in grund.items()}, hinweise
 
 
+def gateway_bedarf(konzept: Konzept) -> tuple[set[str], int, int]:
+    """Benötigte Gateway-Artikel, Zahl der Innengeräte mit bzw. ohne integriertes WLAN."""
+    bedarf: set[str] = set()
+    mit_wlan = ohne_wlan = 0
+    for ie in _innengeraete(konzept):
+        nrs = [nr for nr, _ in _gateway(ie)]
+        bedarf |= set(nrs)
+        mit_wlan += not nrs
+        ohne_wlan += bool(nrs)
+    return bedarf, mit_wlan, ohne_wlan
+
+
+def _sperrgrund(nr: str, konzept: Konzept, bedarf: set[str], ohne_wlan: int, bopa: set[str]) -> str:
+    if nr in GATEWAYS and nr not in bedarf:
+        return ("WLAN bei allen Innengeräten integriert (Climate 7000i / Class 8000i)" if not ohne_wlan
+                else "passt nicht zu den gewählten Innengeräten")
+    if nr == NR_MSG1 and not any(t.set and t.set.linie == "Climate 7000i" for t in konzept.teilsysteme):
+        return "nur für Climate 7000i Single-Split"
+    if nr in BOPA_NRS and nr not in bopa:
+        return "nur für CL7000i-Set 26 E bzw. CL3200i-Set 26 WE"
+    return ""
+
+
 def tabelle(projekt: Projekt, konzept: Konzept, kat: Katalog) -> tuple[list[ZubehoerZeile], list[str]]:
-    """Alle anbietbaren Zubehörartikel mit Vorschlag und gewählter Menge (manuelle Mengen haben Vorrang)."""
+    """Alle anbietbaren Zubehörartikel mit Vorschlag und gewählter Menge (manuelle Mengen haben Vorrang).
+    Artikel, die zum Konzept nicht passen (z. B. WLAN-Gateway bei integriertem WLAN), sind gesperrt (Menge 0)."""
     mengen, grund, hinweise = vorschlag(projekt, konzept, kat)
+    bedarf, _, ohne_wlan = gateway_bedarf(konzept)
+    bopa = {nr for t in konzept.teilsysteme if t.set for nr in BOPA.get(t.set.typ, {}).values()}
     zeilen = []
     for z in kat.zubehoer:
         if z.kategorie == "Dienstleistung" or z.bestellnr in ERSETZT or z.bestellnr not in GRUPPE:
             continue
         v = mengen.get(z.bestellnr, 0)
-        menge = projekt.zubehoer_mengen.get(z.bestellnr, v)
+        sperre = _sperrgrund(z.bestellnr, konzept, bedarf, ohne_wlan, bopa)
+        menge = 0 if sperre else projekt.zubehoer_mengen.get(z.bestellnr, v)
         zeilen.append(ZubehoerZeile(GRUPPEN[GRUPPE[z.bestellnr]], z.bestellnr, z.name, z.preis, v, max(int(menge), 0),
-                                    grund.get(z.bestellnr, ALTERNATIVE.get(z.bestellnr, z.passend or ""))))
+                                    grund.get(z.bestellnr, ALTERNATIVE.get(z.bestellnr, z.passend or "")), sperre))
     zeilen.sort(key=lambda x: (GRUPPEN.index(x.gruppe), -x.vorschlag, x.name))
     return zeilen, hinweise
 

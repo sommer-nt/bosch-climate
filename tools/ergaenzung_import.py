@@ -62,6 +62,16 @@ BILD_GESAMT = {
 }
 # Innengerät aus dem scharfen Set ausschneiden (kein eigenes hochaufgelöstes Einzelbild im Katalog)
 IE_AUS_SET = {"ie_8000i_weiss": "set_8000i_weiss"}
+# Zubehörbilder: Name → (Katalog "erg"/"gesamt", Seite, xref) – Zuordnung über die Tabellenzeile im Katalog
+ZUBEHOER_BILDER = {
+    "kabel": ("erg", 129, 584), "regler": ("erg", 129, 585), "sockel_450": ("erg", 129, 586),
+    "sockel_600": ("erg", 129, 587), "wandkonsole": ("erg", 129, 588), "spiralschlauch": ("erg", 129, 589),
+    "doppelrohr": ("erg", 130, 593), "klemmring": ("erg", 130, 594), "pumpe_mini": ("erg", 131, 598),
+    "pumpe_kanal": ("erg", 131, 599), "pumpe_einbau": ("erg", 131, 600),
+    "msg1": ("gesamt", 17, 78), "mcr": ("gesamt", 17, 358), "g10_3": ("gesamt", 27, 379),
+    "g10_4": ("gesamt", 27, 378), "g10_clc": ("gesamt", 40, 192), "adapter": ("gesamt", 32, 387),
+    "bodenkonsole": ("gesamt", 63, 300),
+}
 # Farbvarianten der Sets: im Katalog nur in Weiß hochaufgelöst → weißes Set + farbiges Innengerät
 SET_FARBEN = {
     "set_8000i_anthrazit": ("set_8000i_weiss", "ie_8000i_anthrazit"), "set_8000i_silber": ("set_8000i_weiss", "ie_8000i_silber"),
@@ -418,6 +428,28 @@ def zubehoer_neu(alle_preise: dict[str, float], hinweise: list[str]) -> list[dic
     return out
 
 
+def zubehoer_bilder(doc, gesamt: str | None) -> dict[str, str]:
+    """Zubehörbilder als kleine PNG (max. 200 px) nach splitklima/daten/bilder/zubehoer/."""
+    import pymupdf
+
+    ziel = BILDER / "zubehoer"
+    ziel.mkdir(parents=True, exist_ok=True)
+    quellen = {"erg": doc, "gesamt": pymupdf.open(gesamt) if gesamt else None}
+    out = {}
+    for name, (quelle, seite, xref) in ZUBEHOER_BILDER.items():
+        if quellen[quelle] is None:
+            continue
+        try:
+            bild = _bild_weiss(quellen[quelle], xref)
+        except Exception as fehler:  # noqa: BLE001
+            print(f" ! Zubehörbild {name}: {fehler}")
+            continue
+        bild.thumbnail((200, 200))
+        bild.save(ziel / f"{name}.png", optimize=True)
+        out[name] = f"{quelle} S. {seite}"
+    return out
+
+
 def _gesamt_bilder(gesamt: str | None) -> dict[str, str]:
     if not gesamt:
         return {}
@@ -457,7 +489,8 @@ def main(pdf: str, gesamt: str | None = None) -> None:
         "sets": sets, "aussen": aussen, "innen": innen, "kombinationen": kombis,
         "zubehoer": zubehoer_neu(alle_preise, hinweise),
         "preise": alle_preise, "bilder": {**bilder(doc), **bilder_ersetzen(doc), **_gesamt_bilder(gesamt), **ie_aus_set(),
-                   **set_farbvarianten()}, "pruefhinweise": hinweise,
+                   **set_farbvarianten(),
+                   **{f"zubehoer/{k}": v for k, v in zubehoer_bilder(doc, gesamt).items()}}, "pruefhinweise": hinweise,
     }
     ZIEL.write_text(json.dumps(erg, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"{len(sets)} Large-Split-Sets, {len(aussen)} Außen-, {len(innen)} Inneneinheiten neu, "

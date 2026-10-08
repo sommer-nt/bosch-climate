@@ -9,6 +9,7 @@ Rechnung und Geräteauswahl macht weiterhin das Programm, nicht das Sprachmodell
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass, field
 
 from .. import klima_plz as KP
@@ -22,8 +23,13 @@ from . import auswahl as A
 from . import zubehoer as Z
 from .katalog import BAUARTEN, FARBEN, Katalog
 
-MODELL = "claude-opus-5-5"
+# Chat: kleinstes Modell genügt – es versteht den Wunsch und ruft Werkzeuge auf; gerechnet wird im Programm.
+# (Die Grundriss-Erkennung in ki_plan.py nutzt weiterhin Opus.) Über .env umstellbar.
+MODELL = os.environ.get("ASSISTENT_MODELL", "claude-haiku-5-5")
+EFFORT = os.environ.get("ASSISTENT_EFFORT", "low")
+MIT_FALLBACK = {"claude-opus-5-5", "claude-opus-5", "claude-fable-5-1", "claude-sonnet-5-5"}  # Haiku: keiner
 MAX_RUNDEN = 10  # Werkzeug-Runden je Nachricht
+MAX_TURNS_IM_VERLAUF = 8  # danach neues Gespräch (Planung liest der Assistent ohnehin neu)
 MAX_NACHRICHTEN = 40  # je Sitzung (Kostenbremse)
 RICHTUNGEN = P.AUSRICHTUNGEN  # N, NO, O, SO, S, SW, W, NW – im Uhrzeigersinn
 DACH = {"kein": None, "flat": "flat", "saddle_south": "saddle_south", "saddle_north": "saddle_north",
@@ -485,14 +491,19 @@ def antworten(verlauf: list, eingabe: str, p: Projekt, kat: Katalog, zustand: di
             raise AssistentFehler("Der Assistent ist nicht eingerichtet (API-Schlüssel fehlt).") from e
     werkzeuge = _Werkzeuge(p, kat, zustand)
     vorher = kurzstatus(p, kat, zustand.get("konzept"))
+    if sum(1 for m in verlauf if m["role"] == "user" and isinstance(m["content"], str)) >= MAX_TURNS_IM_VERLAUF:
+        verlauf.clear()  # Token sparen: frisches Gespräch statt immer längerem Verlauf (nur anhängen, nie kürzen)
     verlauf.append({"role": "user", "content": eingabe})
     texte: list[str] = []
     for _ in range(MAX_RUNDEN):
+        anfrage = dict(model=MODELL, max_tokens=16000, system=SYSTEM, tools=TOOLS, messages=verlauf,
+                       cache_control={"type": "ephemeral"}, output_config={"effort": EFFORT})
         try:
-            antwort = client.beta.messages.create(
-                model=MODELL, max_tokens=16000, system=SYSTEM, tools=TOOLS, messages=verlauf,
-                cache_control={"type": "ephemeral"}, output_config={"effort": "medium"},
-                betas=["server-side-fallback-2026-07-01"], fallbacks="default")
+            if MODELL in MIT_FALLBACK:
+                antwort = client.beta.messages.create(**anfrage, betas=["server-side-fallback-2026-07-01"],
+                                                      fallbacks="default")
+            else:
+                antwort = client.messages.create(**anfrage)
         except anthropic.AuthenticationError as e:
             raise AssistentFehler("Kein gültiger API-Schlüssel (ANTHROPIC_API_KEY).") from e
         except anthropic.RateLimitError as e:
