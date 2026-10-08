@@ -789,3 +789,17 @@ def test_oberflaeche_zubehoer_liste_mengen(monkeypatch):
     assert at.session_state.v2_projekt.zubehoer_mengen == {"7738345958": 2}
     assert not at.exception
     assert any("WLAN:" in c.value for c in at.caption)
+
+
+def test_oberflaeche_gesperrtes_zubehoer_nur_in_gesamtansicht(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("APP_PASSWORT", raising=False)
+    at = AppTest.from_file(str(WURZEL / "app_v2.py"), default_timeout=60).run()
+    next(b for b in at.button if b.label == "Beispielhaus laden").click().run()
+    at.session_state.v2_seite = "ergebnis"
+    at.run()
+    assert not any("nicht wählbar" in m.value for m in at.markdown)
+    assert not any("7736606771" in n.key for n in at.number_input)  # G 10-3: nie als Mengenfeld
+    next(t for t in at.toggle if t.label == "Alle Zubehörartikel zeigen").set_value(True).run()
+    assert any("nicht wählbar" in m.value for m in at.markdown)
+    assert not any("7736606771" in n.key for n in at.number_input)

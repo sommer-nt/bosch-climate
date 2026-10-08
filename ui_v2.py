@@ -937,13 +937,15 @@ def zubehoer_bereich(p: Projekt, k: A.Konzept, kat: Katalog) -> None:
         if neu != p.zubehoer_mengen:
             p.zubehoer_mengen = neu
             st.rerun()
-        gesperrt = [z for z in zeilen if z.gesperrt and (alle or z.bestellnr in Z.GATEWAYS)]
+        # Nicht wählbare Artikel nur in der Gesamtansicht zeigen – sonst wirken sie wie eine Auswahl
+        gesperrt = [z for z in zeilen if z.gesperrt] if alle else []
         for titel, auswahl in (("Nicht erforderlich – WLAN integriert",
                                 [z for z in gesperrt if z.gesperrt.startswith("WLAN")]),
                                ("Passt nicht zu den gewählten Geräten",
                                 [z for z in gesperrt if not z.gesperrt.startswith("WLAN")])):
             if auswahl:
-                st.markdown(f'<div class="zub-gesperrt-titel">{titel}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="zub-gesperrt-titel">{titel} – nicht wählbar</div>',
+                            unsafe_allow_html=True)
                 st.markdown("".join(
                     '<div class="zub-gesperrt">'
                     + (f'<img src="{_zubehoer_bild(z.bestellnr)}">' if _zubehoer_bild(z.bestellnr) else "<span></span>")
