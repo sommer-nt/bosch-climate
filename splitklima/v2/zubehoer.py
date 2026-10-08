@@ -36,6 +36,9 @@ ALTERNATIVE = {  # Hinweistext für Artikel, die nicht automatisch vorgeschlagen
     NR_SOCKEL_450: "Alternative zur Bodenkonsole: direkt auf Betonfundament, schallentkoppelt",
     NR_SOCKEL_600: "Alternative zur Bodenkonsole für CL7000M 79/3, CL5000M 105/4 und 125/5 auf Betonfundament",
     NR_PUMPE_WAND: "Optional: Kondensatpumpe unter wandhängenden Innengeräten",
+    NR_G10_3: "Optional: Alternative zum G 10-4 – laut aktuellem Katalog bis Q4/2026 verfügbar",
+    NR_G10_4: "Optional: Internet-Gateway für die App-Steuerung",
+    NR_G10_CLC: "Optional: Gateway-Anschluss für Deckenkassetten, zusammen mit G 10-3",
     "7738345958": "Optional: Alternative zur Silent+ mini – Pumpe mit 800 mm Kabelkanal für Wandgeräte",
     NR_PUMPE_EINBAU: "Optional: Einbaupumpe für Konsolen und Truhen",
     NR_WANDKONSOLE: "Optional: Wandmontage der Außeneinheit",
@@ -177,6 +180,27 @@ def _gateway(ie: _Ie) -> list[tuple[str, str]]:
     return [(NR_G10_4, "")]
 
 
+def _gateway_passend(ie: _Ie) -> set[str]:
+    """Alle laut Katalog passenden Gateway-Artikel (Vorschlag siehe _gateway – hier auch Alternativen).
+    Quellen: Gesamtkatalog 03/2026 S. 27/40, Ergänzungskatalog 09/2026 S. 27/35/41/55."""
+    a, typ = ie.geraet, ie.geraet.typ
+    if "7000i" in a.linie or "8000i" in a.linie:
+        return set()
+    if a.linie == "Climate 5000i L":
+        return {NR_G10_4} | ({NR_G10_CLC1} if ie.bauart == "Truhe/Decke" else set())
+    if typ.startswith("CL5000iM 4CC"):
+        return {NR_G10_3, NR_G10_CLC}
+    if typ.startswith(("CL5000iU 4CC", "CL5001iU 4CC")):
+        return {NR_G10_4, NR_G10_3, NR_G10_CLC}
+    if " CN " in f" {typ} ":
+        return {NR_G10_4, NR_G10_3}
+    if "3000i" in a.linie:
+        return {NR_G10_3}
+    if "3200i" in a.linie:
+        return {NR_G10_4, NR_G10_3}
+    return {nr for nr, _ in _gateway(ie)}
+
+
 def vorschlag(projekt: Projekt, konzept: Konzept, kat: Katalog) -> tuple[dict[str, int], dict[str, str], list[str]]:
     """Vorgeschlagene Mengen je Bestell-Nr., Begründung je Bestell-Nr. und Planungshinweise."""
     mengen: dict[str, int] = {}
@@ -279,8 +303,8 @@ def gateway_bedarf(konzept: Konzept) -> tuple[set[str], int, int]:
     bedarf: set[str] = set()
     mit_wlan = ohne_wlan = 0
     for ie in _innengeraete(konzept):
-        nrs = [nr for nr, _ in _gateway(ie)]
-        bedarf |= set(nrs)
+        nrs = _gateway_passend(ie)
+        bedarf |= nrs
         mit_wlan += not nrs
         ohne_wlan += bool(nrs)
     return bedarf, mit_wlan, ohne_wlan
@@ -293,8 +317,10 @@ def wlan_uebersicht(konzept: Konzept, kat: Katalog | None = None) -> list[str]:
     for ie in _innengeraete(konzept):
         serie = ie.geraet.linie + (f" {ie.bauart}" if ie.bauart != "Wandgerät" else "")
         nrs = [nr for nr, _ in _gateway(ie)]
+        alternativ = _gateway_passend(ie) - set(nrs) - {NR_G10_CLC} if nrs else set()
         zeilen[serie] = ("WLAN integriert" if not nrs
-                         else "kein WLAN eingebaut → " + " + ".join(namen[nr] for nr in nrs))
+                         else "kein WLAN eingebaut → " + " + ".join(namen[nr] for nr in nrs)
+                         + (f" (alternativ {', '.join(namen[nr] for nr in sorted(alternativ))})" if alternativ else ""))
     return [f"{s}: {t}" for s, t in zeilen.items()]
 
 
