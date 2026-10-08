@@ -148,6 +148,10 @@ div[class*="st-key-navr-"] button p {{font-size:.86rem}}
 .st-key-chatpanel [data-testid="stChatMessage"] {{padding:.4rem .2rem}}
 .st-key-chatpanel [data-testid="stChatMessage"] p {{font-size:.9rem}}
 .chat-titel {{font-weight:700; color:{BLAU}}}
+.auslauf-liste {{font-size:.82rem; color:#5c6773; background:#f7f9fa; border:1px solid #e3e8ed; border-radius:.5rem;
+                 padding:.5rem .8rem; margin:.2rem 0 .6rem}}
+.auslauf-liste.an {{background:#fff8e6; border-color:#f0d58c; color:#5c4a12}}
+.auslauf-liste ul {{margin:.3rem 0 0 1rem; padding:0}} .auslauf-liste li {{margin:0}}
 .zub-gruppe {{font-size:.78rem; font-weight:600; color:{BLAU}; text-transform:uppercase; letter-spacing:.04em;
                margin:.8rem 0 .1rem; padding-bottom:.2rem; border-bottom:1px solid #e3e8ed}}
 div[class*="st-key-zubrow-"] {{border-bottom:1px solid #f0f2f5; padding:.15rem 0}}
@@ -434,7 +438,21 @@ def ki_uebernehmen(p: Projekt, analyse: KiPlanAnalyse) -> None:
 
 
 # ====================================================================== Seiten
-def seite_system(p: Projekt) -> None:
+def _auslauf_liste(kat: Katalog, an: bool) -> str:
+    """Welche Artikel der Schalter „Auslaufartikel“ betrifft – gruppiert nach Serie."""
+    gruppen: dict[str, list[str]] = {}
+    for a in kat.auslaufartikel:
+        art = "Set" if a.aussen_typ else "Multi-Innengerät"
+        gruppen.setdefault(f"{a.linie} – {art}", []).append(
+            a.typ + (f" ({a.farbe})" if a.farbe not in ("", "weiß") else ""))
+    zeilen = "".join(f"<li><b>{g}</b>: {', '.join(t)}</li>" for g, t in gruppen.items())
+    kopf = (f"{len(kat.auslaufartikel)} Auslaufartikel werden bei der Auswahl berücksichtigt (Preise Stand 03/2026):"
+            if an else f"{len(kat.auslaufartikel)} Artikel sind ausgeblendet, weil sie im Ergänzungskatalog 09/2026 "
+                       "fehlen – mit dem Schalter für Altprojekte wieder zulassen:")
+    return f'<div class="auslauf-liste{" an" if an else ""}">{kopf}<ul>{zeilen}</ul></div>'
+
+
+def seite_system(p: Projekt, kat: Katalog | None = None) -> None:
     ki_bereich(p, gross=True)
     st.write("")
     st.markdown("#### Welches System wünschen Sie?")
@@ -464,6 +482,8 @@ def seite_system(p: Projekt) -> None:
         p.auslaufartikel = auslauf
         _ss().pop("v2_konzept", None)
         st.rerun()
+    if kat is not None and kat.auslaufartikel:
+        st.markdown(_auslauf_liste(kat, p.auslaufartikel), unsafe_allow_html=True)
     st.markdown("#### Wo steht die Außeneinheit?")
     karten("aufst", [(v, t, AUFSTELLUNG_UNTERTITEL[v], f"ae_{v}" if v else "egal") for v, t in A.AUFSTELLUNG.items()],
            p.aufstellung, lambda v: setattr(p, "aufstellung", v), spalten=4, klein=True)
@@ -1409,6 +1429,7 @@ def app_v2(kat: Katalog) -> None:
     if msg := _ss().pop("v2_toast", None):
         st.toast(msg, icon="✅")
 
+    kat_voll = kat
     if not p.auslaufartikel:  # Standard: nur Artikel des aktuellen Katalogs 09/2026
         kat = kat.ohne_auslauf()
     links, mitte, rechts = st.columns([1.05, 3, 1.35], gap="medium")
@@ -1416,7 +1437,7 @@ def app_v2(kat: Katalog) -> None:
     with mitte:
         mobil_navigation(p)
         if seite == "system":
-            seite_system(p)
+            seite_system(p, kat_voll)
         elif seite == "gebaeude":
             seite_gebaeude(p)
         elif seite == "raeume":
