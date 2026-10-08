@@ -54,7 +54,7 @@ class Raum(BaseModel):
     vertikal: Vertikal = "between_heated"
     baualter: str = ""  # "" = aus Dämmstandard ableiten
     speicher: Literal["light", "mid", "heavy"] = "mid"
-    daemmung: Literal["none", "facade", "core", "interior"] = "none"
+    daemmung: Literal["none", "facade", "core", "interior", "facade_1990", "facade_2000"] = "none"
     fenstergruppen: list[Fenstergruppe] = Field(default_factory=list)
     ig_bauart: str = "auto"
     ig_id: str | None = None
@@ -137,7 +137,8 @@ class Projekt(BaseModel):
     klima_quelle: str = ""
     norm_aussen_manuell: bool = False
     geraetelinie: str = ""  # Version 2: Wunsch-Gerätelinie, z. B. "7000i" ("" = wirtschaftlichste)
-    auslaufartikel: bool = False  # Version 2: Artikel ohne Eintrag im Ergänzungskatalog 09/2026 zulassen
+    auslaufartikel: bool = False
+    nachdaemmung: str = "none"  # Version 2: nachträgliche Dämmung der Außenwände für alle Räume  # Version 2: Artikel ohne Eintrag im Ergänzungskatalog 09/2026 zulassen
     aufstellung: Literal["", "wand", "boden", "flachdach"] = ""  # Version 2: Aufstellort der Außeneinheit(en)
     # Version 2: Zubehör und Montagematerial
     leitungslaenge: float = 5.0  # m Kältemittelleitung je Innengerät

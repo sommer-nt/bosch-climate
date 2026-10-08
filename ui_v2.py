@@ -31,6 +31,7 @@ from splitklima.standort import klimaregion
 from splitklima.v2 import auswahl as A
 from splitklima.v2.angebot import pdf_angebot_v2
 from splitklima.v2.bilder import bild, bild_innen_set
+from splitklima.v2 import assistent as AS
 from splitklima.v2 import speichern as SP
 from splitklima.v2 import zubehoer as Z
 from splitklima.v2.katalog import FARBEN, Katalog
@@ -60,6 +61,10 @@ LAGE = [("outside", "1 Außen&shy;wand"), ("corner", "Eckraum"), ("three", "3 Au
         ("basement", "Über Keller")]
 DG_LAGEN = ("attic", "attic_corner")
 ENTWICKLER = "Entwickelt von Daniel Sommer (HC/SDE3-PSD)"
+ASSISTENT_AKTIV = os.environ.get("ASSISTENT", "1") != "0"  # ASSISTENT=0 blendet den Chat aus
+BEISPIELE = ["Der Plan hat keinen Nordpfeil – das Wohnzimmer liegt im Norden.",
+             "Das Haus ist von 1958, die Fassade wurde 1990 gedämmt.",
+             "Geht es günstiger? Die Farbe ist mir egal."]
 RAUMART_KURZ = {"Wohnzimmer": "Wohnen", "Schlafzimmer": "Schlafen", "Büro": "Büro", "Küche": "Küche",
                 "Kinderzimmer": "Kinder", "Badezimmer": "Bad", "Werkstatt": "Werkstatt",
                 "Halle / Lager": "Halle / Lager", "Verkaufsraum": "Laden"}
@@ -131,6 +136,21 @@ div[class*="st-key-navr-"] button p {{font-size:.86rem}}
 .zs-zeile {{gap:.6rem}} .zs-zeile span:last-child {{text-align:right}}
 [data-testid="stMetricValue"] {{font-size:clamp(1.35rem, 2.3vw, 2.25rem) !important}}
 [data-testid="stMetricValue"] > div {{overflow:visible !important; text-overflow:clip !important}}
+/* ---------- Planungs-Assistent: Chat-Blase unten rechts */
+.st-key-chatfab {{position:fixed !important; right:1.6rem; bottom:1.6rem; z-index:1002; width:auto !important}}
+.st-key-chatfab button {{background:{BLAU} !important; color:white !important; border:none !important;
+    border-radius:2rem !important; padding:.75rem 1.2rem !important; box-shadow:0 6px 20px rgba(0,86,145,.35)}}
+.st-key-chatfab button:hover {{filter:brightness(1.1)}}
+.st-key-chatpanel {{position:fixed !important; right:1.6rem; bottom:1.6rem; z-index:1002; width:400px !important;
+    max-height:calc(100vh - 6rem); overflow-y:auto; background:white; border:1px solid #dfe3e8;
+    border-radius:1rem; box-shadow:0 12px 40px rgba(0,0,0,.18); padding:.8rem 1rem .6rem}}
+.st-key-chatpanel [data-testid="stChatMessage"] {{padding:.4rem .2rem}}
+.st-key-chatpanel [data-testid="stChatMessage"] p {{font-size:.9rem}}
+.chat-titel {{font-weight:700; color:{BLAU}}}
+.st-key-chatpanel > div > [data-testid="stHorizontalBlock"], .st-key-chatpanel [data-testid="stHorizontalBlock"] {{
+    flex-wrap:nowrap !important}}
+.st-key-chatpanel [data-testid="stColumn"] {{min-width:0 !important}}
+body:has(.st-key-chatpanel) .mobilpreis {{display:none !important}}
 /* ---------- Smartphone/Tablet: Schrittleiste und Preisleiste (Desktop ausgeblendet) */
 .st-key-mobilnav, .mobilpreis {{display:none !important}}
 @media (max-width: 1024px) {{
@@ -163,6 +183,10 @@ div[class*="st-key-navr-"] button p {{font-size:.86rem}}
 }}
 @media (max-width: 640px) {{
   .block-container {{padding-bottom:5.5rem; padding-top:3.8rem}}
+  .st-key-chatfab {{bottom:5.2rem; right:1rem}}
+  .st-key-chatpanel {{left:0; right:0 !important; bottom:0 !important; width:auto !important; max-height:88vh;
+                      border-radius:1rem 1rem 0 0}}
+  .st-key-chatverlauf {{height:auto !important; max-height:52vh}}
   [data-testid="stImage"] img, [data-testid="stMarkdownContainer"] img:not(.karte img), .stHtml img {{
       max-height:140px; width:auto !important; max-width:100%; object-fit:contain}}
   .st-key-zusammenfassung img {{display:none}}  /* Preis steht in der festen Leiste unten */
@@ -584,6 +608,17 @@ def seite_gebaeude(p: Projekt) -> None:
         baujahr_anwenden(p)
     st.caption({"old": "Altbau vor 1979 – wenig Dämmung", "mid": "Baujahr 1979–2001 – mittlerer Dämmstandard",
                 "new": "ab 2002 – guter Dämmstandard (EnEV/GEG)"}[e.daemmstandard])
+    c1, _ = st.columns([2, 1])
+    optionen = list(P.NACHDAEMMUNG_V2)
+    nach = c1.selectbox("Außenwände nachträglich gedämmt", optionen,
+                        index=optionen.index(p.nachdaemmung) if p.nachdaemmung in optionen else 0,
+                        format_func=P.NACHDAEMMUNG_V2.get, key=_k("nachdaemmung"),
+                        help="Sanierung nach dem Baujahr, z. B. Haus von 1958 mit Fassadendämmung 1990. "
+                             "Gilt für alle Räume; einzelne Räume kann der Planungs-Assistent abweichend setzen.")
+    if nach != p.nachdaemmung:
+        p.nachdaemmung = nach
+        for r in p.raeume:
+            r.daemmung = nach
 
     st.markdown("#### Fenster")
     karten("glas", VERGLASUNG, e.verglasung, lambda v: setattr(e, "verglasung", v), klein=True, groesse=44)
@@ -599,6 +634,7 @@ def _raum_neu(p: Projekt) -> None:
                geschoss=p.raeume[-1].geschoss if p.raeume else "EG", waende_auto=True)
     neu.wandlaengen_schaetzen()
     neu.baualter = baualter_aus_baujahr(p.baujahr) if p.baujahr else ""
+    neu.daemmung = p.nachdaemmung if p.nachdaemmung in P.NACHDAEMMUNG_V2 else "none"
     p.raeume.append(neu)
     _ss().v2_rev += 1
     gehe("raum", raum=len(p.raeume) - 1)
@@ -849,6 +885,118 @@ def zubehoer_bereich(p: Projekt, k: A.Konzept, kat: Katalog) -> None:
             p.zubehoer_mengen = {}
             _ss().v2_rev += 1
             st.rerun()
+
+
+def _chat_senden(p: Projekt, kat: Katalog, text: str) -> None:
+    ss = _ss()
+    ss.v2_chat.append({"rolle": "user", "text": text})
+    if ss.v2_chat_zaehler >= AS.MAX_NACHRICHTEN:
+        ss.v2_chat.append({"rolle": "assistant", "text": "Für diese Sitzung ist das Nachrichtenlimit erreicht – "
+                                                         "bitte die Seite neu laden."})
+        return
+    ss.v2_chat_zaehler += 1
+    sicherung = (p.model_dump_json(), ss.get("v2_konzept"))
+    zustand = {"konzept": ss.get("v2_konzept")}
+    try:
+        antwort = AS.antworten(ss.v2_chat_api, text, p, kat, zustand)
+    except AS.AssistentFehler as fehler:
+        ss.v2_chat.append({"rolle": "assistant", "text": str(fehler), "fehler": True})
+        return
+    if zustand.get("konzept"):
+        ss.v2_konzept = zustand["konzept"]
+    else:
+        ss.pop("v2_konzept", None)
+    if antwort.aenderungen:
+        ss.v2_rev += 1  # Eingabefelder mit den neuen Werten neu aufbauen
+    ss.v2_chat.append({"rolle": "assistant", "text": antwort.text, "aenderungen": antwort.aenderungen,
+                       "vorher": antwort.vorher, "nachher": antwort.nachher,
+                       "sicherung": sicherung if antwort.aenderungen else None})
+
+
+def _chat_rueckgaengig(eintrag: dict) -> None:
+    daten, konzept = eintrag["sicherung"]
+    _ss().v2_projekt = Projekt.model_validate_json(daten)
+    if konzept:
+        _ss().v2_konzept = konzept
+    else:
+        _ss().pop("v2_konzept", None)
+    eintrag["sicherung"] = None
+    eintrag["rueckgaengig"] = True
+    _ss().v2_rev += 1
+
+
+def _vergleich(vorher: dict, nachher: dict) -> str:
+    teile = []
+    for feld, name, einheit in (("kuehllast_kw", "Kühllast", " kW"), ("heizlast_kw", "Heizlast", " kW")):
+        a, b = vorher.get(feld), nachher.get(feld)
+        if a is not None and b is not None and a != b:
+            teile.append(f"{name} {de(a, 2)} → {de(b, 2)}{einheit}")
+    if vorher.get("preis") != nachher.get("preis") and nachher.get("preis"):
+        teile.append(f"Preis {vorher.get('preis', '–')} → {nachher['preis']}")
+    if vorher.get("loesung") != nachher.get("loesung") and nachher.get("loesung"):
+        teile.append(f"Lösung: {nachher['loesung']}")
+    return " · ".join(teile)
+
+
+def planungs_assistent(p: Projekt, kat: Katalog) -> None:
+    """Chat-Blase unten rechts: Änderungen an der Planung per Text (nur die eigene Sitzung)."""
+    ss = _ss()
+    for key, start in (("v2_chat", []), ("v2_chat_api", []), ("v2_chat_zaehler", 0), ("v2_chat_offen", False)):
+        if key not in ss:
+            ss[key] = start if not isinstance(start, list) else list(start)
+    if not ss.v2_chat_offen:
+        with st.container(key="chatfab"):
+            if st.button("Planungs-Assistent", icon=":material/forum:", key="chat-oeffnen"):
+                ss.v2_chat_offen = True
+                st.rerun()
+        return
+    with st.container(key="chatpanel"):
+        c1, c2 = st.columns([5, 1], vertical_alignment="center")
+        c1.markdown('<div class="chat-titel">Planungs-Assistent <span class="v2-badge">Beta</span></div>',
+                    unsafe_allow_html=True)
+        if c2.button("", icon=":material/close:", key="chat-schliessen", help="Schließen"):
+            ss.v2_chat_offen = False
+            st.rerun()
+        bereit = schluessel_vorhanden()
+        verlauf = st.container(height=360, key="chatverlauf", border=False)
+        with verlauf:
+            with st.chat_message("assistant", avatar=":material/support_agent:"):
+                st.markdown("Hallo! Beschreiben Sie einfach, was an der Planung anders sein soll – ich passe sie an "
+                            "und zeige, was sich ändert.")
+            letzte = max((i for i, e in enumerate(ss.v2_chat) if e.get("sicherung")), default=-1)
+            for i, eintrag in enumerate(ss.v2_chat):
+                with st.chat_message(eintrag["rolle"],
+                                     avatar=":material/person:" if eintrag["rolle"] == "user"
+                                     else ":material/support_agent:"):
+                    st.markdown(eintrag["text"])
+                    if eintrag.get("aenderungen"):
+                        st.caption("Geändert: " + " · ".join(eintrag["aenderungen"]))
+                        vergleich = _vergleich(eintrag.get("vorher", {}), eintrag.get("nachher", {}))
+                        if vergleich:
+                            st.caption(vergleich)
+                    if eintrag.get("rueckgaengig"):
+                        st.caption("↩ Rückgängig gemacht.")
+                    elif i == letzte and st.button("Rückgängig", icon=":material/undo:", key=f"chat-undo-{i}",
+                                                   type="tertiary"):
+                        _chat_rueckgaengig(eintrag)
+                        st.rerun()
+            if not ss.v2_chat and bereit:
+                for j, beispiel in enumerate(BEISPIELE):
+                    if st.button(beispiel, key=f"chat-bsp-{j}", type="secondary", width="stretch"):
+                        with st.spinner("Der Assistent arbeitet …"):
+                            _chat_senden(p, kat, beispiel)
+                        st.rerun()
+        if not bereit:
+            st.info("Der Assistent ist auf diesem Server noch nicht eingerichtet (API-Schlüssel fehlt).",
+                    icon=":material/key_off:")
+            return
+        text = st.chat_input("Was soll anders sein?", key="chat-eingabe", max_chars=1500)
+        if text:
+            with st.spinner("Der Assistent arbeitet …"):
+                _chat_senden(p, kat, text)
+            st.rerun()
+        st.caption("Ändert nur Ihre Planung in dieser Sitzung. Eingaben werden zur Auswertung an die Claude API "
+                   "übertragen – keine personenbezogenen Kundendaten eingeben.")
 
 
 def seite_ergebnis(p: Projekt, kat: Katalog) -> None:
@@ -1206,3 +1354,5 @@ def app_v2(kat: Katalog) -> None:
     with rechts:
         zusammenfassung(p, kat)
     st.markdown(f'<div class="entwickler">{ENTWICKLER}</div>', unsafe_allow_html=True)
+    if ASSISTENT_AKTIV:
+        planungs_assistent(p, kat)

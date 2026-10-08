@@ -53,7 +53,7 @@ class GebaeudeLast:
 
 
 def wand_u(raum: Raum, e: Einstellungen) -> float:
-    d = P.RETROFIT.get(raum.daemmung)
+    d = P.RETROFIT.get(raum.daemmung) or P.RETROFIT_ZUSATZ.get(raum.daemmung)
     if d and d["u"] is not None:
         return d["u"]
     if raum.baualter in P.AGE_CLASSES:

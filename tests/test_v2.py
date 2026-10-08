@@ -629,3 +629,123 @@ def test_oberflaeche_entwicklerhinweis(monkeypatch):
     monkeypatch.delenv("APP_PASSWORT", raising=False)
     at = AppTest.from_file(str(WURZEL / "app_v2.py"), default_timeout=60).run()
     assert any("Entwickelt von Daniel Sommer (HC/SDE3-PSD)" in m.value for m in at.markdown)
+
+
+# ---------------------------------------------------------------- Planungs-Assistent
+from splitklima.v2 import assistent as AS  # noqa: E402
+
+
+def _werkzeuge(p=None):
+    p = p or beispielprojekt()
+    return p, AS._Werkzeuge(p, KAT, {})
+
+
+def test_assistent_plan_drehen_dreht_alle_raeume():
+    p, w = _werkzeuge()
+    vorher = [[x.ausrichtung for x in r.waende] for r in p.raeume]
+    _, fehler = w.ausfuehren("plan_drehen", {"grad_im_uhrzeigersinn": 180})
+    assert not fehler
+    gegenueber = {"N": "S", "S": "N", "O": "W", "W": "O", "NO": "SW", "SW": "NO", "SO": "NW", "NW": "SO"}
+    assert [[x.ausrichtung for x in r.waende] for r in p.raeume] == [[gegenueber[a] for a in r] for r in vorher]
+    assert w.log and "180°" in w.log[0]
+
+
+def test_assistent_raum_aendern_und_grenzen():
+    p, w = _werkzeuge()
+    text, fehler = w.ausfuehren("raum_aendern", {"raum": "Küche", "flaeche": 20, "farbe": "schwarz"})
+    assert not fehler and p.raeume[1].flaeche == 20 and p.raeume[1].farbe == "schwarz"
+    assert "neuer_stand" in text
+    _, fehler = w.ausfuehren("raum_aendern", {"raum": "Küche", "flaeche": 900})
+    assert fehler and p.raeume[1].flaeche == 20  # Grenzwert 500 m² → abgelehnt, nichts geändert
+    _, fehler = w.ausfuehren("raum_aendern", {"raum": "Kind", "hoehe": 3})
+    assert fehler  # „Kind“ passt auf Kind 1 und Kind 2 → nicht eindeutig
+    _, fehler = w.ausfuehren("raum_aendern", {"raum": "2", "raumart": "Sauna"})
+    assert fehler and p.raeume[1].raumart == "Küche"
+
+
+def test_assistent_daemmung_baujahr_und_loesung():
+    p, w = _werkzeuge()
+    heiz_vorher = gebaeude_last(p).heat
+    assert not w.ausfuehren("projekt_einstellungen", {"baujahr": 1958})[1]
+    assert p.einstellungen.daemmstandard == "old"
+    heiz_alt = gebaeude_last(p).heat
+    assert not w.ausfuehren("daemmung_setzen", {"art": "facade_1990"})[1]
+    assert all(r.daemmung == "facade_1990" for r in p.raeume) and p.nachdaemmung == "facade_1990"
+    assert gebaeude_last(p).heat < heiz_alt and heiz_alt > heiz_vorher
+    assert not w.ausfuehren("loesung_waehlen", {"konzept": "single"})[1]
+    assert w.zustand["konzept"] == "single"
+    assert w.ausfuehren("loesung_waehlen", {"konzept": "gibtsnicht"})[1]
+
+
+def test_assistent_raum_hinzufuegen_und_entfernen():
+    p, w = _werkzeuge()
+    assert not w.ausfuehren("raum_hinzufuegen", {"name": "Werkstatt", "raumart": "Werkstatt", "flaeche": 200,
+                                                  "lage": "three"})[1]
+    r = p.raeume[-1]
+    assert r.name == "Werkstatt" and [x.laenge for x in r.waende] == [14.1, 14.1, 14.1]
+    assert not w.ausfuehren("raum_entfernen", {"raum": "Werkstatt"})[1]
+    assert all(x.name != "Werkstatt" for x in p.raeume)
+
+
+def _mock_client(antworten, anfragen):
+    import json as _json
+
+    import anthropic
+    import httpx2
+
+    def handler(req):
+        anfragen.append(_json.loads(req.content))
+        a = antworten[len(anfragen) - 1]
+        return httpx2.Response(200, json={"id": f"msg_{len(anfragen)}", "type": "message", "role": "assistant",
+                                          "model": AS.MODELL, "content": a[0], "stop_reason": a[1],
+                                          "stop_sequence": None, "usage": {"input_tokens": 1, "output_tokens": 1}})
+    return anthropic.Anthropic(api_key="test", http_client=httpx2.Client(transport=httpx2.MockTransport(handler)))
+
+
+def test_assistent_dialog_mit_werkzeugen():
+    anfragen = []
+    client = _mock_client([
+        ([{"type": "tool_use", "id": "a", "name": "raum_aendern", "input": {"raum": "1", "flaeche": 9999}}],
+         "tool_use"),
+        ([{"type": "tool_use", "id": "b", "name": "plan_drehen", "input": {"grad_im_uhrzeigersinn": 180}}],
+         "tool_use"),
+        ([{"type": "text", "text": "Plan gedreht."}], "end_turn"),
+    ], anfragen)
+    p = beispielprojekt()
+    verlauf = []
+    a = AS.antworten(verlauf, "Wohnzimmer liegt im Norden", p, KAT, {}, client=client)
+    assert a.text == "Plan gedreht." and len(a.aenderungen) == 1
+    assert a.nachher["kuehllast_kw"] < a.vorher["kuehllast_kw"]
+    erste = anfragen[0]
+    assert erste["model"] == "claude-opus-5-5" and erste["fallbacks"] == "default"
+    assert erste["output_config"] == {"effort": "medium"} and erste["system"] == AS.SYSTEM
+    assert {t["name"] for t in erste["tools"]} >= {"plan_drehen", "raum_aendern", "daemmung_setzen"}
+    fehler_ergebnis = anfragen[1]["messages"][-1]["content"][0]
+    assert fehler_ergebnis["is_error"] and "außerhalb" in fehler_ergebnis["content"]
+    assert [m["role"] for m in anfragen[2]["messages"]] == ["user", "assistant", "user", "assistant", "user"]
+    # Werkzeuge erlauben keinen Zugriff auf Code, Dateien oder Server
+    assert not {t["name"] for t in AS.TOOLS} & {"bash", "datei", "code", "shell"}
+
+
+def test_oberflaeche_assistent_chat_und_rueckgaengig(monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test")
+    monkeypatch.delenv("APP_PASSWORT", raising=False)
+
+    def fake(verlauf, text, p, kat, zustand, client=None):
+        vorher = AS.kurzstatus(p, kat)
+        p.raeume[0].flaeche = 60.0
+        return AS.Antwort("Wohnzimmer auf 60 m² vergrößert.", ["Wohnen/Essen: Fläche 60 m²"], vorher,
+                          AS.kurzstatus(p, kat))
+
+    monkeypatch.setattr(AS, "antworten", fake)
+    at = AppTest.from_file(str(WURZEL / "app_v2.py"), default_timeout=60).run()
+    next(b for b in at.button if b.label == "Beispielhaus laden").click().run()
+    flaeche = at.session_state.v2_projekt.raeume[0].flaeche
+    next(b for b in at.button if b.label == "Planungs-Assistent").click().run()
+    assert at.session_state.v2_chat_offen and not at.exception
+    at.chat_input[0].set_value("Wohnzimmer 60 m²").run()
+    assert at.session_state.v2_projekt.raeume[0].flaeche == 60.0
+    assert any("60 m² vergrößert" in m.value for m in at.markdown)
+    next(b for b in at.button if b.label == "Rückgängig").click().run()
+    assert at.session_state.v2_projekt.raeume[0].flaeche == flaeche
+    assert not at.exception
