@@ -35,6 +35,13 @@ SOCKEL_600_FUER = ("CL7000M 79/3", "CL5000M 105/4", "CL5000M 125/5")
 ALTERNATIVE = {  # Hinweistext für Artikel, die nicht automatisch vorgeschlagen werden
     NR_SOCKEL_450: "Alternative zur Bodenkonsole: direkt auf Betonfundament, schallentkoppelt",
     NR_SOCKEL_600: "Alternative zur Bodenkonsole für CL7000M 79/3, CL5000M 105/4 und 125/5 auf Betonfundament",
+    NR_PUMPE_WAND: "Optional: Kondensatpumpe unter wandhängenden Innengeräten",
+    "7738345958": "Optional: Alternative zur Silent+ mini – Pumpe mit 800 mm Kabelkanal für Wandgeräte",
+    NR_PUMPE_EINBAU: "Optional: Einbaupumpe für Konsolen und Truhen",
+    NR_WANDKONSOLE: "Optional: Wandmontage der Außeneinheit",
+    NR_BODENKONSOLE: "Optional: Boden- oder Flachdachaufstellung der Außeneinheit",
+    "7733704064": "Optional: Kabelregler; Wandgeräte benötigen zusätzlich das Verbindungsmodul MC R",
+    "7733701597": "Optional: potentialfreier Kontakt, externes Ein/Aus, Alarm (3000i, 3200i, 7000i)",
 }
 # im Ergänzungskatalog 09/2026 ersetzt → nicht mehr anbieten
 ERSETZT = {"7733701903": "7733704064", "7738336975": "7738346711"}
@@ -189,11 +196,11 @@ def vorschlag(projekt: Projekt, konzept: Konzept, kat: Katalog) -> tuple[dict[st
     # Aufstellung der Außeneinheit
     for ae in aes:
         if projekt.aufstellung == "wand":
-            add(NR_WANDKONSOLE, 1, "Wandmontage je Außeneinheit")
+            add(NR_WANDKONSOLE, 1, "Aufstellort Fassade/Wand: 1 je Außeneinheit")
         elif projekt.aufstellung == "flachdach":
-            add(NR_BODENKONSOLE, 1, "Flachdach: aufgeständert über Schnee/Wasser")
+            add(NR_BODENKONSOLE, 1, "Aufstellort Flachdach: 1 je Außeneinheit, aufgeständert über Schnee/Wasser")
         elif projekt.aufstellung == "boden":
-            add(NR_BODENKONSOLE, 1, "Bodenaufstellung vor dem Haus je Außeneinheit")
+            add(NR_BODENKONSOLE, 1, "Aufstellort Boden: 1 je Außeneinheit")
 
     # Kältemittelleitung, Kommunikationskabel, Klemmringverschraubungen je Innengerät
     ohne_rohr = []
@@ -203,15 +210,15 @@ def vorschlag(projekt: Projekt, konzept: Konzept, kat: Katalog) -> tuple[dict[st
             ohne_rohr.append(ie.raum)
         else:
             for l in rohr_pakete(laenge, kat, klasse):
-                add(ROHRE[klasse][l], 1, f"{laenge:g} m je Innengerät")
+                add(ROHRE[klasse][l], 1, f"Grundausstattung: Kältemittelleitung {laenge:g} m je Innengerät")
             if projekt.boerdelfrei:
                 fluessig = '3/8"' if klasse == '5/8"' else '1/4"'
-                add(KLEMMRING[fluessig], 2, "bördelfrei, 2 je Leitung und Seite")
-                add(KLEMMRING[klasse], 2, "bördelfrei, 2 je Leitung und Seite")
+                add(KLEMMRING[fluessig], 2, "Bördelfrei gewählt: 2 je Leitung und Seite")
+                add(KLEMMRING[klasse], 2, "Bördelfrei gewählt: 2 je Leitung und Seite")
         if ie.kuehl <= 5.5:
-            add(NR_KABEL_KLEIN, math.ceil(laenge / 5.5), "Kommunikationskabel 5,5 m je Innengerät")
+            add(NR_KABEL_KLEIN, math.ceil(laenge / 5.5), "Grundausstattung: Steuerleitung je Innengerät (5,5 m je Kabel)")
         elif ie.kuehl <= 7.5:
-            add(NR_KABEL_GROSS, math.ceil(laenge / 5.5), "Kabel 2,5 mm² für 7-kW-Geräte")
+            add(NR_KABEL_GROSS, math.ceil(laenge / 5.5), "Grundausstattung: Steuerleitung 2,5 mm² für 7-kW-Geräte")
     if ohne_rohr:
         hinweise.append("Kältemittelleitung für Geräte über 7 kW (" + ", ".join(sorted(set(ohne_rohr)))
                         + ") nicht als Paket im Katalog – Kupferrohr und Kabel bauseits nach Montageanleitung.")
@@ -219,23 +226,23 @@ def vorschlag(projekt: Projekt, konzept: Konzept, kat: Katalog) -> tuple[dict[st
     # Kondensat: Wandgeräte/Konsolen mit 16-mm-Ablauf; Kassetten haben eine integrierte Pumpe
     mit_schlauch = [ie for ie in ies if ie.bauart in ("Wandgerät", "Konsole")]
     if mit_schlauch:
-        add(NR_SPIRALSCHLAUCH, math.ceil(len(mit_schlauch) * 3 / 30), "Kondensatablauf Ø 16 mm, Rolle 30 m")
+        add(NR_SPIRALSCHLAUCH, math.ceil(len(mit_schlauch) * 3 / 30), "Grundausstattung: Kondensatablauf Ø 16 mm (Rolle 30 m)")
     if projekt.kondensatpumpe:
         for ie in ies:
             if ie.bauart == "Wandgerät":
-                add(NR_PUMPE_WAND, 1, "Kondensat ohne natürliches Gefälle")
+                add(NR_PUMPE_WAND, 1, "Kondensatpumpe gewählt: unter dem Wandgerät")
             elif ie.bauart in ("Konsole", "Truhe/Decke"):
-                add(NR_PUMPE_EINBAU, 1, "Kondensat ohne natürliches Gefälle")
+                add(NR_PUMPE_EINBAU, 1, "Kondensatpumpe gewählt: Einbau in Konsole/Truhe")
 
     # App-Steuerung (WLAN)
     if projekt.app_steuerung:
         for ie in ies:
             for nr, text in _gateway(ie):
-                add(nr, 1, text or "App HomeCom Easy")
+                add(nr, 1, "App-Steuerung gewählt" + (f" – {text}" if text else ""))
 
     # BEG-Förderung: Climate 7000i nur mit Smart-Grid-Modul MSG-1
     add(NR_MSG1, sum(1 for t in konzept.teilsysteme if t.set and t.set.linie == "Climate 7000i"),
-        "netzdienliche Schnittstelle für die BEG-Förderung")
+        "BEG-Förderung: netzdienliche Schnittstelle je Climate 7000i Set")
 
     # Basispakete: Set + Montagematerial + Konsole unter einer Bestell-Nr.
     raeume: dict[str, list[str]] = {}
@@ -259,6 +266,14 @@ def vorschlag(projekt: Projekt, konzept: Konzept, kat: Katalog) -> tuple[dict[st
     return mengen, {nr: "; ".join(t) for nr, t in grund.items()}, hinweise
 
 
+def _optional(passend: str | None) -> str:
+    if not passend or passend in ("–", "Split-Klimageräte", "Climate Außeneinheiten"):
+        return "Optional"
+    if "kW" in passend:
+        return f"Optional: für Geräte mit {passend}"
+    return f"Optional: passend für {passend}"
+
+
 def gateway_bedarf(konzept: Konzept) -> tuple[set[str], int, int]:
     """Benötigte Gateway-Artikel, Zahl der Innengeräte mit bzw. ohne integriertes WLAN."""
     bedarf: set[str] = set()
@@ -269,6 +284,18 @@ def gateway_bedarf(konzept: Konzept) -> tuple[set[str], int, int]:
         mit_wlan += not nrs
         ohne_wlan += bool(nrs)
     return bedarf, mit_wlan, ohne_wlan
+
+
+def wlan_uebersicht(konzept: Konzept, kat: Katalog | None = None) -> list[str]:
+    """Je Geräteserie: WLAN integriert oder welches Gateway nötig ist (für den App-Schalter)."""
+    namen = {NR_G10_3: "G 10-3", NR_G10_4: "G 10-4", NR_G10_CLC: "G 10 CLC", NR_G10_CLC1: "G 10 CLC-1"}
+    zeilen: dict[str, str] = {}
+    for ie in _innengeraete(konzept):
+        serie = ie.geraet.linie + (f" {ie.bauart}" if ie.bauart != "Wandgerät" else "")
+        nrs = [nr for nr, _ in _gateway(ie)]
+        zeilen[serie] = ("WLAN integriert" if not nrs
+                         else "kein WLAN eingebaut → " + " + ".join(namen[nr] for nr in nrs))
+    return [f"{s}: {t}" for s, t in zeilen.items()]
 
 
 def _sperrgrund(nr: str, konzept: Konzept, bedarf: set[str], ohne_wlan: int, bopa: set[str]) -> str:
@@ -296,7 +323,7 @@ def tabelle(projekt: Projekt, konzept: Konzept, kat: Katalog) -> tuple[list[Zube
         sperre = _sperrgrund(z.bestellnr, konzept, bedarf, ohne_wlan, bopa)
         menge = 0 if sperre else projekt.zubehoer_mengen.get(z.bestellnr, v)
         zeilen.append(ZubehoerZeile(GRUPPEN[GRUPPE[z.bestellnr]], z.bestellnr, z.name, z.preis, v, max(int(menge), 0),
-                                    grund.get(z.bestellnr, ALTERNATIVE.get(z.bestellnr, z.passend or "")), sperre))
+                                    grund.get(z.bestellnr, ALTERNATIVE.get(z.bestellnr, _optional(z.passend))), sperre))
     zeilen.sort(key=lambda x: (GRUPPEN.index(x.gruppe), -x.vorschlag, x.name))
     return zeilen, hinweise
 

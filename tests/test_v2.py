@@ -774,3 +774,18 @@ def test_zubehoer_wlan_gesperrt_und_bilder():
     k = next(k for k in A.konzepte(p, KAT, "single"))
     assert Z.NR_G10_4 in {z.bestellnr for z in Z.gewaehlt(p, k, KAT)}
     assert all(Z.bild(nr) is not None for nr in Z.BILD)
+
+
+def test_oberflaeche_zubehoer_liste_mengen(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("APP_PASSWORT", raising=False)
+    at = AppTest.from_file(str(WURZEL / "app_v2.py"), default_timeout=60).run()
+    next(b for b in at.button if b.label == "Beispielhaus laden").click().run()
+    at.session_state.v2_seite = "ergebnis"
+    at.run()
+    next(t for t in at.toggle if t.label == "Alle Zubehörartikel zeigen").set_value(True).run()
+    feld = next(n for n in at.number_input if "-7738345958-" in n.key)  # Kondensatpumpe inkl. Kanal
+    feld.set_value(2).run()
+    assert at.session_state.v2_projekt.zubehoer_mengen == {"7738345958": 2}
+    assert not at.exception
+    assert any("WLAN:" in c.value for c in at.caption)
