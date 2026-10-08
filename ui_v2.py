@@ -12,6 +12,7 @@ import os
 import tempfile
 import threading
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 
 import pandas as pdx
@@ -147,6 +148,12 @@ div[class*="st-key-navr-"] button p {{font-size:.86rem}}
 .st-key-chatpanel [data-testid="stChatMessage"] {{padding:.4rem .2rem}}
 .st-key-chatpanel [data-testid="stChatMessage"] p {{font-size:.9rem}}
 .chat-titel {{font-weight:700; color:{BLAU}}}
+.zub-gesperrt-titel {{font-size:.82rem; color:#8a949e; margin:.4rem 0 .2rem}}
+.zub-gesperrt {{display:grid; grid-template-columns:44px 1fr auto; gap:.7rem; align-items:center; padding:.3rem .5rem;
+               border:1px dashed #d5dbe1; border-radius:.4rem; margin-bottom:.3rem; color:#9aa4ad; font-size:.82rem;
+               background:#fafbfc}}
+.zub-gesperrt img {{width:40px; height:30px; object-fit:contain; filter:grayscale(1); opacity:.5}}
+.zub-gesperrt b {{font-weight:600; color:#8a949e}}
 .st-key-chatpanel > div > [data-testid="stHorizontalBlock"], .st-key-chatpanel [data-testid="stHorizontalBlock"] {{
     flex-wrap:nowrap !important}}
 .st-key-chatpanel [data-testid="stColumn"] {{min-width:0 !important}}
@@ -825,59 +832,102 @@ def _teilsystem_karte(t: A.Teilsystem, p: Projekt) -> None:
                             f"{farbe}</span>", unsafe_allow_html=True)
 
 
+@lru_cache(maxsize=128)
+def _bild_uri(pfad: str, kante: int = 72) -> str:
+    """Kleines Vorschaubild als data-URI (für Bildspalten in Tabellen)."""
+    import base64
+    import io
+
+    with Image.open(pfad) as im:
+        im = im.convert("RGB")
+        im.thumbnail((kante, kante))
+        puffer = io.BytesIO()
+        im.save(puffer, format="PNG", optimize=True)
+    return "data:image/png;base64," + base64.b64encode(puffer.getvalue()).decode()
+
+
+def _zubehoer_bild(nr: str) -> str | None:
+    pfad = Z.bild(nr)
+    return _bild_uri(str(pfad)) if pfad else None
+
+
 def zubehoer_bereich(p: Projekt, k: A.Konzept, kat: Katalog) -> None:
-    """Zubehör und Montagematerial: Vorschlag aus dem Konzept, Mengen frei änderbar."""
+    """Zubehör und Montagematerial: Vorschlag aus dem Konzept, Mengen frei änderbar.
+    Das Fenster bleibt offen, bis es selbst zugeklappt wird (fester Schlüssel statt wechselndem Titel)."""
     zeilen, _ = Z.tabelle(p, k, kat)
     summe = Z.summe(zeilen)
-    with st.expander(f"Zubehör und Montagematerial · {fmt_eur(summe)}", icon=":material/handyman:",
-                     expanded=bool(p.zubehoer_mengen)):
+    bedarf, mit_wlan, ohne_wlan = Z.gateway_bedarf(k)
+    with st.expander("Zubehör und Montagematerial", icon=":material/handyman:", key="zubehoer-fenster"):
+        st.markdown(f"**Summe Zubehör: {fmt_eur(summe)}**")
         c1, _ = st.columns([1, 1])
         laenge = zahl(c1, "Leitungslänge je Innengerät", "m", p.leitungslaenge, 1.0, 50.0, 1.0, "zlaenge", "%.0f")
         c2, c3, c4 = st.columns(3)
-        app = c2.toggle("App-Steuerung (WLAN)", p.app_steuerung, key=_k("zapp"),
-                        help="Internet-Gateways für Geräte ohne integriertes WLAN (7000i/8000i haben WLAN integriert).")
+        if bedarf:
+            app = c2.toggle("App-Steuerung (WLAN)", p.app_steuerung, key=_k("zapp"),
+                            help="Internet-Gateways für Innengeräte ohne integriertes WLAN"
+                                 + (f" ({ohne_wlan} von {mit_wlan + ohne_wlan} Geräten)." if mit_wlan else "."))
+        else:
+            c2.toggle("App-Steuerung (WLAN)", True, key=_k("zapp_fest"), disabled=True,
+                      help="WLAN ist bei allen Innengeräten integriert (Climate 7000i / Class 8000i) – "
+                           "kein Gateway nötig.")
+            app = p.app_steuerung
         boerdel = c3.toggle("Bördelfrei (Klemmring)", p.boerdelfrei, key=_k("zboerdel"),
                             help="SAE-Klemmringverschraubungen, 2 je Leitung und Seite.")
         pumpe = c4.toggle("Kondensatpumpe", p.kondensatpumpe, key=_k("zpumpe"),
                           help="Wenn das Kondensat nicht mit Gefälle abgeleitet werden kann. Kassetten haben eine "
                                "integrierte Pumpe.")
+        if not bedarf:
+            c2.caption("WLAN integriert")
         if (laenge, app, boerdel, pumpe) != (p.leitungslaenge, p.app_steuerung, p.boerdelfrei, p.kondensatpumpe):
             p.leitungslaenge, p.app_steuerung, p.boerdelfrei, p.kondensatpumpe = laenge, app, boerdel, pumpe
             st.rerun()
         alle = st.toggle("Alle Zubehörartikel zeigen", key=_k("zalle"))
-        sichtbar = [z for z in zeilen if alle or z.vorschlag or z.menge]
+        sichtbar = [z for z in zeilen if not z.gesperrt and (alle or z.vorschlag or z.menge)]
+        gesperrt = [z for z in zeilen if z.gesperrt and (alle or z.bestellnr in Z.GATEWAYS)]
         if not sichtbar:
             st.info("Für diese Lösung gibt es keinen automatischen Zubehörvorschlag – z. B. Large-Split über 7 kW "
                     "(Kältemittelleitung bauseits) ohne gewählten Aufstellort. Über „Alle Zubehörartikel zeigen“ "
                     "können Sie Artikel manuell ergänzen.", icon=":material/info:")
-            return
-        spalten = ["Menge", "Artikel", "Bestell-Nr.", "Einzelpreis", "Summe", "Gruppe", "Vorschlag", "Hinweis"]
-        df = st.data_editor(
-            pdx.DataFrame([{"Menge": z.menge, "Artikel": z.name, "Bestell-Nr.": z.bestellnr,
-                            "Einzelpreis": z.einzelpreis, "Summe": z.summe, "Gruppe": z.gruppe,
-                            "Vorschlag": z.vorschlag, "Hinweis": z.grund} for z in sichtbar], columns=spalten),
-            hide_index=True, width="stretch", num_rows="fixed", key=_k(f"zub-{k.key}-{alle}"),
-            disabled=["Artikel", "Bestell-Nr.", "Einzelpreis", "Summe", "Gruppe", "Vorschlag", "Hinweis"],
-            column_config={
-                "Menge": st.column_config.NumberColumn(min_value=0, max_value=999, step=1, format="%d", width="small"),
-                "Einzelpreis": st.column_config.NumberColumn(format="%.2f €"),
-                "Summe": st.column_config.NumberColumn(format="%.2f €"),
-                "Vorschlag": st.column_config.NumberColumn(format="%d", width="small"),
-            })
-        neu = dict(p.zubehoer_mengen)
-        for z, menge in zip(sichtbar, df["Menge"].tolist()):
-            menge = int(menge or 0)
-            if menge == z.vorschlag:
-                neu.pop(z.bestellnr, None)
-            else:
-                neu[z.bestellnr] = menge
-        if neu != p.zubehoer_mengen:
-            p.zubehoer_mengen = neu
-            st.rerun()
+        else:
+            spalten = ["Bild", "Menge", "Artikel", "Bestell-Nr.", "Einzelpreis", "Summe", "Gruppe", "Vorschlag",
+                       "Hinweis"]
+            df = st.data_editor(
+                pdx.DataFrame([{"Bild": _zubehoer_bild(z.bestellnr), "Menge": z.menge, "Artikel": z.name,
+                                "Bestell-Nr.": z.bestellnr, "Einzelpreis": z.einzelpreis, "Summe": z.summe,
+                                "Gruppe": z.gruppe, "Vorschlag": z.vorschlag, "Hinweis": z.grund}
+                               for z in sichtbar], columns=spalten),
+                hide_index=True, width="stretch", num_rows="fixed", key=_k(f"zub-{k.key}-{alle}"), row_height=60,
+                disabled=["Bild", "Artikel", "Bestell-Nr.", "Einzelpreis", "Summe", "Gruppe", "Vorschlag", "Hinweis"],
+                column_config={
+                    "Bild": st.column_config.ImageColumn("", width="small"),
+                    "Menge": st.column_config.NumberColumn(min_value=0, max_value=999, step=1, format="%d",
+                                                           width="small"),
+                    "Einzelpreis": st.column_config.NumberColumn(format="%.2f €"),
+                    "Summe": st.column_config.NumberColumn(format="%.2f €"),
+                    "Vorschlag": st.column_config.NumberColumn(format="%d", width="small"),
+                })
+            neu = dict(p.zubehoer_mengen)
+            for z, menge in zip(sichtbar, df["Menge"].tolist()):
+                menge = int(menge or 0)
+                if menge == z.vorschlag:
+                    neu.pop(z.bestellnr, None)
+                else:
+                    neu[z.bestellnr] = menge
+            if neu != p.zubehoer_mengen:
+                p.zubehoer_mengen = neu
+                st.rerun()
+        if gesperrt:
+            st.markdown('<div class="zub-gesperrt-titel">Nicht erforderlich für diese Lösung</div>',
+                        unsafe_allow_html=True)
+            st.markdown("".join(
+                f'<div class="zub-gesperrt">'
+                + (f'<img src="{_zubehoer_bild(z.bestellnr)}">' if _zubehoer_bild(z.bestellnr) else "<span></span>")
+                + f'<span><b>{z.name}</b> · {z.bestellnr}</span><span>{z.gesperrt}</span></div>' for z in gesperrt),
+                unsafe_allow_html=True)
         geraete = k.preis
         st.markdown(f"**Summe Zubehör: {fmt_eur(summe)}**" + (
             f" · Geräte + Zubehör: **{fmt_eur(geraete + summe)}**" if geraete is not None and summe is not None else ""))
-        c1, c2 = st.columns([3, 1], vertical_alignment="center")
+        c1, c2 = st.columns([2, 1], vertical_alignment="center")
         c1.caption(f"{Z.VORKALKULATION} Vorschlag aus Konzept, Aufstellort und Leitungslänge – Mengen in der "
                    f"Spalte „Menge“ anpassen. {kat.preisbasis}.")
         if p.zubehoer_mengen and c2.button("Vorschlag wiederherstellen", icon=":material/restart_alt:",

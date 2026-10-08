@@ -66,7 +66,8 @@ Rechenkern und derselben KI-Planerkennung:
   nach Gerätegröße und Leitungslänge), Kommunikationskabel, Kondensatschlauch/-pumpen, Wand- bzw.
   Bodenkonsole je Aufstellort (Boden vor dem Haus und Flachdach: Bodenkonsole; Dämpfungssockel als Alternative), WLAN-Gateways (G 10-4, G 10 CLC/CLC-1), Smart-Grid-Modul MSG-1,
   Klemmringverschraubungen; Mengen frei änderbar, BOPA-Basispakete als Hinweis. Ersetzte Artikel (CRC R-1,
-  Kondensatpumpe 7738336975) werden nicht mehr angeboten. Summe „Geräte + Zubehör“ im Ergebnis und im PDF.
+  Kondensatpumpe 7738336975) werden nicht mehr angeboten. Summe „Geräte + Zubehör“ im Ergebnis und im PDF. Produktbilder je Artikel (aus den Katalogen); WLAN-Gateways
+  bei integriertem WLAN (Climate 7000i / Class 8000i) und andere unpassende Artikel ausgegraut.
 - **Farbwunsch:** geht vor der bevorzugten Gerätelinie; reicht das größte Gerät in Wunschfarbe nicht (schwarz/silber
   bis 3,4 kW), erhält der Raum mehrere Geräte in dieser Farbe – mit Hinweis.
 - **Smartphone und Tablet:** bis 1024 px Breite kompakte Schrittleiste oben statt Navigationsspalte (Speichern/Laden
@@ -87,7 +88,7 @@ Rechenkern und derselben KI-Planerkennung:
   Ende der Ergebnisseite); vorher optional als JSON speichern.
 - **Planungs-Assistent (Beta):** Chat-Blase unten rechts (Smartphone: Panel von unten). Änderungen an der Planung
   per Text, z. B. „Der Plan hat keinen Nordpfeil – das Wohnzimmer liegt im Norden“ (dreht den ganzen Grundriss) oder
-  „Haus von 1958, Fassade 1990 gedämmt“. Claude (`claude-opus-5-5`) arbeitet nur über feste Werkzeuge auf der
+  „Haus von 1958, Fassade 1990 gedämmt“. Claude Haiku 5.5 (`ASSISTENT_MODELL`, Denktiefe `ASSISTENT_EFFORT`=low; Grundriss-Erkennung weiter Opus 5.5) arbeitet nur über feste Werkzeuge auf der
   Planung der eigenen Sitzung (`splitklima/v2/assistent.py`): kein Zugriff auf Code, Dateien, Server oder Katalog;
   jede Eingabe wird wie per Klick geprüft; Ergebnis mit vorher/nachher und „Rückgängig“. Benötigt
   `ANTHROPIC_API_KEY` (wie die Grundriss-Erkennung); `ASSISTENT=0` blendet den Chat aus. Kostenbremse: 40

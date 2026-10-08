@@ -717,8 +717,8 @@ def test_assistent_dialog_mit_werkzeugen():
     assert a.text == "Plan gedreht." and len(a.aenderungen) == 1
     assert a.nachher["kuehllast_kw"] < a.vorher["kuehllast_kw"]
     erste = anfragen[0]
-    assert erste["model"] == "claude-opus-5-5" and erste["fallbacks"] == "default"
-    assert erste["output_config"] == {"effort": "medium"} and erste["system"] == AS.SYSTEM
+    assert erste["model"] == "claude-haiku-5-5" and "fallbacks" not in erste  # Chat: kleinstes Modell
+    assert erste["output_config"] == {"effort": "low"} and erste["system"] == AS.SYSTEM
     assert {t["name"] for t in erste["tools"]} >= {"plan_drehen", "raum_aendern", "daemmung_setzen"}
     fehler_ergebnis = anfragen[1]["messages"][-1]["content"][0]
     assert fehler_ergebnis["is_error"] and "außerhalb" in fehler_ergebnis["content"]
@@ -749,3 +749,28 @@ def test_oberflaeche_assistent_chat_und_rueckgaengig(monkeypatch):
     next(b for b in at.button if b.label == "Rückgängig").click().run()
     assert at.session_state.v2_projekt.raeume[0].flaeche == flaeche
     assert not at.exception
+
+
+def test_assistent_verlauf_wird_begrenzt():
+    anfragen = []
+    client = _mock_client([([{"type": "text", "text": "ok"}], "end_turn")] * 12, anfragen)
+    verlauf, p = [], beispielprojekt()
+    for i in range(AS.MAX_TURNS_IM_VERLAUF + 2):
+        AS.antworten(verlauf, f"Frage {i}", p, KAT, {}, client=client)
+    assert len(anfragen[AS.MAX_TURNS_IM_VERLAUF]["messages"]) == 1  # neues Gespräch, nie gekürzt
+    assert len(anfragen[AS.MAX_TURNS_IM_VERLAUF - 1]["messages"]) == 2 * AS.MAX_TURNS_IM_VERLAUF - 1
+
+
+def test_zubehoer_wlan_gesperrt_und_bilder():
+    p = beispielprojekt()
+    p.geraetelinie, p.app_steuerung = "7000i", True
+    k = next(k for k in A.konzepte(p, KAT, "single"))
+    zeilen, _ = Z.tabelle(p, k, KAT)
+    gateways = [z for z in zeilen if z.bestellnr in Z.GATEWAYS]
+    assert gateways and all(z.gesperrt.startswith("WLAN bei allen") and z.menge == 0 for z in gateways)
+    p.zubehoer_mengen = {Z.NR_G10_4: 3}  # auch von Hand nicht wählbar
+    assert Z.NR_G10_4 not in {z.bestellnr for z in Z.gewaehlt(p, k, KAT)}
+    p.geraetelinie = "3200i"
+    k = next(k for k in A.konzepte(p, KAT, "single"))
+    assert Z.NR_G10_4 in {z.bestellnr for z in Z.gewaehlt(p, k, KAT)}
+    assert all(Z.bild(nr) is not None for nr in Z.BILD)
