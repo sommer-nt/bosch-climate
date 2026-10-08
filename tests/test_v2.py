@@ -799,7 +799,22 @@ def test_oberflaeche_gesperrtes_zubehoer_nur_in_gesamtansicht(monkeypatch):
     at.session_state.v2_seite = "ergebnis"
     at.run()
     assert not any("nicht wählbar" in m.value for m in at.markdown)
-    assert not any("7736606771" in n.key for n in at.number_input)  # G 10-3: nie als Mengenfeld
+    assert not any("7733704066" in n.key for n in at.number_input)  # G 10 CLC-1 (nur Large-Split CF): nie wählbar
     next(t for t in at.toggle if t.label == "Alle Zubehörartikel zeigen").set_value(True).run()
     assert any("nicht wählbar" in m.value for m in at.markdown)
-    assert not any("7736606771" in n.key for n in at.number_input)
+    assert not any("7733704066" in n.key for n in at.number_input)
+
+
+def test_g10_3_als_alternative_bei_3200i():
+    """G 10-3 passt laut Katalog (S. 40) auch zur Climate 3200i – wählbar, aber nicht vorgeschlagen."""
+    p = beispielprojekt()
+    p.geraetelinie, p.app_steuerung = "3200i", True
+    k = next(k for k in A.konzepte(p, KAT, "single"))
+    z = {x.bestellnr: x for x in Z.tabelle(p, k, KAT)[0]}
+    assert not z[Z.NR_G10_3].gesperrt and z[Z.NR_G10_3].vorschlag == 0
+    assert z[Z.NR_G10_4].vorschlag == k.innengeraete and not z[Z.NR_G10_4].gesperrt
+    assert z[Z.NR_G10_CLC].gesperrt and z[Z.NR_G10_CLC1].gesperrt
+    p.zubehoer_mengen = {Z.NR_G10_4: 0, Z.NR_G10_3: k.innengeraete}
+    gew = {x.bestellnr: x.menge for x in Z.gewaehlt(p, k, KAT)}
+    assert gew.get(Z.NR_G10_3) == k.innengeraete and Z.NR_G10_4 not in gew
+    assert any("alternativ G 10-3" in t for t in Z.wlan_uebersicht(k))
