@@ -622,3 +622,10 @@ def test_oberflaeche_planung_zuruecksetzen(monkeypatch):
     q = at.session_state.v2_projekt
     assert q.raeume == [] and q.aufstellung == "" and q.zubehoer_mengen == {}
     assert at.session_state.v2_seite == "system" and q.config_id != p.config_id
+
+
+def test_oberflaeche_entwicklerhinweis(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("APP_PASSWORT", raising=False)
+    at = AppTest.from_file(str(WURZEL / "app_v2.py"), default_timeout=60).run()
+    assert any("Entwickelt von Daniel Sommer (HC/SDE3-PSD)" in m.value for m in at.markdown)
