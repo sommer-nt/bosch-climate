@@ -148,6 +148,14 @@ div[class*="st-key-navr-"] button p {{font-size:.86rem}}
 .st-key-chatpanel [data-testid="stChatMessage"] {{padding:.4rem .2rem}}
 .st-key-chatpanel [data-testid="stChatMessage"] p {{font-size:.9rem}}
 .chat-titel {{font-weight:700; color:{BLAU}}}
+.zub-gruppe {{font-size:.78rem; font-weight:600; color:{BLAU}; text-transform:uppercase; letter-spacing:.04em;
+               margin:.8rem 0 .1rem; padding-bottom:.2rem; border-bottom:1px solid #e3e8ed}}
+div[class*="st-key-zubrow-"] {{border-bottom:1px solid #f0f2f5; padding:.15rem 0}}
+.zub-bild {{width:56px; height:56px; object-fit:contain; border-radius:.3rem; background:white}}
+.zub-name {{font-weight:600; font-size:.9rem; color:#1d2834}}
+.zub-info {{font-size:.78rem; color:#5c6773}}
+.zub-warum {{font-size:.78rem; color:{BLAU}}}
+.zub-summe {{text-align:right; font-weight:600; font-size:.9rem; white-space:nowrap}}
 .zub-gesperrt-titel {{font-size:.82rem; color:#8a949e; margin:.4rem 0 .2rem}}
 .zub-gesperrt {{display:grid; grid-template-columns:44px 1fr auto; gap:.7rem; align-items:center; padding:.3rem .5rem;
                border:1px dashed #d5dbe1; border-radius:.4rem; margin-bottom:.3rem; color:#9aa4ad; font-size:.82rem;
@@ -185,6 +193,11 @@ body:has(.st-key-chatpanel) .mobilpreis {{display:none !important}}
       white-space:normal !important; overflow:visible !important; text-overflow:clip !important}}
   [data-testid="stMetricLabel"], [data-testid="stMetricLabel"] * {{white-space:normal !important;
       overflow:visible !important; text-overflow:clip !important}}
+  div[class*="st-key-zubrow-"] [data-testid="stHorizontalBlock"] {{flex-wrap:wrap !important}}
+  div[class*="st-key-zubrow-"] [data-testid="stColumn"]:nth-child(1) {{min-width:60px !important; flex:0 0 60px !important}}
+  div[class*="st-key-zubrow-"] [data-testid="stColumn"]:nth-child(2) {{min-width:0 !important; flex:1 1 calc(100% - 80px) !important}}
+  div[class*="st-key-zubrow-"] [data-testid="stColumn"]:nth-child(3),
+  div[class*="st-key-zubrow-"] [data-testid="stColumn"]:nth-child(4) {{min-width:0 !important; flex:1 1 40% !important}}
   [data-testid="stCheckbox"] label, [data-testid="stCheckbox"] label p {{white-space:normal !important;
       overflow:visible !important; text-overflow:clip !important}}
 }}
@@ -840,10 +853,19 @@ def _bild_uri(pfad: str, kante: int = 72) -> str:
 
     with Image.open(pfad) as im:
         im = im.convert("RGB")
-        im.thumbnail((kante, kante))
+        im.thumbnail((kante - 6, kante - 6))
+        feld = Image.new("RGB", (kante, kante), "white")  # quadratisch, nichts wird abgeschnitten
+        feld.paste(im, ((kante - im.width) // 2, (kante - im.height) // 2))
         puffer = io.BytesIO()
-        im.save(puffer, format="PNG", optimize=True)
+        feld.save(puffer, format="PNG", optimize=True)
     return "data:image/png;base64," + base64.b64encode(puffer.getvalue()).decode()
+
+
+def fmt_eur2(betrag: float | None) -> str:
+    """Betrag mit Cent, deutsch formatiert (z. B. 1.970,64 €)."""
+    if betrag is None:
+        return "auf Anfrage"
+    return f"{betrag:,.2f} €".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def _zubehoer_bild(nr: str) -> str | None:
@@ -881,55 +903,58 @@ def zubehoer_bereich(p: Projekt, k: A.Konzept, kat: Katalog) -> None:
         if (laenge, app, boerdel, pumpe) != (p.leitungslaenge, p.app_steuerung, p.boerdelfrei, p.kondensatpumpe):
             p.leitungslaenge, p.app_steuerung, p.boerdelfrei, p.kondensatpumpe = laenge, app, boerdel, pumpe
             st.rerun()
-        alle = st.toggle("Alle Zubehörartikel zeigen", key=_k("zalle"))
+        st.caption("WLAN: " + " · ".join(Z.wlan_uebersicht(k)))
+        alle = st.toggle("Alle Zubehörartikel zeigen", key=_k("zalle"),
+                         help="Auch Artikel, die nicht automatisch vorgeschlagen werden – Menge mit + erhöhen.")
         sichtbar = [z for z in zeilen if not z.gesperrt and (alle or z.vorschlag or z.menge)]
-        gesperrt = [z for z in zeilen if z.gesperrt and (alle or z.bestellnr in Z.GATEWAYS)]
         if not sichtbar:
             st.info("Für diese Lösung gibt es keinen automatischen Zubehörvorschlag – z. B. Large-Split über 7 kW "
                     "(Kältemittelleitung bauseits) ohne gewählten Aufstellort. Über „Alle Zubehörartikel zeigen“ "
                     "können Sie Artikel manuell ergänzen.", icon=":material/info:")
-        else:
-            spalten = ["Bild", "Menge", "Artikel", "Bestell-Nr.", "Einzelpreis", "Summe", "Gruppe", "Vorschlag",
-                       "Hinweis"]
-            df = st.data_editor(
-                pdx.DataFrame([{"Bild": _zubehoer_bild(z.bestellnr), "Menge": z.menge, "Artikel": z.name,
-                                "Bestell-Nr.": z.bestellnr, "Einzelpreis": z.einzelpreis, "Summe": z.summe,
-                                "Gruppe": z.gruppe, "Vorschlag": z.vorschlag, "Hinweis": z.grund}
-                               for z in sichtbar], columns=spalten),
-                hide_index=True, width="stretch", num_rows="fixed", key=_k(f"zub-{k.key}-{alle}"), row_height=60,
-                disabled=["Bild", "Artikel", "Bestell-Nr.", "Einzelpreis", "Summe", "Gruppe", "Vorschlag", "Hinweis"],
-                column_config={
-                    "Bild": st.column_config.ImageColumn("", width="small"),
-                    "Menge": st.column_config.NumberColumn(min_value=0, max_value=999, step=1, format="%d",
-                                                           width="small"),
-                    "Einzelpreis": st.column_config.NumberColumn(format="%.2f €"),
-                    "Summe": st.column_config.NumberColumn(format="%.2f €"),
-                    "Vorschlag": st.column_config.NumberColumn(format="%d", width="small"),
-                })
-            neu = dict(p.zubehoer_mengen)
-            for z, menge in zip(sichtbar, df["Menge"].tolist()):
-                menge = int(menge or 0)
-                if menge == z.vorschlag:
-                    neu.pop(z.bestellnr, None)
-                else:
-                    neu[z.bestellnr] = menge
-            if neu != p.zubehoer_mengen:
-                p.zubehoer_mengen = neu
-                st.rerun()
-        if gesperrt:
-            st.markdown('<div class="zub-gesperrt-titel">Nicht erforderlich für diese Lösung</div>',
-                        unsafe_allow_html=True)
-            st.markdown("".join(
-                f'<div class="zub-gesperrt">'
-                + (f'<img src="{_zubehoer_bild(z.bestellnr)}">' if _zubehoer_bild(z.bestellnr) else "<span></span>")
-                + f'<span><b>{z.name}</b> · {z.bestellnr}</span><span>{z.gesperrt}</span></div>' for z in gesperrt),
-                unsafe_allow_html=True)
+        neu = dict(p.zubehoer_mengen)
+        gruppe = None
+        for z in sichtbar:
+            if z.gruppe != gruppe:
+                gruppe = z.gruppe
+                st.markdown(f'<div class="zub-gruppe">{gruppe}</div>', unsafe_allow_html=True)
+            manuell = z.bestellnr in p.zubehoer_mengen
+            with st.container(key=f"zubrow-{z.bestellnr}"):
+                c1, c2, c3, c4 = st.columns([0.9, 4.2, 1.5, 1.2], vertical_alignment="center")
+                uri = _zubehoer_bild(z.bestellnr)
+                c1.markdown(f'<img class="zub-bild" src="{uri}">' if uri else "", unsafe_allow_html=True)
+                warum = z.grund + (" · Menge von Hand geändert" if manuell else "")
+                c2.markdown(f'<div class="zub-name">{z.name}</div><div class="zub-info">{z.bestellnr} · '
+                            f'{fmt_eur2(z.einzelpreis)} je Stück</div><div class="zub-warum">{warum}</div>',
+                            unsafe_allow_html=True)
+                menge = c3.number_input("Menge", 0, 999, int(z.menge), 1, label_visibility="collapsed",
+                                        key=_k(f"zm-{k.key}-{z.bestellnr}-{z.vorschlag}-{int(manuell)}"))
+                c4.markdown(f'<div class="zub-summe">{fmt_eur2(z.einzelpreis * menge if z.einzelpreis else None)}'
+                            '</div>', unsafe_allow_html=True)
+            if int(menge) == z.vorschlag:
+                neu.pop(z.bestellnr, None)
+            else:
+                neu[z.bestellnr] = int(menge)
+        if neu != p.zubehoer_mengen:
+            p.zubehoer_mengen = neu
+            st.rerun()
+        gesperrt = [z for z in zeilen if z.gesperrt and (alle or z.bestellnr in Z.GATEWAYS)]
+        for titel, auswahl in (("Nicht erforderlich – WLAN integriert",
+                                [z for z in gesperrt if z.gesperrt.startswith("WLAN")]),
+                               ("Passt nicht zu den gewählten Geräten",
+                                [z for z in gesperrt if not z.gesperrt.startswith("WLAN")])):
+            if auswahl:
+                st.markdown(f'<div class="zub-gesperrt-titel">{titel}</div>', unsafe_allow_html=True)
+                st.markdown("".join(
+                    '<div class="zub-gesperrt">'
+                    + (f'<img src="{_zubehoer_bild(z.bestellnr)}">' if _zubehoer_bild(z.bestellnr) else "<span></span>")
+                    + f'<span><b>{z.name}</b> · {z.bestellnr}</span><span>{z.gesperrt}</span></div>'
+                    for z in auswahl), unsafe_allow_html=True)
         geraete = k.preis
         st.markdown(f"**Summe Zubehör: {fmt_eur(summe)}**" + (
             f" · Geräte + Zubehör: **{fmt_eur(geraete + summe)}**" if geraete is not None and summe is not None else ""))
         c1, c2 = st.columns([2, 1], vertical_alignment="center")
-        c1.caption(f"{Z.VORKALKULATION} Vorschlag aus Konzept, Aufstellort und Leitungslänge – Mengen in der "
-                   f"Spalte „Menge“ anpassen. {kat.preisbasis}.")
+        c1.caption(f"{Z.VORKALKULATION} Vorschlag aus Konzept, Aufstellort und Leitungslänge – Mengen mit "
+                   f"+/− anpassen. {kat.preisbasis}.")
         if p.zubehoer_mengen and c2.button("Vorschlag wiederherstellen", icon=":material/restart_alt:",
                                            type="tertiary"):
             p.zubehoer_mengen = {}
