@@ -86,6 +86,10 @@ Rechenkern und derselben KI-Planerkennung:
   Katalogbildern prüfen.
 - **Neu beginnen:** setzt die Planung nach Sicherheitsabfrage komplett zurück (Navigation links, Smartphone-Menü,
   Ende der Ergebnisseite); vorher optional als JSON speichern.
+- **Plan fotografieren:** Knopf „📷 Plan fotografieren“ im Grundriss-Bereich öffnet auf iPad/iPhone direkt die
+  Rückkamera (volle Auflösung, `capture="environment"`); ein Foto je Geschoss, „Weiteres Foto“ ergänzt. Vorschau mit
+  „Drehen“; vor der Erkennung werden Fotos nach EXIF gedreht, auf 2.400 px verkleinert und im Kontrast angehoben
+  (`splitklima/v2/fotos.py`). Am PC öffnet der Knopf die Dateiauswahl.
 - **Planungs-Assistent (Beta):** Chat-Blase unten rechts (Smartphone: Panel von unten). Änderungen an der Planung
   per Text, z. B. „Der Plan hat keinen Nordpfeil – das Wohnzimmer liegt im Norden“ (dreht den ganzen Grundriss) oder
   „Haus von 1958, Fassade 1990 gedämmt“. Claude Haiku 5.5 (`ASSISTENT_MODELL`, Denktiefe `ASSISTENT_EFFORT`=low; Grundriss-Erkennung weiter Opus 5.5) arbeitet nur über feste Werkzeuge auf der

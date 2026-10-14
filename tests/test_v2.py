@@ -836,3 +836,41 @@ def test_oberflaeche_auslaufartikel_liste_sichtbar(monkeypatch):
     assert any("13 Artikel sind ausgeblendet" in m.value and "CL3000i-Set 26 WE" in m.value for m in at.markdown)
     next(t for t in at.toggle if t.label == "Auslaufartikel anzeigen").set_value(True).run()
     assert any("werden bei der Auswahl berücksichtigt" in m.value for m in at.markdown)
+
+
+# ---------------------------------------------------------------- Plan fotografieren
+def _handyfoto(breite=4000, hoehe=3000, exif_orientierung=6) -> bytes:
+    import io
+
+    from PIL import Image, ImageDraw
+
+    bild = Image.new("RGB", (breite, hoehe), (200, 196, 190))  # graues Papier im Kunstlicht
+    zeichnen = ImageDraw.Draw(bild)
+    zeichnen.rectangle([400, 300, breite - 400, hoehe - 300], outline=(60, 60, 60), width=12)
+    zeichnen.rectangle([400, 300, 900, 600], fill=(30, 30, 30))  # Markierung oben links
+    exif = Image.Exif()
+    exif[0x0112] = exif_orientierung  # 6 = Kamera um 90° gedreht gehalten
+    puffer = io.BytesIO()
+    bild.save(puffer, format="JPEG", quality=95, exif=exif)
+    return puffer.getvalue()
+
+
+def test_foto_aufbereitung_dreht_verkleinert_und_hebt_kontrast():
+    import io
+
+    from PIL import Image
+
+    from splitklima.v2 import fotos as FO
+
+    roh = _handyfoto()
+    fertig = FO.aufbereiten(roh)
+    with Image.open(io.BytesIO(fertig)) as bild:
+        assert bild.format == "JPEG" and max(bild.size) == FO.MAX_KANTE
+        assert bild.size[0] < bild.size[1]  # EXIF 6: Hochformat wiederhergestellt
+        hell = max(bild.convert("L").getdata())
+    assert hell > 240  # Papier durch Kontrastanhebung fast weiß
+    assert len(fertig) < len(roh)
+    with Image.open(io.BytesIO(FO.aufbereiten(roh, drehung=90))) as gedreht:
+        assert gedreht.size[0] > gedreht.size[1]  # zusätzlich 90° gedreht → wieder quer
+    with pytest.raises(FO.FotoFehler):
+        FO.aufbereiten(b"kein bild")
