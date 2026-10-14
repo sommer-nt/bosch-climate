@@ -33,6 +33,7 @@ from splitklima.v2 import auswahl as A
 from splitklima.v2.angebot import pdf_angebot_v2
 from splitklima.v2.bilder import bild, bild_innen_set
 from splitklima.v2 import assistent as AS
+from splitklima.v2 import fotos as FO
 from splitklima.v2 import speichern as SP
 from splitklima.v2 import zubehoer as Z
 from splitklima.v2.katalog import FARBEN, Katalog
@@ -137,6 +138,17 @@ div[class*="st-key-navr-"] button p {{font-size:.86rem}}
 .zs-zeile {{gap:.6rem}} .zs-zeile span:last-child {{text-align:right}}
 [data-testid="stMetricValue"] {{font-size:clamp(1.35rem, 2.3vw, 2.25rem) !important}}
 [data-testid="stMetricValue"] > div {{overflow:visible !important; text-overflow:clip !important}}
+/* ---------- Plan fotografieren: Upload-Feld als großer Kamera-Knopf */
+.st-key-kamera [data-testid="stFileUploaderDropzone"] {{background:#eef5fb; border:1.5px dashed #7fa9cc}}
+.st-key-kamera [data-testid="stFileUploaderDropzoneInstructions"] {{display:none}}
+.st-key-kamera button:not([data-testid="stBaseButton-minimal"]) {{font-size:0 !important;
+    background:{BLAU} !important; color:white !important; border:none !important; padding:.55rem 1.1rem !important;
+    border-radius:.5rem !important; width:auto !important; height:auto !important}}
+.st-key-kamera button:not([data-testid="stBaseButton-minimal"]) * {{font-size:0 !important}}
+.st-key-kamera button:not([data-testid="stBaseButton-minimal"])::after {{content:"📷  Plan fotografieren";
+    font-size:.95rem; font-weight:600; color:white; white-space:nowrap}}
+.st-key-kamera [data-testid="stFileChips"] > button:not([data-testid="stBaseButton-minimal"])::after {{
+    content:"📷  Weiteres Foto"}}
 /* ---------- Planungs-Assistent: Chat-Blase unten rechts */
 .st-key-chatfab {{position:fixed !important; right:1.6rem; bottom:1.6rem; z-index:1002; width:auto !important}}
 .st-key-chatfab button {{background:{BLAU} !important; color:white !important; border:none !important;
@@ -395,20 +407,28 @@ def ki_bereich(p: Projekt, gross: bool) -> None:
             st.markdown("**Grundrisse hochladen – Räume automatisch erkennen**")
         dateien = st.file_uploader("Pläne", type=["pdf", "png", "jpg", "jpeg", "webp"], accept_multiple_files=True,
                                    label_visibility="collapsed", key="v2_upload")
+        fotos = kamera_bereich()
+        dateien = [*(dateien or []), *fotos]
         ki_bereit = schluessel_vorhanden()
         c1, c2, c3 = st.columns([2, 2, 2])
         with c3.popover("Zusatzangaben", width="stretch"):
             zusatz = st.text_area("Hinweise für die Erkennung", key="v2_zusatz",
                                   placeholder="z. B. Plan-Oben zeigt nach Nordost; Keller nicht klimatisieren")
-        groesse = sum(len(f.getvalue()) for f in dateien or []) / 1e6
+        try:
+            eingaben = ki_eingaben(dateien)
+            fehler_foto = ""
+        except FO.FotoFehler as fehler:
+            eingaben, fehler_foto = [], str(fehler)
+        groesse = sum(len(d) for d, _ in eingaben) / 1e6
         if c1.button("Räume erkennen", type="primary", width="stretch", icon=":material/auto_awesome:",
-                     disabled=not dateien or not ki_bereit or groesse > MAX_MB):
+                     disabled=not eingaben or not ki_bereit or groesse > MAX_MB):
             with st.spinner("Die Pläne werden gelesen … das dauert 1–2 Minuten."):
                 try:
-                    ki_uebernehmen(p, analysiere(
-                        [(f.getvalue(), MIME[Path(f.name).suffix.lower()]) for f in dateien], zusatz))
+                    ki_uebernehmen(p, analysiere(eingaben, zusatz))
                 except PlanFehler as fehler:
                     st.error(str(fehler))
+        if fehler_foto:
+            st.error(fehler_foto)
         if c2.button("Beispielhaus laden", width="stretch", icon=":material/home_work:"):
             ki_uebernehmen(p, KiPlanAnalyse.model_validate_json(BEISPIEL.read_text("utf-8")))
         if groesse > MAX_MB:
@@ -417,8 +437,64 @@ def ki_bereich(p: Projekt, gross: bool) -> None:
             st.caption("Automatische Erkennung ist hier nicht eingerichtet (API-Schlüssel fehlt) – "
                        "„Beispielhaus laden“ zeigt, wie es funktioniert.")
         else:
-            st.caption("PDF, PNG oder JPG · alle Geschosse auf einmal möglich · die Pläne werden zur Auswertung "
-                       "an die Claude API übertragen.")
+            st.caption("PDF, PNG, JPG oder Foto · alle Geschosse auf einmal möglich · Fotos werden vorher gedreht, "
+                       "verkleinert und kontrastverstärkt · die Pläne werden zur Auswertung an die Claude API "
+                       "übertragen.")
+
+
+KAMERA_JS = """<script>
+(() => {
+  // „Plan fotografieren“: öffnet auf Tablet/Smartphone direkt die Rückkamera (volle Auflösung)
+  const setzen = () => document.querySelectorAll('.st-key-kamera input[type=file]').forEach(i => {
+    if (i.getAttribute('capture') !== 'environment') { i.setAttribute('capture', 'environment');
+      i.setAttribute('accept', 'image/*'); }
+  });
+  setzen();
+  if (!window.__kameraBeobachter) {
+    window.__kameraBeobachter = new MutationObserver(setzen);
+    window.__kameraBeobachter.observe(document.body, {childList: true, subtree: true});
+  }
+})();
+</script>"""
+
+
+def kamera_bereich() -> list:
+    """Knopf „Plan fotografieren“ mit Vorschau und Drehen; liefert die aufgenommenen Fotos."""
+    with st.container(key="kamera"):
+        fotos = st.file_uploader("Plan fotografieren", type=["jpg", "jpeg", "png", "webp"],
+                                 accept_multiple_files=True, label_visibility="collapsed", key="v2_kamera")
+        st.html(KAMERA_JS, unsafe_allow_javascript=True)
+        st.caption("Tipp: Plan flach hinlegen, von oben fotografieren, ganzes Blatt im Bild, gutes Licht – "
+                   "Maßketten müssen lesbar sein. Ein Foto je Geschoss; jedes neue Foto wird ergänzt.")
+    alle_bilder = [f for f in [*(_ss().get("v2_upload") or []), *(fotos or [])]
+                   if Path(f.name).suffix.lower() != ".pdf"]
+    if alle_bilder:
+        drehung = _ss().setdefault("v2_drehung", {})
+        spalten = st.columns(min(len(alle_bilder), 4))
+        for i, f in enumerate(alle_bilder):
+            with spalten[i % len(spalten)]:
+                try:
+                    st.image(FO.vorschau(f.getvalue(), drehung.get(f.file_id, 0)), width="stretch")
+                except FO.FotoFehler:
+                    st.caption(f"{f.name}: nicht lesbar")
+                    continue
+                if st.button("Drehen", icon=":material/rotate_right:", key=f"dreh-{f.file_id}", type="tertiary"):
+                    drehung[f.file_id] = (drehung.get(f.file_id, 0) + 90) % 360
+                    st.rerun()
+    return list(fotos or [])
+
+
+def ki_eingaben(dateien: list) -> list[tuple[bytes, str]]:
+    """Dateien für die Erkennung: PDFs unverändert, Fotos/Bilder aufbereitet (Drehung, Größe, Kontrast)."""
+    drehung = _ss().get("v2_drehung", {})
+    out = []
+    for f in dateien:
+        endung = Path(f.name).suffix.lower()
+        if endung == ".pdf":
+            out.append((f.getvalue(), MIME[".pdf"]))
+        else:
+            out.append((FO.aufbereiten(f.getvalue(), drehung.get(f.file_id, 0)), "image/jpeg"))
+    return out
 
 
 def ki_uebernehmen(p: Projekt, analyse: KiPlanAnalyse) -> None:
