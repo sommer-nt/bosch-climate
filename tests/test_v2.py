@@ -874,3 +874,25 @@ def test_foto_aufbereitung_dreht_verkleinert_und_hebt_kontrast():
         assert gedreht.size[0] > gedreht.size[1]  # zusätzlich 90° gedreht → wieder quer
     with pytest.raises(FO.FotoFehler):
         FO.aufbereiten(b"kein bild")
+
+
+def test_webcam_aufnahme_wird_geprueft_und_wie_datei_behandelt():
+    import base64
+    import io
+
+    from PIL import Image
+
+    from splitklima.v2 import fotos as FO
+
+    puffer = io.BytesIO()
+    Image.new("RGB", (1920, 1080), "white").save(puffer, format="JPEG")
+    url = "data:image/jpeg;base64," + base64.b64encode(puffer.getvalue()).decode()
+    daten = FO.aus_data_url(url)
+    foto = FO.WebcamFoto(daten)
+    assert foto.getvalue() == daten and foto.file_id.startswith("webcam-")
+    assert FO.WebcamFoto(daten).file_id == foto.file_id  # gleiche Aufnahme → keine Doppelung
+    assert max(Image.open(io.BytesIO(FO.aufbereiten(foto.getvalue()))).size) == 1920
+    for falsch in ("data:text/html;base64,PGI+", "data:image/jpeg;base64,!!!", "data:image/png;base64,AAAA",
+                   "kein-url", None, "data:image/jpeg;base64," + "A" * FO.MAX_WEBCAM_BYTES):
+        with pytest.raises(FO.FotoFehler):
+            FO.aus_data_url(falsch)

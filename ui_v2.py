@@ -149,6 +149,9 @@ div[class*="st-key-navr-"] button p {{font-size:.86rem}}
     font-size:.95rem; font-weight:600; color:white; white-space:nowrap}}
 .st-key-kamera [data-testid="stFileChips"] > button:not([data-testid="stBaseButton-minimal"])::after {{
     content:"📷  Weiteres Foto"}}
+/* Gerätekamera nur auf Touch-Geräten, Webcam nur am PC (Maus/Trackpad) */
+@media (hover:hover) and (pointer:fine) {{ .st-key-kamera {{display:none !important}} }}
+@media (hover:none), (pointer:coarse) {{ .st-key-webcam {{display:none !important}} }}
 /* ---------- Planungs-Assistent: Chat-Blase unten rechts */
 .st-key-chatfab {{position:fixed !important; right:1.6rem; bottom:1.6rem; z-index:1002; width:auto !important}}
 .st-key-chatfab button {{background:{BLAU} !important; color:white !important; border:none !important;
@@ -356,7 +359,7 @@ def neues_projekt(p: Projekt | None = None, geladen: bool = False) -> None:
     _ss().v2_erledigt = set()
     _ss().v2_seite = "system"
     _ss().v2_raum = 0
-    for key in ("v2_ki_info", "v2_konzept", "v2_ack_zeit"):
+    for key in ("v2_ki_info", "v2_konzept", "v2_ack_zeit", "v2_webcam_fotos"):
         _ss().pop(key, None)
 
 
@@ -458,15 +461,200 @@ KAMERA_JS = """<script>
 </script>"""
 
 
+WEBCAM_HTML = """
+<div class="wc">
+  <button class="start" type="button">🖥️&nbsp; Plan in die Webcam halten</button>
+  <div class="live" hidden>
+    <div class="rahmen"><video playsinline muted autoplay></video><div class="ecke"></div>
+      <div class="zahl"></div><div class="blitz"></div></div>
+    <div class="knoepfe">
+      <button class="ausloesen haupt" type="button">📸&nbsp; Aufnehmen <small>(Leertaste)</small></button>
+      <button class="timer" type="button">⏱️&nbsp; Selbstauslöser 3 s</button>
+      <select class="cams" title="Kamera wählen" hidden></select>
+      <button class="aus" type="button">Kamera aus</button>
+    </div>
+    <div class="info"></div>
+  </div>
+  <div class="fehler" hidden></div>
+</div>"""
+
+WEBCAM_CSS = """
+.wc {font-family: var(--st-font, "Source Sans Pro", sans-serif); font-size:.95rem}
+button {font:inherit; font-weight:600; border-radius:.5rem; padding:.5rem 1rem; cursor:pointer;
+  border:1px solid #c5d3df; background:white; color:#1f2b37}
+button:hover {border-color:#005691; color:#005691}
+.start, .haupt {background:#005691; color:white; border-color:#005691}
+.start:hover, .haupt:hover {filter:brightness(1.1); color:white}
+small {font-weight:400; opacity:.8}
+.rahmen {position:relative; margin-top:.6rem; max-width:720px; border-radius:.6rem; overflow:hidden;
+  background:#0b1620; aspect-ratio:16/9}
+video {width:100%; height:100%; object-fit:contain; display:block}
+.ecke {position:absolute; inset:7%; border:2px dashed rgba(255,255,255,.65); border-radius:.4rem;
+  pointer-events:none}
+.zahl {position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:6rem; font-weight:700; color:white; text-shadow:0 2px 12px rgba(0,0,0,.6); pointer-events:none}
+.blitz {position:absolute; inset:0; background:white; opacity:0; pointer-events:none; transition:opacity .35s}
+.blitz.an {opacity:.85; transition:none}
+.knoepfe {display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.6rem; align-items:center}
+select {font:inherit; padding:.45rem .5rem; border-radius:.5rem; border:1px solid #c5d3df; max-width:16rem}
+.info {font-size:.82rem; color:#5c6773; margin-top:.4rem}
+.info.warn {color:#a15c00}
+.fehler {margin-top:.5rem; padding:.6rem .8rem; border-radius:.5rem; background:#fdecea; color:#8a1c12;
+  font-size:.88rem}
+"""
+
+WEBCAM_JS = """
+export default function (component) {
+  const { parentElement, setTriggerValue } = component;
+  const $ = (s) => parentElement.querySelector(s);
+  // Bei jedem Streamlit-Lauf wird die Funktion erneut aufgerufen – Kamera und Knöpfe nur einmal einrichten
+  if (parentElement.__wc) return parentElement.__wc.aufraeumen;
+  const video = $("video"), live = $(".live"), start = $(".start"), info = $(".info"), fehler = $(".fehler");
+  const cams = $(".cams"), zahl = $(".zahl"), blitz = $(".blitz");
+  let strom = null, zaehler = null;
+
+  const meldung = (text) => { fehler.textContent = text; fehler.hidden = !text; };
+  const stoppen = () => {
+    if (zaehler) { clearInterval(zaehler); zaehler = null; zahl.textContent = ""; }
+    if (strom) { strom.getTracks().forEach((t) => t.stop()); strom = null; }
+    video.srcObject = null; live.hidden = true; start.hidden = false;
+  };
+
+  async function starten(geraet) {
+    meldung("");
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      meldung("Der Browser erlaubt hier keinen Kamerazugriff (nur über https). Alternativ ein Foto über „Pläne hochladen“ hinzufügen.");
+      return;
+    }
+    if (strom) { strom.getTracks().forEach((t) => t.stop()); strom = null; }
+    const video_wunsch = { width: { ideal: 3840 }, height: { ideal: 2160 } };  // höchste Auflösung der Webcam
+    if (geraet) video_wunsch.deviceId = { exact: geraet };
+    try {
+      strom = await navigator.mediaDevices.getUserMedia({ video: video_wunsch, audio: false });
+    } catch (e) {
+      const text = { NotAllowedError: "Kamerazugriff wurde abgelehnt – bitte in der Adressleiste erlauben und erneut starten.",
+                     NotFoundError: "Keine Webcam gefunden. Alternativ ein Foto über „Pläne hochladen“ hinzufügen.",
+                     NotReadableError: "Die Webcam wird gerade von einem anderen Programm benutzt (z. B. Teams) – dort schließen und erneut starten." };
+      meldung(text[e.name] || ("Webcam konnte nicht gestartet werden: " + e.message));
+      return;
+    }
+    const spur = strom.getVideoTracks()[0];
+    try {  // Autofokus, wo die Webcam es kann
+      const kann = spur.getCapabilities ? spur.getCapabilities() : {};
+      if (kann.focusMode && kann.focusMode.includes("continuous"))
+        await spur.applyConstraints({ advanced: [{ focusMode: "continuous" }] });
+    } catch (e) { /* egal */ }
+    video.srcObject = strom;
+    live.hidden = false; start.hidden = true;
+    try { await video.play(); } catch (e) { /* autoplay */ }
+    const st = spur.getSettings();
+    const mp = ((st.width || 0) * (st.height || 0) / 1e6).toFixed(1);
+    if ((st.width || 0) < 1280) {
+      info.className = "info warn";
+      info.textContent = `Webcam liefert nur ${st.width}×${st.height} – Plan nah an die Kamera halten oder besser mit dem Handy fotografieren und hochladen.`;
+    } else {
+      info.className = "info";
+      info.textContent = `Webcam: ${st.width}×${st.height} (${mp} MP) · Plan formatfüllend in den Rahmen halten, ruhig halten, gutes Licht · ein Foto je Geschoss.`;
+    }
+    try {
+      const geraete = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === "videoinput");
+      cams.hidden = geraete.length < 2;
+      cams.innerHTML = "";
+      geraete.forEach((d, i) => {
+        const o = document.createElement("option");
+        o.value = d.deviceId; o.textContent = d.label || `Kamera ${i + 1}`;
+        if (d.deviceId === st.deviceId) o.selected = true;
+        cams.appendChild(o);
+      });
+    } catch (e) { cams.hidden = true; }
+  }
+
+  function aufnehmen() {
+    if (!strom || !video.videoWidth) return;
+    const MAX = 3200;  // reicht für Maßketten; Python verkleinert danach ohnehin auf 2400 px
+    const f = Math.min(1, MAX / Math.max(video.videoWidth, video.videoHeight));
+    const c = document.createElement("canvas");
+    c.width = Math.round(video.videoWidth * f); c.height = Math.round(video.videoHeight * f);
+    c.getContext("2d").drawImage(video, 0, 0, c.width, c.height);
+    blitz.classList.add("an"); setTimeout(() => blitz.classList.remove("an"), 60);
+    setTriggerValue("foto", c.toDataURL("image/jpeg", 0.92));
+  }
+
+  function selbstausloeser() {
+    if (!strom || zaehler) return;
+    let n = 3; zahl.textContent = n;
+    zaehler = setInterval(() => {
+      n -= 1;
+      if (n > 0) { zahl.textContent = n; return; }
+      clearInterval(zaehler); zaehler = null; zahl.textContent = ""; aufnehmen();
+    }, 1000);
+  }
+
+  const taste = (e) => {
+    if (!strom || e.code !== "Space" || e.repeat) return;
+    const ziel = e.composedPath ? e.composedPath()[0] : e.target;
+    if (ziel && /^(INPUT|TEXTAREA|SELECT)$/.test(ziel.tagName || "")) return;
+    if (ziel && ziel.isContentEditable) return;
+    e.preventDefault(); aufnehmen();
+  };
+
+  start.onclick = () => starten();
+  $(".ausloesen").onclick = aufnehmen;
+  $(".timer").onclick = selbstausloeser;
+  $(".aus").onclick = stoppen;
+  cams.onchange = () => starten(cams.value);
+  document.addEventListener("keydown", taste);
+  const aufraeumen = () => { document.removeEventListener("keydown", taste); stoppen(); delete parentElement.__wc; };
+  parentElement.__wc = { aufraeumen };
+  return aufraeumen;
+}
+"""
+
+_WEBCAM: dict = {}
+
+
+def _webcam_komponente():
+    """Webcam-Komponente einmal je Streamlit-Laufzeit registrieren."""
+    from streamlit.components.v2 import get_bidi_component_manager
+    manager = get_bidi_component_manager()
+    if _WEBCAM.get("manager") is not manager:
+        _WEBCAM["manager"] = manager
+        _WEBCAM["render"] = st.components.v2.component("bosch_webcam", html=WEBCAM_HTML, css=WEBCAM_CSS,
+                                                       js=WEBCAM_JS)
+    return _WEBCAM["render"]
+
+
+def webcam_bereich() -> None:
+    """PC: Plan in die Webcam halten – Live-Bild, Aufnehmen (Leertaste) oder Selbstauslöser."""
+    with st.container(key="webcam"):
+        ergebnis = _webcam_komponente()(key="v2_webcam", on_foto_change=lambda: None)
+        roh = ergebnis.get("foto") if hasattr(ergebnis, "get") else getattr(ergebnis, "foto", None)
+    if not roh:
+        return
+    try:
+        foto = FO.WebcamFoto(FO.aus_data_url(roh))
+    except FO.FotoFehler as fehler:
+        st.error(str(fehler))
+        return
+    liste = _ss().setdefault("v2_webcam_fotos", [])
+    if all(f.file_id != foto.file_id for f in liste):
+        foto.name = f"webcam-{len(liste) + 1}.jpg"
+        liste.append(foto)
+        st.toast("Webcam-Foto übernommen – für das nächste Geschoss einfach erneut aufnehmen.")
+
+
 def kamera_bereich() -> list:
-    """Knopf „Plan fotografieren“ mit Vorschau und Drehen; liefert die aufgenommenen Fotos."""
+    """Fotos aufnehmen: Tablet/Smartphone über die Gerätekamera, PC über die Webcam.
+    Zeigt Vorschau mit Drehen; liefert die aufgenommenen Fotos."""
     with st.container(key="kamera"):
         fotos = st.file_uploader("Plan fotografieren", type=["jpg", "jpeg", "png", "webp"],
                                  accept_multiple_files=True, label_visibility="collapsed", key="v2_kamera")
         st.html(KAMERA_JS, unsafe_allow_javascript=True)
         st.caption("Tipp: Plan flach hinlegen, von oben fotografieren, ganzes Blatt im Bild, gutes Licht – "
                    "Maßketten müssen lesbar sein. Ein Foto je Geschoss; jedes neue Foto wird ergänzt.")
-    alle_bilder = [f for f in [*(_ss().get("v2_upload") or []), *(fotos or [])]
+    webcam_bereich()
+    webcam_fotos = _ss().get("v2_webcam_fotos", [])
+    alle_bilder = [f for f in [*(_ss().get("v2_upload") or []), *(fotos or []), *webcam_fotos]
                    if Path(f.name).suffix.lower() != ".pdf"]
     if alle_bilder:
         drehung = _ss().setdefault("v2_drehung", {})
@@ -478,10 +666,15 @@ def kamera_bereich() -> list:
                 except FO.FotoFehler:
                     st.caption(f"{f.name}: nicht lesbar")
                     continue
-                if st.button("Drehen", icon=":material/rotate_right:", key=f"dreh-{f.file_id}", type="tertiary"):
+                k1, k2 = st.columns(2) if isinstance(f, FO.WebcamFoto) else (st.container(), None)
+                if k1.button("Drehen", icon=":material/rotate_right:", key=f"dreh-{f.file_id}", type="tertiary"):
                     drehung[f.file_id] = (drehung.get(f.file_id, 0) + 90) % 360
                     st.rerun()
-    return list(fotos or [])
+                if k2 is not None and k2.button("Entfernen", icon=":material/delete:", key=f"weg-{f.file_id}",
+                                                type="tertiary"):
+                    _ss().v2_webcam_fotos = [w for w in webcam_fotos if w.file_id != f.file_id]
+                    st.rerun()
+    return [*(fotos or []), *webcam_fotos]
 
 
 def ki_eingaben(dateien: list) -> list[tuple[bytes, str]]:
