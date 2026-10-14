@@ -89,7 +89,13 @@ Rechenkern und derselben KI-Planerkennung:
 - **Plan fotografieren:** Knopf „📷 Plan fotografieren“ im Grundriss-Bereich öffnet auf iPad/iPhone direkt die
   Rückkamera (volle Auflösung, `capture="environment"`); ein Foto je Geschoss, „Weiteres Foto“ ergänzt. Vorschau mit
   „Drehen“; vor der Erkennung werden Fotos nach EXIF gedreht, auf 2.400 px verkleinert und im Kontrast angehoben
-  (`splitklima/v2/fotos.py`). Am PC öffnet der Knopf die Dateiauswahl.
+  (`splitklima/v2/fotos.py`).
+- **Plan in die Webcam halten (PC):** Am PC (Maus/Trackpad) erscheint statt des Kamera-Knopfs „🖥️ Plan in die Webcam
+  halten“: Live-Bild in der höchsten Auflösung der Webcam (bis 4K angefragt, Autofokus wenn vorhanden), Aufnehmen per
+  Knopf oder Leertaste, „Selbstauslöser 3 s“ für beide Hände am Plan, Kamerawahl bei mehreren Webcams. Aufnahmen
+  erscheinen in der Vorschau (Drehen/Entfernen) und laufen durch dieselbe Aufbereitung. Bei unter 1280 px Breite
+  weist die App auf das Handyfoto hin. Kamerazugriff nur über https (bzw. localhost); Bilder bleiben in der Sitzung
+  und gehen nur mit „Räume erkennen“ an die Claude API.
 - **Planungs-Assistent (Beta):** Chat-Blase unten rechts (Smartphone: Panel von unten). Änderungen an der Planung
   per Text, z. B. „Der Plan hat keinen Nordpfeil – das Wohnzimmer liegt im Norden“ (dreht den ganzen Grundriss) oder
   „Haus von 1958, Fassade 1990 gedämmt“. Claude Haiku 5.5 (`ASSISTENT_MODELL`, Denktiefe `ASSISTENT_EFFORT`=low; Grundriss-Erkennung weiter Opus 5.5) arbeitet nur über feste Werkzeuge auf der
