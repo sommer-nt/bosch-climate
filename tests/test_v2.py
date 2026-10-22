@@ -971,3 +971,13 @@ def test_oberflaeche_englisch_umschalten(monkeypatch):
     assert not at.exception and at.session_state.v2_sprache == "de"
     assert len(at.session_state.v2_projekt.raeume) == 7
     assert any("UNSERE EMPFEHLUNG" in m.value for m in at.markdown)
+
+
+def test_englisch_ohne_fremde_sonderzeichen():
+    """Englische Texte enthalten keine deutschen/französischen Buchstaben (ä, ö, ü, ß, ç …) – Ortsnamen ausgenommen."""
+    from splitklima.sprache_en import EN
+
+    erlaubt = set("–“”’≈²°×€θØ≤≥→·…√✓−⋮")
+    for text in EN.values():
+        fremd = {c for c in text.replace("Nürtingen", "") if ord(c) > 127 and c not in erlaubt}
+        assert not fremd, (fremd, text)
