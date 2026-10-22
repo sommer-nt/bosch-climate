@@ -96,6 +96,13 @@ Rechenkern und derselben KI-Planerkennung:
   erscheinen in der Vorschau (Drehen/Entfernen) und laufen durch dieselbe Aufbereitung. Bei unter 1280 px Breite
   weist die App auf das Handyfoto hin. Kamerazugriff nur über https (bzw. localhost); Bilder bleiben in der Sitzung
   und gehen nur mit „Räume erkennen“ an die Claude API.
+- **Englisch (DE | EN):** Umschalter oben rechts; Link mit `?lang=en` öffnet direkt Englisch. Übersetzt sind
+  Oberfläche, Lösungen und Hinweise, Zubehör, Angebots-PDF (Dateiname `Split_AC_Quote_…`), Fehlermeldungen,
+  Webcam, Beispielhaus und Planungs-Assistent (antwortet dann auf Englisch); die Grundriss-Erkennung schreibt
+  Raumnamen und Hinweise auf Englisch. Zahlen im englischen Format (`€8,842`, `3.22 kW`). Fachlich bleibt alles
+  deutsch: PLZ, Orte, Klimadaten (DIN/TS 12831-1), Normen, Katalog, Bestellnummern, Euro. Die Planung bleibt beim
+  Umschalten erhalten. Texte: `splitklima/sprache_en.py` (Schlüssel = deutscher Text); fehlende Übersetzungen
+  findet `python tools/sprache_schluessel.py .` bzw. der Test `test_englisch_vollstaendig`.
 - **Planungs-Assistent (Beta):** Chat-Blase unten rechts (Smartphone: Panel von unten). Änderungen an der Planung
   per Text, z. B. „Der Plan hat keinen Nordpfeil – das Wohnzimmer liegt im Norden“ (dreht den ganzen Grundriss) oder
   „Haus von 1958, Fassade 1990 gedämmt“. Claude Haiku 5.5 (`ASSISTENT_MODELL`, Denktiefe `ASSISTENT_EFFORT`=low; Grundriss-Erkennung weiter Opus 5.5) arbeitet nur über feste Werkzeuge auf der
