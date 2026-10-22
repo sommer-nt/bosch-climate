@@ -164,11 +164,11 @@ EN: dict[str, str] = {
     "Multi-Innengerät": "Multi-split indoor unit",
     "Wo steht die Außeneinheit?": "Where is the outdoor unit installed?",
     "Noch offen": "Not decided yet",
-    "Fassade / Wand": "Façade / wall",
+    "Fassade / Wand": "Facade / wall",
     "Boden / Terrasse": "Ground / terrace",
     "Flachdach": "Flat roof",
     "Entscheiden wir später.": "We'll decide later.",
-    "Wandkonsole an der Fassade.": "Wall bracket on the façade.",
+    "Wandkonsole an der Fassade.": "Wall bracket on the facade.",
     "Bodenkonsole vor dem Haus, z. B. Garten oder Terrasse.": "Floor stand in front of the house, e.g. garden or "
                                                               "terrace.",
     "Bodenkonsole auf dem Flachdach, ohne Dachdurchdringung.": "Floor stand on the flat roof, without roof "
@@ -210,12 +210,12 @@ EN: dict[str, str] = {
     "Außenwände nachträglich gedämmt": "Exterior walls insulated later",
     "Sanierung nach dem Baujahr, z. B. Haus von 1958 mit Fassadendämmung 1990. Gilt für alle Räume; einzelne "
     "Räume kann der Planungs-Assistent abweichend setzen.": "Renovation after construction, e.g. house from 1958 "
-                                                            "with façade insulation in 1990. Applies to all rooms; "
+                                                            "with facade insulation in 1990. Applies to all rooms; "
                                                             "the planning assistant can set individual rooms "
                                                             "differently.",
-    "Fassadendämmung vor 1995, ca. 4–6 cm (U≈0,50)": "Façade insulation before 1995, approx. 4–6 cm (U≈0.50)",
-    "Fassadendämmung 1995–2008, ca. 8–10 cm (U≈0,35)": "Façade insulation 1995–2008, approx. 8–10 cm (U≈0.35)",
-    "Fassadendämmung ab 2009, ca. 12–16 cm (U≈0,28)": "Façade insulation from 2009, approx. 12–16 cm (U≈0.28)",
+    "Fassadendämmung vor 1995, ca. 4–6 cm (U≈0,50)": "Facade insulation before 1995, approx. 4–6 cm (U≈0.50)",
+    "Fassadendämmung 1995–2008, ca. 8–10 cm (U≈0,35)": "Facade insulation 1995–2008, approx. 8–10 cm (U≈0.35)",
+    "Fassadendämmung ab 2009, ca. 12–16 cm (U≈0,28)": "Facade insulation from 2009, approx. 12–16 cm (U≈0.28)",
     "Kerndämmung (U≈0,45)": "Cavity wall insulation (U≈0.45)",
     "Innendämmung (U≈0,40)": "Interior insulation (U≈0.40)",
     "Fenster": "Windows",
@@ -479,7 +479,7 @@ EN: dict[str, str] = {
                                              "documented.",
     "CF-Gerät: Gateway-Anschluss nötig": "CF unit: gateway connection required",
     "Kassette CL5000iM 4CC: Gateway-Anschluss nötig": "Cassette CL5000iM 4CC: gateway connection required",
-    "Aufstellort Fassade/Wand: 1 je Außeneinheit": "Location façade/wall: 1 per outdoor unit",
+    "Aufstellort Fassade/Wand: 1 je Außeneinheit": "Location facade/wall: 1 per outdoor unit",
     "Aufstellort Flachdach: 1 je Außeneinheit, aufgeständert über Schnee/Wasser":
         "Location flat roof: 1 per outdoor unit, raised above snow/water",
     "Aufstellort Boden: 1 je Außeneinheit": "Location ground: 1 per outdoor unit",
@@ -574,7 +574,7 @@ EN: dict[str, str] = {
     # ------------------------------------------------------------------ Geräteauswahl (Konzepte, Hinweise)
     "Ein Multi-Split-System": "One multi-split system",
     "Alle Räume an möglichst wenigen Außeneinheiten. Wenige Geräte an der Fassade, längere Kältemittelleitungen.":
-        "All rooms on as few outdoor units as possible. Few units on the façade, longer refrigerant pipes.",
+        "All rooms on as few outdoor units as possible. Few units on the facade, longer refrigerant pipes.",
     "Multi-Split je Geschoss": "Multi-split per floor",
     "Je Geschoss ein eigenes System mit kurzen Leitungswegen; ein einzelner Raum auf einer Etage erhält ein "
     "Single-Split-Set.": "A separate system per floor with short pipe runs; a single room on a floor gets a "
@@ -641,7 +641,7 @@ EN: dict[str, str] = {
         "minimum distances to the parapet and skylights according to the installation instructions.",
     "Flachdach: Leitungsführung durch die Dachhaut nur über Dachdurchführung oder Fassade; maximale Leitungslänge "
     "und Höhendifferenz der Außeneinheit beachten.": "Flat roof: route pipes through the roof only via a roof "
-                                                     "penetration or the façade; observe the maximum pipe length "
+                                                     "penetration or the facade; observe the maximum pipe length "
                                                      "and height difference of the outdoor unit.",
     "Flachdach: sicheren Zugang für Wartung einplanen (Absturzsicherung nach DGUV/ASR A2.1).":
         "Flat roof: plan safe access for maintenance (fall protection according to DGUV/ASR A2.1).",
@@ -733,7 +733,7 @@ EN: dict[str, str] = {
                "changes.",
     "Der Plan hat keinen Nordpfeil – das Wohnzimmer liegt im Norden.": "The plan has no north arrow – the living "
                                                                        "room faces north.",
-    "Das Haus ist von 1958, die Fassade wurde 1990 gedämmt.": "The house is from 1958, the façade was insulated in "
+    "Das Haus ist von 1958, die Fassade wurde 1990 gedämmt.": "The house is from 1958, the facade was insulated in "
                                                               "1990.",
     "Geht es günstiger? Die Farbe ist mir egal.": "Can it be cheaper? I don't mind the colour.",
     "Was soll anders sein?": "What should be different?",
@@ -807,7 +807,7 @@ EN: dict[str, str] = {
     "Terrasse Westseite (EG)": "Terrace, west side (ground floor)",
     "Direkt am Wohnzimmer, kurzer Leitungsweg, gut zugänglich.": "Right next to the living room, short pipe run, "
                                                                  "easily accessible.",
-    "Fassade Ostseite neben Küche": "East façade next to the kitchen",
+    "Fassade Ostseite neben Küche": "East facade next to the kitchen",
     "Abseits der Schlafräume, kurze Leitung zu Küche und Arbeiten.": "Away from the bedrooms, short pipe to "
                                                                      "kitchen and study.",
     "Beispieldaten – Nordpfeil im Lageplan (Plan-Oben = Norden)": "Example data – north arrow in the site plan "
