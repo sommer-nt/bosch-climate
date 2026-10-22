@@ -981,3 +981,42 @@ def test_englisch_ohne_fremde_sonderzeichen():
     for text in EN.values():
         fremd = {c for c in text.replace("Nürtingen", "") if ord(c) > 127 and c not in erlaubt}
         assert not fremd, (fremd, text)
+
+
+def test_englisch_rechnet_identisch_wie_deutsch():
+    """Sprache ändert nur Texte: gleiche Lösungen, Geräte, Preise, Empfehlung, Zubehörmengen und Sperren."""
+    from splitklima.sprache import sprache
+
+    def stand(p):
+        out = []
+        for wunsch in ("auto", "multi", "single"):
+            for k in A.konzepte(p, KAT, wunsch):
+                zub = Z.tabelle(p, k, KAT)[0] if k.gedeckt else []
+                out.append((wunsch, k.key, k.gedeckt, k.empfohlen, k.preis, k.aussengeraete, k.innengeraete,
+                            [(x.artikel, x.menge, x.einzelpreis) for x in k.stueckliste()],
+                            [(z.bestellnr, z.vorschlag, z.menge, bool(z.gesperrt), z.wlan_integriert) for z in zub],
+                            len(k.hinweise), len(k.lieferhinweise), len(A.aufstellungshinweise(p, k))))
+        return out
+
+    rnd = random.Random(7)
+    projekte = [beispielprojekt()]
+    for _ in range(25):
+        p = Projekt(raeume=[])
+        p.einstellungen.betriebsart = rnd.choice(["both", "cool", "heat"])
+        p.aufstellung = rnd.choice(["", "wand", "boden", "flachdach"])
+        p.app_steuerung, p.kondensatpumpe, p.boerdelfrei = rnd.random() < .5, rnd.random() < .5, rnd.random() < .5
+        p.geraetelinie = rnd.choice(["", "3200i", "7000i", "8000i"])
+        for j in range(rnd.randint(1, 7)):
+            r = Raum(name=f"R{j}", geschoss=rnd.choice(["EG", "OG"]), flaeche=rnd.uniform(8, 120),
+                     lage=rnd.choice(["outside", "corner", "attic"]),
+                     raumart=rnd.choice([*P.RAUMARTEN, *P.RAUMARTEN_GEWERBE]),
+                     waende=[Wand(ausrichtung=rnd.choice(["N", "O", "S", "W"]), laenge=5, fenster=rnd.uniform(0, 6))])
+            r.ig_bauart = rnd.choice(["auto", "auto", "Wandgerät", "Deckenkassette", "Konsole", "Truhe/Decke"])
+            r.farbe = rnd.choice(["", "", *FARBEN])
+            p.raeume.append(r)
+        projekte.append(p)
+    for p in projekte:
+        deutsch = stand(p)
+        with sprache("en"):
+            englisch = stand(p)
+        assert deutsch == englisch
