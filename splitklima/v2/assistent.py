@@ -18,6 +18,7 @@ from ..berechnung import gebaeude_last, raum_last
 from ..ki_plan import baualter_aus_baujahr
 from ..modell import Fenstergruppe, Projekt, Raum, Wand
 from ..preise import fmt_eur
+from ..sprache import T
 from ..standort import klimaregion
 from . import auswahl as A
 from . import zubehoer as Z
@@ -87,6 +88,14 @@ _RAUM = {"type": "string", "description": "Raumnummer (1, 2, …) oder Raumname"
 _WAND = _o({"ausrichtung": {"type": "string", "enum": RICHTUNGEN}, "laenge": {"type": "number"},
             "fenster": {"type": "number", "description": "Fensterfläche dieser Wand in m²"}},
            ["ausrichtung", "laenge", "fenster"])
+
+SYSTEM_EN = """
+
+Sprache: Die Oberfläche ist auf Englisch. Antworte auf Englisch (britisch-neutral, Fachbegriffe wie
+„multi-split“, „indoor unit“, „outdoor unit“). Werkzeug-Parameter und Auswahlwerte (z. B. Raumarten,
+Lagen, Ausrichtungen N/NO/O/…) bleiben genau wie oben angegeben; im Text nennst du Himmelsrichtungen
+englisch (NO = north-east, O = east, SO = south-east). Orte, PLZ und Normen bleiben deutsch.
+"""
 
 TOOLS = [
     {"name": "planung_lesen", "description": "Aktuelle Planung: Projekt-Einstellungen, alle Räume mit Wänden, "
@@ -305,7 +314,7 @@ class _Werkzeuge:
                 r.dach = True
             if r.waende_auto:
                 r.wandlaengen_schaetzen()
-            teile.append(f"Lage {P.MODE_LABEL[felder['lage']]}")
+            teile.append(T("Lage {l}", l=T(P.MODE_LABEL[felder["lage"]])))
         for feld in ("name", "geschoss", "raumart"):
             if feld in felder:
                 setattr(r, feld, felder[feld])
@@ -314,10 +323,10 @@ class _Werkzeuge:
             r.flaeche = _zahl("flaeche", felder["flaeche"])
             if r.waende_auto:
                 r.wandlaengen_schaetzen()
-            teile.append(f"Fläche {r.flaeche:g} m²")
+            teile.append(T("Fläche {a} m²", a=f"{r.flaeche:g}"))
         if "hoehe" in felder:
             r.hoehe = _zahl("hoehe", felder["hoehe"])
-            teile.append(f"Höhe {r.hoehe:g} m")
+            teile.append(T("Höhe {h} m", h=f"{r.hoehe:g}"))
         if "dach" in felder:
             if felder["dach"] not in DACH:
                 raise _Ungueltig(f"dach muss eine von {', '.join(DACH)} sein")
@@ -325,20 +334,20 @@ class _Werkzeuge:
             r.dach = bool(form) or r.lage in ("attic", "attic_corner")
             if form:
                 r.dachform = form
-            teile.append(f"Dach {P.DACHFORM_LABEL.get(form, 'kein') if form else 'kein'}")
+            teile.append(T("Dach {d}", d=T(P.DACHFORM_LABEL.get(form, "kein") if form else "kein")))
         if "dachfenster_m2" in felder:
             fl = _zahl("dachfenster_m2", felder["dachfenster_m2"])
             r.fenstergruppen = [g for g in r.fenstergruppen if not g.dachfenster]
             if fl > 0:
                 r.dach = True
                 r.fenstergruppen.append(Fenstergruppe(ausrichtung="S", flaeche=fl, dachfenster=True))
-            teile.append(f"Dachfenster {fl:g} m²")
+            teile.append(T("Dachfenster {a} m²", a=f"{fl:g}"))
         if "farbe" in felder:
             r.farbe = "" if felder["farbe"] == "keine" else felder["farbe"]
-            teile.append(f"Farbe {felder['farbe']}")
+            teile.append(T("Farbe {f}", f=T(felder["farbe"])))
         if "geraetewunsch" in felder:
             r.ig_bauart = "auto" if felder["geraetewunsch"] == "keine" else felder["geraetewunsch"]
-            teile.append(f"Gerätewunsch {felder['geraetewunsch']}")
+            teile.append(T("Gerätewunsch {g}", g=T(felder["geraetewunsch"])))
         self.p.raeume[i] = Raum.model_validate(r.model_dump())
         self.log.append(f"{alt_name}: " + ", ".join(teile))
         return self._status()
@@ -350,8 +359,9 @@ class _Werkzeuge:
         r.waende, r.waende_auto = neu, False
         if not neu:
             r.lage = "inside"
-        self.log.append(f"{r.name}: Außenwände " + (", ".join(f"{w.ausrichtung} {w.laenge:g} m/Fenster "
-                                                              f"{w.fenster:g} m²" for w in neu) or "keine"))
+        self.log.append(f"{r.name}: " + T("Außenwände") + " " + (", ".join(
+            T("{r} {l} m/Fenster {f} m²", r=w.ausrichtung, l=f"{w.laenge:g}", f=f"{w.fenster:g}") for w in neu)
+            or T("keine")))
         return self._status()
 
     def t_fenster_setzen(self, raum, ausrichtung, fenster_m2) -> str:
@@ -363,7 +373,8 @@ class _Werkzeuge:
                              f"(vorhanden: {', '.join(w.ausrichtung for w in r.waende) or 'keine'})")
         alt = wand.fenster
         wand.fenster = _zahl("fenster", fenster_m2)
-        self.log.append(f"{r.name}: Fenster {ausrichtung} {alt:g} → {wand.fenster:g} m²")
+        self.log.append(T("{raum}: Fenster {r} {a} → {b} m²", raum=r.name, r=ausrichtung, a=f"{alt:g}",
+                          b=f"{wand.fenster:g}"))
         return self._status()
 
     def t_raum_hinzufuegen(self, name, raumart, flaeche, hoehe=2.5, geschoss="", lage="outside", waende=None) -> str:
@@ -380,13 +391,13 @@ class _Werkzeuge:
         else:
             r.wandlaengen_schaetzen()
         self.p.raeume.append(Raum.model_validate(r.model_dump()))
-        self.log.append(f"Raum „{name}“ angelegt ({raumart}, {r.flaeche:g} m²)")
+        self.log.append(T("Raum „{name}“ angelegt ({art}, {a} m²)", name=name, art=T(raumart), a=f"{r.flaeche:g}"))
         return self._status()
 
     def t_raum_entfernen(self, raum) -> str:
         i = _raum_finden(self.p, raum)
         r = self.p.raeume.pop(i)
-        self.log.append(f"Raum „{r.name}“ entfernt")
+        self.log.append(T("Raum „{name}“ entfernt", name=r.name))
         return self._status()
 
     def t_plan_drehen(self, grad_im_uhrzeigersinn) -> str:
@@ -405,7 +416,7 @@ class _Werkzeuge:
                 elif grad in (90, 270):
                     r.dachform = {"saddle_south": "saddle_eastwest", "saddle_north": "saddle_eastwest",
                                   "saddle_eastwest": "saddle_south"}.get(r.dachform, r.dachform)
-        self.log.append(f"Grundriss um {grad}° im Uhrzeigersinn gedreht ({len(self.p.raeume)} Räume)")
+        self.log.append(T("Grundriss um {g}° im Uhrzeigersinn gedreht ({n} Räume)", g=grad, n=len(self.p.raeume)))
         return self._status()
 
     def t_daemmung_setzen(self, art, raeume=None) -> str:
@@ -416,8 +427,8 @@ class _Werkzeuge:
             self.p.raeume[i].daemmung = art
         if not raeume:
             self.p.nachdaemmung = art
-        self.log.append(f"Nachträgliche Dämmung: {P.NACHDAEMMUNG_V2[art]} "
-                        f"({'alle Räume' if not raeume else ', '.join(self.p.raeume[i].name for i in ziele)})")
+        self.log.append(T("Nachträgliche Dämmung: {art} ({raeume})", art=T(P.NACHDAEMMUNG_V2[art]),
+                          raeume=T("alle Räume") if not raeume else ", ".join(self.p.raeume[i].name for i in ziele)))
         return self._status()
 
     def t_projekt_einstellungen(self, **felder) -> str:
@@ -426,7 +437,7 @@ class _Werkzeuge:
         teile = []
         if "projektname" in felder:
             p.name = felder["projektname"]
-            teile.append(f"Projektname {p.name}")
+            teile.append(T("Projektname {n}", n=p.name))
         if "plz" in felder:
             eintrag = KP.eintrag(str(felder["plz"]))
             if eintrag is None:
@@ -437,13 +448,13 @@ class _Werkzeuge:
                 e.norm_aussen, p.klima_quelle = round(wert.theta_e, 1), wert.quelle
             p.norm_aussen_manuell = False
             e.sommer = klimaregion(eintrag.plz).sommer
-            teile.append(f"Standort {p.ort} (Norm-Außentemperatur {e.norm_aussen:g} °C)")
+            teile.append(T("Standort {ort} (Norm-Außentemperatur {t} °C)", ort=p.ort, t=f"{e.norm_aussen:g}"))
         if "baujahr" in felder:
             p.baujahr = int(_zahl("baujahr", felder["baujahr"]))
             e.daemmstandard = "old" if p.baujahr < 1979 else "mid" if p.baujahr < 2002 else "new"
             for r in p.raeume:
                 r.baualter = baualter_aus_baujahr(p.baujahr)
-            teile.append(f"Baujahr {p.baujahr} ({P.USTD_LABEL[e.daemmstandard]})")
+            teile.append(T("Baujahr {bj} ({d})", bj=p.baujahr, d=T(P.USTD_LABEL[e.daemmstandard])))
         for feld in ("systemwunsch", "geraetelinie", "aufstellung", "auslaufartikel", "app_steuerung",
                      "kondensatpumpe", "boerdelfrei"):
             if feld in felder:
@@ -455,31 +466,32 @@ class _Werkzeuge:
                 teile.append(f"{feld} {felder[feld]}")
         if "leitungslaenge" in felder:
             p.leitungslaenge = _zahl("leitungslaenge", felder["leitungslaenge"])
-            teile.append(f"Leitungslänge {p.leitungslaenge:g} m")
+            teile.append(T("Leitungslänge {l} m", l=f"{p.leitungslaenge:g}"))
         neu = Projekt.model_validate(p.model_dump())
         for k in Projekt.model_fields:
             setattr(self.p, k, getattr(neu, k))
         if {"systemwunsch", "geraetelinie", "auslaufartikel"} & set(felder):
             self.zustand.pop("konzept", None)
-        self.log.append("Projekt: " + (", ".join(teile) or "keine Änderung"))
+        self.log.append(T("Projekt:") + " " + (", ".join(teile) or T("keine Änderung")))
         return self._status()
 
     def t_loesung_waehlen(self, konzept) -> str:
         if konzept == "empfehlung":
             self.zustand.pop("konzept", None)
-            self.log.append("Lösung: Empfehlung")
+            self.log.append(T("Lösung: Empfehlung"))
             return self._status()
         liste = [k for k in _konzepte(self.p, self.kat) if k.gedeckt]
         k = next((k for k in liste if k.key == konzept), None)
         if k is None:
             raise _Ungueltig(f"Lösung {konzept} nicht verfügbar; möglich: {', '.join(x.key for x in liste)}")
         self.zustand["konzept"] = k.key
-        self.log.append(f"Lösung gewählt: {k.name}")
+        self.log.append(T("Lösung gewählt: {name}", name=k.name))
         return self._status()
 
 
 # ---------------------------------------------------------------------- Dialog
-def antworten(verlauf: list, eingabe: str, p: Projekt, kat: Katalog, zustand: dict, client=None) -> Antwort:
+def antworten(verlauf: list, eingabe: str, p: Projekt, kat: Katalog, zustand: dict, client=None,
+              sprache: str = "de") -> Antwort:
     """Eine Nutzernachricht verarbeiten. ``verlauf`` (API-Nachrichten) und ``p`` werden fortgeschrieben,
     ``zustand['konzept']`` ist die gewählte Lösung der Sitzung."""
     import anthropic
@@ -488,7 +500,7 @@ def antworten(verlauf: list, eingabe: str, p: Projekt, kat: Katalog, zustand: di
         try:
             client = anthropic.Anthropic()
         except Exception as e:  # noqa: BLE001
-            raise AssistentFehler("Der Assistent ist nicht eingerichtet (API-Schlüssel fehlt).") from e
+            raise AssistentFehler(T("Der Assistent ist nicht eingerichtet (API-Schlüssel fehlt).")) from e
     werkzeuge = _Werkzeuge(p, kat, zustand)
     vorher = kurzstatus(p, kat, zustand.get("konzept"))
     if sum(1 for m in verlauf if m["role"] == "user" and isinstance(m["content"], str)) >= MAX_TURNS_IM_VERLAUF:
@@ -496,7 +508,8 @@ def antworten(verlauf: list, eingabe: str, p: Projekt, kat: Katalog, zustand: di
     verlauf.append({"role": "user", "content": eingabe})
     texte: list[str] = []
     for _ in range(MAX_RUNDEN):
-        anfrage = dict(model=MODELL, max_tokens=16000, system=SYSTEM, tools=TOOLS, messages=verlauf,
+        anfrage = dict(model=MODELL, max_tokens=16000, system=SYSTEM + (SYSTEM_EN if sprache == "en" else ""),
+                       tools=TOOLS, messages=verlauf,
                        cache_control={"type": "ephemeral"}, output_config={"effort": EFFORT})
         try:
             if MODELL in MIT_FALLBACK:
@@ -505,21 +518,21 @@ def antworten(verlauf: list, eingabe: str, p: Projekt, kat: Katalog, zustand: di
             else:
                 antwort = client.messages.create(**anfrage)
         except anthropic.AuthenticationError as e:
-            raise AssistentFehler("Kein gültiger API-Schlüssel (ANTHROPIC_API_KEY).") from e
+            raise AssistentFehler(T("Kein gültiger API-Schlüssel (ANTHROPIC_API_KEY).")) from e
         except anthropic.RateLimitError as e:
-            raise AssistentFehler("Zu viele Anfragen – bitte kurz warten und erneut senden.") from e
+            raise AssistentFehler(T("Zu viele Anfragen – bitte kurz warten und erneut senden.")) from e
         except anthropic.APIConnectionError as e:
-            raise AssistentFehler("Keine Verbindung zur Claude API.") from e
+            raise AssistentFehler(T("Keine Verbindung zur Claude API.")) from e
         except anthropic.APIStatusError as e:
-            raise AssistentFehler(f"Claude API meldet einen Fehler ({e.status_code}).") from e
+            raise AssistentFehler(T("Claude API meldet einen Fehler ({code}).", code=e.status_code)) from e
         verlauf.append({"role": "assistant", "content": antwort.content})
         texte += [b.text for b in antwort.content if getattr(b, "type", "") == "text" and b.text.strip()]
         if antwort.stop_reason == "refusal":
-            texte.append("Dazu kann ich leider nichts beitragen.")
+            texte.append(T("Dazu kann ich leider nichts beitragen."))
             break
         if antwort.stop_reason != "tool_use":
             if antwort.stop_reason == "max_tokens":
-                texte.append("(Antwort gekürzt.)")
+                texte.append(T("(Antwort gekürzt.)"))
             break
         ergebnisse = []
         for b in antwort.content:
@@ -529,6 +542,6 @@ def antworten(verlauf: list, eingabe: str, p: Projekt, kat: Katalog, zustand: di
                                    **({"is_error": True} if fehler else {})})
         verlauf.append({"role": "user", "content": ergebnisse})
     else:
-        texte.append("Ich habe die Bearbeitung nach mehreren Schritten angehalten – bitte genauer beschreiben.")
-    return Antwort("\n\n".join(texte) or "Erledigt.", werkzeuge.log, vorher,
+        texte.append(T("Ich habe die Bearbeitung nach mehreren Schritten angehalten – bitte genauer beschreiben."))
+    return Antwort("\n\n".join(texte) or T("Erledigt."), werkzeuge.log, vorher,
                    kurzstatus(p, kat, zustand.get("konzept")))

@@ -8,6 +8,8 @@ from dataclasses import dataclass, field, fields, replace
 from functools import lru_cache
 from pathlib import Path
 
+from ..sprache import N_
+
 KATALOG_JSON = Path(__file__).resolve().parent.parent / "daten" / "katalog.json"
 ERGAENZUNG_JSON = KATALOG_JSON.with_name("katalog_ergaenzung.json")
 
@@ -63,14 +65,14 @@ class Artikel:
     @property
     def lieferhinweis(self) -> str | None:
         if self.auslauf:
-            return "Auslaufartikel – nicht mehr im Ergänzungskatalog 09/2026 (Preis 03/2026)"
+            return N_("Auslaufartikel – nicht mehr im Ergänzungskatalog 09/2026 (Preis 03/2026)")
         s = self.lieferstatus.lower()
         if "ab q3" in s:
-            return "verfügbar ab Q3/2026"
+            return N_("verfügbar ab Q3/2026")
         if "vorrat" in s:
-            return "nur solange Vorrat reicht"
+            return N_("nur solange Vorrat reicht")
         if "bis q3" in s:
-            return "verfügbar bis Q3/2026"
+            return N_("verfügbar bis Q3/2026")
         return None
 
 

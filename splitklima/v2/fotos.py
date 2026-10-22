@@ -15,6 +15,8 @@ from dataclasses import dataclass, field
 
 from PIL import Image, ImageFilter, ImageOps
 
+from ..sprache import T
+
 MAX_KANTE = 2400  # px – reicht für Maßketten, spart Token und bleibt unter den Bildgrenzen der API
 BILD_MIME = {"image/jpeg", "image/png", "image/webp"}
 MAX_WEBCAM_BYTES = 15_000_000  # Data-URL einer Webcam-Aufnahme (4K-JPEG ≈ 2–4 MB)
@@ -32,7 +34,7 @@ def aufbereiten(daten: bytes, drehung: int = 0, max_kante: int = MAX_KANTE) -> b
             bild = ImageOps.exif_transpose(roh)
             bild = bild.convert("RGB")
     except Exception as fehler:  # noqa: BLE001 – beschädigte oder unbekannte Bilddatei
-        raise FotoFehler("Das Foto konnte nicht gelesen werden – bitte als JPG oder PNG aufnehmen.") from fehler
+        raise FotoFehler(T("Das Foto konnte nicht gelesen werden – bitte als JPG oder PNG aufnehmen.")) from fehler
     if drehung % 360:
         bild = bild.rotate(-(drehung % 360), expand=True)  # PIL dreht gegen den Uhrzeigersinn
     bild.thumbnail((max_kante, max_kante), Image.LANCZOS)
@@ -66,17 +68,17 @@ class WebcamFoto:
 def aus_data_url(url: str) -> bytes:
     """``data:image/jpeg;base64,…`` aus dem Browser prüfen und als Bildbytes liefern."""
     if not isinstance(url, str) or len(url) > MAX_WEBCAM_BYTES:
-        raise FotoFehler("Die Webcam-Aufnahme ist zu groß oder ungültig.")
+        raise FotoFehler(T("Die Webcam-Aufnahme ist zu groß oder ungültig."))
     kopf, _, inhalt = url.partition(",")
     if not (kopf.startswith("data:image/") and kopf.endswith(";base64")) or kopf[5:-7] not in BILD_MIME:
-        raise FotoFehler("Die Webcam-Aufnahme hat kein unterstütztes Bildformat.")
+        raise FotoFehler(T("Die Webcam-Aufnahme hat kein unterstütztes Bildformat."))
     try:
         daten = base64.b64decode(inhalt, validate=True)
     except (binascii.Error, ValueError) as fehler:
-        raise FotoFehler("Die Webcam-Aufnahme ist beschädigt.") from fehler
+        raise FotoFehler(T("Die Webcam-Aufnahme ist beschädigt.")) from fehler
     try:
         with Image.open(io.BytesIO(daten)) as bild:
             bild.verify()
     except Exception as fehler:  # noqa: BLE001
-        raise FotoFehler("Die Webcam-Aufnahme konnte nicht gelesen werden.") from fehler
+        raise FotoFehler(T("Die Webcam-Aufnahme konnte nicht gelesen werden.")) from fehler
     return daten

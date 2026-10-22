@@ -18,6 +18,7 @@ from itertools import permutations
 from ..berechnung import gebaeude_last, raum_last
 from ..modell import Projekt, Raum
 from ..preise import Position, gesamtpreis, stueckliste_zusammenfassen
+from ..sprache import N_, T, zahl
 from .katalog import Artikel, Katalog
 
 # Bauart-Werte aus v1 auf v2 abbilden
@@ -27,22 +28,24 @@ NR_INBETRIEBNAHME_IE = "8737804260"
 NR_AUFTRAGSPAUSCHALE = "7739607426"
 NR_MSG1 = "7733702555"
 
-MONTAGE_HINWEIS = ("Montagehinweise beruhen auf allgemeinen Fachregeln und dienen der überschlägigen Planung. "
+MONTAGE_HINWEIS = N_("Montagehinweise beruhen auf allgemeinen Fachregeln und dienen der überschlägigen Planung. "
                    "Maßgeblich sind die jeweils gültigen Montageanleitungen des Herstellers.")
 # Aufstellort der Außeneinheit → Montagehinweise (Konsolen/Sockel: zubehoer.py)
-AUFSTELLUNG = {"": "Noch offen", "wand": "Fassade / Wand", "boden": "Boden / Terrasse", "flachdach": "Flachdach"}
+AUFSTELLUNG = {"": N_("Noch offen"), "wand": N_("Fassade / Wand"), "boden": N_("Boden / Terrasse"),
+               "flachdach": N_("Flachdach")}
 AUFSTELLUNG_HINWEISE = {
-    "wand": ["Wandmontage: Tragfähigkeit der Wand und Körperschall zu angrenzenden Schlafräumen prüfen."],
-    "boden": ["Bodenaufstellung vor dem Haus: Bodenkonsole mit Schwingungsdämpfern auf ebenem, tragfähigem Untergrund, "
-              "Kondensat- und Abtauwasser frostsicher ableiten. Alternative auf Betonfundament: Dämpfungssockel-Set."],
+    "wand": [N_("Wandmontage: Tragfähigkeit der Wand und Körperschall zu angrenzenden Schlafräumen prüfen.")],
+    "boden": [N_("Bodenaufstellung vor dem Haus: Bodenkonsole mit Schwingungsdämpfern auf ebenem, tragfähigem "
+                 "Untergrund, Kondensat- und Abtauwasser frostsicher ableiten. Alternative auf Betonfundament: "
+                 "Dämpfungssockel-Set.")],
     "flachdach": [
-        "Flachdach: Außeneinheit auf Bodenkonsole mit Schwingungsdämpfern, auf Bautenschutzmatte bzw. "
-        "Lastverteilplatten – die Dachabdichtung nicht durchdringen; Dachlast und Windsog prüfen lassen.",
-        "Flachdach: Kondensat- und Abtauwasser zum Dachablauf führen, Vereisung der Dachfläche vermeiden; "
-        "Mindestabstände zur Attika und zu Lichtkuppeln nach Montageanleitung einhalten.",
-        "Flachdach: Leitungsführung durch die Dachhaut nur über Dachdurchführung oder Fassade; "
-        "maximale Leitungslänge und Höhendifferenz der Außeneinheit beachten.",
-        "Flachdach: sicheren Zugang für Wartung einplanen (Absturzsicherung nach DGUV/ASR A2.1).",
+        N_("Flachdach: Außeneinheit auf Bodenkonsole mit Schwingungsdämpfern, auf Bautenschutzmatte bzw. "
+           "Lastverteilplatten – die Dachabdichtung nicht durchdringen; Dachlast und Windsog prüfen lassen."),
+        N_("Flachdach: Kondensat- und Abtauwasser zum Dachablauf führen, Vereisung der Dachfläche vermeiden; "
+           "Mindestabstände zur Attika und zu Lichtkuppeln nach Montageanleitung einhalten."),
+        N_("Flachdach: Leitungsführung durch die Dachhaut nur über Dachdurchführung oder Fassade; "
+           "maximale Leitungslänge und Höhendifferenz der Außeneinheit beachten."),
+        N_("Flachdach: sicheren Zugang für Wartung einplanen (Absturzsicherung nach DGUV/ASR A2.1)."),
     ],
 }
 
@@ -77,7 +80,7 @@ class Bedarf:
 
 # Gerätelinien, die der Anwender bevorzugen kann ("" = wirtschaftlichste Lösung)
 GERAETELINIEN = {
-    "": "Wirtschaftlichste Lösung",
+    "": N_("Wirtschaftlichste Lösung"),
     "3200i": "Climate 3200i",
     "7000i": "Climate 7000i",
     "8000i": "Climate Class 8000i",
@@ -204,7 +207,7 @@ class Teilsystem:
             return self.set.typ
         if self.aussen:
             return f"{self.aussen.typ} + " + ", ".join(u.typ for _, u in self.innen)
-        return "keine passende Lösung"
+        return T("keine passende Lösung")
 
     @property
     def schall_aussen(self) -> float | None:
@@ -245,41 +248,42 @@ def single_set(b: Bedarf, kat: Katalog, projekt: Projekt, mit_large: bool = Fals
     alle = [s for s in kat.sets if deckt(s) and (not wunsch or set_bauart(s) == wunsch)
             and (mit_large or not ist_large(s))]
     if not alle:
-        art = f" als {wunsch}" if wunsch else ""
-        return None, [f"{b.raum.name}: Kein Single-Split-Set{art} deckt {b.kuehl:.2f} kW Kühl-/"
-                      f"{b.heiz:.2f} kW Heizlast."]
+        art = T(" als {bauart}", bauart=T(wunsch)) if wunsch else ""
+        return None, [T("{raum}: Kein Single-Split-Set{art} deckt {k} kW Kühl-/{h} kW Heizlast.",
+                        raum=b.raum.name, art=art, k=f"{b.kuehl:.2f}", h=f"{b.heiz:.2f}")]
     linie = projekt.geraetelinie
     kandidaten = [s for s in alle if linie_passt(s, linie)]
     linien_hinweis = []
     if linie and not kandidaten and alle:
         kandidaten = alle
-        linien_hinweis = [f"{b.raum.name}: {GERAETELINIEN.get(linie, linie)} deckt die Last nicht – "
-                          "andere Gerätelinie gewählt."]
+        linien_hinweis = [T("{raum}: {linie} deckt die Last nicht – andere Gerätelinie gewählt.",
+                            raum=b.raum.name, linie=T(GERAETELINIEN.get(linie, linie)))]
     farbe = farbwunsch(b.raum)
     if linie and farbe and not any(s.farbe == farbe and s.verfuegbar for s in kandidaten):
         farbig = [s for s in alle if s.farbe == farbe and s.verfuegbar]
         if farbig:  # Farbwunsch des Raums geht vor der bevorzugten Gerätelinie
             kandidaten = farbig
-            linien_hinweis = [f"{b.raum.name}: „{farbe}“ gibt es nicht als {GERAETELINIEN.get(linie, linie)} – "
-                              f"{farbig[0].linie} gewählt."]
+            linien_hinweis = [T("{raum}: „{farbe}“ gibt es nicht als {linie} – {neu} gewählt.", raum=b.raum.name,
+                                farbe=T(farbe), linie=T(GERAETELINIEN.get(linie, linie)), neu=farbig[0].linie)]
     stufen = [
         ([s for s in kandidaten if s.verfuegbar and (not farbe or s.farbe == farbe)], None),
-        ([s for s in kandidaten if s.verfuegbar], f"{b.raum.name}: Farbe „{farbe}“ in passender Größe nicht "
-                                                  "verfügbar – Standardfarbe gewählt."),
-        (kandidaten, f"{b.raum.name}: Nur mit noch nicht lieferbarem Gerät lösbar."),
+        ([s for s in kandidaten if s.verfuegbar], T("{raum}: Farbe „{farbe}“ in passender Größe nicht verfügbar – "
+                                                    "Standardfarbe gewählt.", raum=b.raum.name, farbe=T(farbe))),
+        (kandidaten, T("{raum}: Nur mit noch nicht lieferbarem Gerät lösbar.", raum=b.raum.name)),
     ]
-    for liste, hinweis in stufen:
+    for stufe, (liste, hinweis) in enumerate(stufen):
         if liste:
             best = min(liste, key=lambda s: (s.preis or math.inf, s.kuehl or 0))
-            notizen = [hinweis] if hinweis and (farbe or "lieferbar" in hinweis) else []
+            notizen = [hinweis] if hinweis and (farbe or stufe == 2) else []
             if best.phasen == 3:
-                notizen.append(f"{b.raum.name}: {best.typ} benötigt einen Drehstromanschluss (400 V).")
+                notizen.append(T("{raum}: {typ} benötigt einen Drehstromanschluss (400 V).",
+                                 raum=b.raum.name, typ=best.typ))
             if best.anzahl_ie > 1:
-                notizen.append(f"{b.raum.name}: {best.anzahl_ie} Innengeräte an einer Außeneinheit "
-                               f"({best.typ}).")
+                notizen.append(T("{raum}: {n} Innengeräte an einer Außeneinheit ({typ}).",
+                                 raum=b.raum.name, n=best.anzahl_ie, typ=best.typ))
             return best, linien_hinweis + notizen
-    return None, [f"{b.raum.name}: Kein Single-Split-Set deckt {b.kuehl:.2f} kW Kühl-/"
-                  f"{b.heiz:.2f} kW Heizlast."]
+    return None, [T("{raum}: Kein Single-Split-Set{art} deckt {k} kW Kühl-/{h} kW Heizlast.",
+                    raum=b.raum.name, art="", k=f"{b.kuehl:.2f}", h=f"{b.heiz:.2f}")]
 
 
 def single_system(b: Bedarf, kat: Katalog, projekt: Projekt, bezeichnung: str | None = None,
@@ -381,15 +385,15 @@ def multi_system(gruppe: list[Bedarf], kat: Katalog, projekt: Projekt, bezeichnu
                 ts.aussen = ae
                 ts.innen = [(b.raum, u) for b, u in zip(gruppe, wahl)]
                 if linie != projekt.geraetelinie:
-                    ts.hinweise.append(f"{GERAETELINIEN.get(projekt.geraetelinie, projekt.geraetelinie)} "
-                                       "als Multi-Split hier nicht möglich – andere Gerätelinie gewählt.")
-                ts.hinweise += [f"{name}: Wunschfarbe nicht verfügbar – Standardfarbe gewählt."
+                    ts.hinweise.append(T("{linie} als Multi-Split hier nicht möglich – andere Gerätelinie gewählt.",
+                                         linie=T(GERAETELINIEN.get(projekt.geraetelinie, projekt.geraetelinie))))
+                ts.hinweise += [T("{raum}: Wunschfarbe nicht verfügbar – Standardfarbe gewählt.", raum=name)
                                 for name in gelockert]
                 if not nur_verfuegbar:
-                    ts.hinweise.append("Enthält noch nicht lieferbare Geräte.")
+                    ts.hinweise.append(T("Enthält noch nicht lieferbare Geräte."))
                 return ts
-    ts.hinweise.append(f"Keine zulässige Multi-Split-Kombination für {n} Räume "
-                       f"({last_k:.2f} kW Kühl-/{last_h:.2f} kW Heizlast).")
+    ts.hinweise.append(T("Keine zulässige Multi-Split-Kombination für {n} Räume ({k} kW Kühl-/{h} kW Heizlast).",
+                         n=n, k=f"{last_k:.2f}", h=f"{last_h:.2f}"))
     return ts
 
 
@@ -451,8 +455,8 @@ class Konzept:
 
     @property
     def lieferhinweise(self) -> list[str]:
-        return sorted({f"{a.typ}: {a.lieferhinweis}" for t in self.teilsysteme for a in t.artikel()
-                       if a.lieferhinweis} | {f"{a.typ}: {a.datenfehler}" for t in self.teilsysteme
+        return sorted({f"{a.typ}: {T(a.lieferhinweis)}" for t in self.teilsysteme for a in t.artikel()
+                       if a.lieferhinweis} | {f"{a.typ}: {T(a.datenfehler)}" for t in self.teilsysteme
                                               for a in t.artikel() if a.datenfehler})
 
     @property
@@ -496,7 +500,7 @@ def _multi_teilsysteme(bed: list[Bedarf], kat: Katalog, projekt: Projekt, name: 
     gs = gruppen(bed, max_groesse=max(ae.anschluesse or 1 for ae in aes), max_kuehl=max(ae.kuehl or 0 for ae in aes) if kuehl_rel else math.inf,
                  max_heiz=max(ae.heiz or 0 for ae in aes) if heiz_rel else math.inf)
     for j, g in enumerate(gs, 1):
-        bez = name if len(gs) == 1 else (f"{name} ({j})" if mehrere else f"System {j}")
+        bez = T(name) if len(gs) == 1 else (f"{T(name)} ({j})" if mehrere else f"System {j}")
         out.append(single_system(g[0], kat, projekt, bez) if len(g) == 1 else multi_system(g, kat, projekt, bez))
     return out
 
@@ -511,7 +515,7 @@ def konzepte(projekt: Projekt, kat: Katalog, wunsch: str = "auto") -> list[Konze
     eigene_sets = [b for b in bed if nur_als_set(b, kat, projekt.geraetelinie)]
     rest = [b for b in bed if b not in eigene_sets]
     farb_sets = [single_system(b, kat, projekt) for b in eigene_sets]
-    FARB_TEXT = " Räume mit Wunschfarbe erhalten ein eigenes Set in dieser Farbe."
+    FARB_TEXT = " " + T("Räume mit Wunschfarbe erhalten ein eigenes Set in dieser Farbe.")
 
     def gesamt(liste: list[Bedarf]) -> list[Teilsystem]:
         return _multi_teilsysteme(liste, kat, projekt, "Gebäude", mehrere=False) if liste else []
@@ -531,9 +535,9 @@ def konzepte(projekt: Projekt, kat: Katalog, wunsch: str = "auto") -> list[Konze
         return neu if neu.gedeckt and farbabweichungen(neu) < farbabweichungen(k) else k
 
     if multi_moeglich and len(rest) > 1 and wunsch in ("auto", "multi"):
-        k = Konzept("multi_gesamt", "Ein Multi-Split-System",
-                    "Alle Räume an möglichst wenigen Außeneinheiten. Wenige Geräte an der Fassade, "
-                    "längere Kältemittelleitungen.")
+        k = Konzept("multi_gesamt", T("Ein Multi-Split-System"),
+                    T("Alle Räume an möglichst wenigen Außeneinheiten. Wenige Geräte an der Fassade, "
+                      "längere Kältemittelleitungen."))
         k.teilsysteme = gesamt(rest) + farb_sets
         if farb_sets:
             k.beschreibung += FARB_TEXT
@@ -541,20 +545,20 @@ def konzepte(projekt: Projekt, kat: Katalog, wunsch: str = "auto") -> list[Konze
 
         etagen = _geschosse(rest)
         if len(etagen) > 1 and any(len(g) > 1 for g in etagen.values()):
-            k = Konzept("multi_geschoss", "Multi-Split je Geschoss",
-                        "Je Geschoss ein eigenes System mit kurzen Leitungswegen; ein einzelner Raum auf einer "
-                        "Etage erhält ein Single-Split-Set.")
+            k = Konzept("multi_geschoss", T("Multi-Split je Geschoss"),
+                        T("Je Geschoss ein eigenes System mit kurzen Leitungswegen; ein einzelner Raum auf einer "
+                          "Etage erhält ein Single-Split-Set."))
             k.teilsysteme = je_geschoss(rest) + farb_sets
             out.append(farbtreu(k, rest, je_geschoss))
 
     if wunsch in ("auto", "single") or not multi_moeglich or not out:
-        k = Konzept("single", "Single-Split je Raum",
-                    "Jeder Raum erhält ein eigenes Set aus Außen- und Inneneinheit – unabhängig und effizient, "
-                    "aber mehr Außengeräte.")
+        k = Konzept("single", T("Single-Split je Raum"),
+                    T("Jeder Raum erhält ein eigenes Set aus Außen- und Inneneinheit – unabhängig und effizient, "
+                      "aber mehr Außengeräte."))
         k.teilsysteme = [single_system(b, kat, projekt) for b in bed]
         if wunsch == "multi" and multi_moeglich:
-            k.beschreibung = ("Die gewünschte Farbe gibt es nur als Single-Split-Set – deshalb erhält jeder Raum "
-                              "ein eigenes Set.")
+            k.beschreibung = T("Die gewünschte Farbe gibt es nur als Single-Split-Set – deshalb erhält jeder Raum "
+                               "ein eigenes Set.")
         out.append(k)
 
     # Large-Split (Ergänzungskatalog): große Räume mit wenigen leistungsstarken Anlagen bis 16 kW
@@ -562,10 +566,10 @@ def konzepte(projekt: Projekt, kat: Katalog, wunsch: str = "auto") -> list[Konze
         bed_gross = bedarfe(projekt, kat, mit_large=True)
         teile = [single_system(b, kat, projekt, mit_large=True) for b in bed_gross]
         if any(t.set is not None and ist_large(t.set) for t in teile):
-            k = Konzept("large", "Large-Split für große Räume",
-                        "Leistungsstarke Einzelanlagen bis 16 kW mit Decken-, Truhen- oder Konsolengeräten – "
-                        "auch als Twin/Triple mit mehreren Innengeräten an einer Außeneinheit. Weniger Geräte, "
-                        "ideal für Werkstatt, Halle und Laden.")
+            k = Konzept("large", T("Large-Split für große Räume"),
+                        T("Leistungsstarke Einzelanlagen bis 16 kW mit Decken-, Truhen- oder Konsolengeräten – "
+                          "auch als Twin/Triple mit mehreren Innengeräten an einer Außeneinheit. Weniger Geräte, "
+                          "ideal für Werkstatt, Halle und Laden."))
             k.teilsysteme = teile
             out.append(k)
 
@@ -577,9 +581,9 @@ def konzepte(projekt: Projekt, kat: Katalog, wunsch: str = "auto") -> list[Konze
         grenze = farbgrenze(r, kat)
         if r.name in geteilt and grenze:
             n = sum(1 for b in bed if b.raum.name.startswith(f"{r.name} · Zone "))
-            hinweis = (f"{r.name}: „{farbwunsch(r)}“ gibt es bis {grenze[0]:.1f} kW je Gerät – der Raum erhält "
-                       f"{n} Geräte in dieser Farbe. Für ein einzelnes Gerät die Farbe auf „Keine Präferenz“ "
-                       "stellen.").replace(".", ",", 1)
+            hinweis = T("{raum}: „{farbe}“ gibt es bis {max} kW je Gerät – der Raum erhält {n} Geräte in dieser "
+                        "Farbe. Für ein einzelnes Gerät die Farbe auf „Keine Präferenz“ stellen.",
+                        raum=r.name, farbe=T(farbwunsch(r)), max=zahl(grenze[0], 1), n=n)
             for k in out:
                 k.zusatzhinweise.append(hinweis)
     empfehlung_setzen(out, projekt.geraetelinie)
@@ -630,10 +634,11 @@ def optionale_leistungen(konzept: Konzept, kat: Katalog) -> list[Position]:
 
 
 def aufstellungshinweise(projekt: Projekt, konzept: Konzept | None = None) -> list[str]:
-    hinweise = list(AUFSTELLUNG_HINWEISE.get(projekt.aufstellung, []))
+    hinweise = [T(h) for h in AUFSTELLUNG_HINWEISE.get(projekt.aufstellung, [])]
     if projekt.aufstellung in ("boden", "flachdach") and konzept and any(
             t.set and ist_large(t.set) for t in konzept.teilsysteme):
-        hinweise.append("Large-Split-Außeneinheiten: Traglast von Konsole bzw. Sockel gegen das Gerätegewicht prüfen.")
+        hinweise.append(T("Large-Split-Außeneinheiten: Traglast von Konsole bzw. Sockel gegen das Gerätegewicht "
+                          "prüfen."))
     if hinweise:
-        hinweise.append(MONTAGE_HINWEIS)
+        hinweise.append(T(MONTAGE_HINWEIS))
     return hinweise

@@ -79,6 +79,7 @@ def gesamtpreis(positionen: list[Position]) -> float | None:
 
 
 def fmt_eur(betrag: float | None) -> str:
-    if betrag is None:
-        return "auf Anfrage"
-    return f"{betrag:,.0f} €".replace(",", ".")
+    """Eurobetrag ohne Cent (Deutsch „12.345 €“, in der englischen Oberfläche „€12,345“)."""
+    from .sprache import euro
+
+    return euro(betrag)
