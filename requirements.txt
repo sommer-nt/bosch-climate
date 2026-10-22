@@ -1,6 +1,6 @@
-streamlit>=1.50
+streamlit>=1.64,<2   # Webcam-Komponente (components.v2), Sprachumschalter
 pandas>=2.0
 pydantic>=2.7
 fpdf2>=2.8
-anthropic>=1.11   # nur für die KI-Planerkennung
+anthropic>=1.11   # KI-Planerkennung und Planungs-Assistent
 pytest>=8.0
