@@ -111,8 +111,11 @@ def schluessel_vorhanden() -> bool:
     return bool(c.api_key or c.auth_token or c.credentials)
 
 
-def analysiere(dateien: list[tuple[bytes, str]], zusatz: str = "", client=None) -> KiPlanAnalyse:
+def analysiere(dateien: list[tuple[bytes, str]], zusatz: str = "", client=None, sprache: str = "de") -> KiPlanAnalyse:
+    """``sprache="en"``: Raumnamen, Hinweise und Begründungen auf Englisch (Auswahlwerte bleiben deutsch)."""
     import anthropic
+
+    from .sprache import T
 
     if not dateien:
         raise ValueError("Mindestens ein Plan erforderlich.")
@@ -120,11 +123,15 @@ def analysiere(dateien: list[tuple[bytes, str]], zusatz: str = "", client=None) 
         client = anthropic.Anthropic()
         # API-Key, Token oder angemeldetes ``ant``-Profil – sonst klare Meldung statt Absturz
         if not (client.api_key or client.auth_token or client.credentials):
-            raise PlanFehler(KEIN_SCHLUESSEL)
+            raise PlanFehler(T(KEIN_SCHLUESSEL))
     inhalt = [_block(d, mt) for d, mt in dateien]
     text = "Erfasse die Räume aus den beigefügten Plänen."
     if zusatz.strip():
         text += f"\n\nAngaben des Nutzers:\n{zusatz.strip()}"
+    if sprache == "en":
+        text += ("\n\nDie Oberfläche ist auf Englisch: Schreibe Raumnamen (z. B. „Living room“, „Bedroom 1“), "
+                 "Hinweise, Aufstellorte und Begründungen auf Englisch. Feste Auswahlwerte (Raumart, Lage, "
+                 "Ausrichtung, Geschoss-Kürzel EG/OG/DG/KG) bleiben unverändert.")
     inhalt.append({"type": "text", "text": text})
     try:
         antwort = client.beta.messages.parse(
@@ -135,19 +142,19 @@ def analysiere(dateien: list[tuple[bytes, str]], zusatz: str = "", client=None) 
             betas=["server-side-fallback-2026-07-01"], fallbacks="default",
         )
     except anthropic.AuthenticationError as e:
-        raise PlanFehler("Kein gültiger API-Schlüssel (ANTHROPIC_API_KEY).") from e
+        raise PlanFehler(T("Kein gültiger API-Schlüssel (ANTHROPIC_API_KEY).")) from e
     except anthropic.RateLimitError as e:
-        raise PlanFehler("Rate-Limit erreicht – bitte kurz warten.") from e
+        raise PlanFehler(T("Rate-Limit erreicht – bitte kurz warten.")) from e
     except anthropic.BadRequestError as e:
-        raise PlanFehler(f"Anfrage abgelehnt (Datei zu groß?): {e.message}") from e
+        raise PlanFehler(T("Anfrage abgelehnt (Datei zu groß?):") + f" {e.message}") from e
     except anthropic.APIConnectionError as e:
-        raise PlanFehler("Keine Verbindung zur Claude API.") from e
+        raise PlanFehler(T("Keine Verbindung zur Claude API.")) from e
     if antwort.stop_reason == "refusal":
-        raise PlanFehler("Die Analyse wurde vom Modell abgelehnt.")
+        raise PlanFehler(T("Die Analyse wurde vom Modell abgelehnt."))
     if antwort.stop_reason == "max_tokens":
-        raise PlanFehler("Plan zu umfangreich – bitte einzelne Geschosse hochladen.")
+        raise PlanFehler(T("Plan zu umfangreich – bitte einzelne Geschosse hochladen."))
     if antwort.parsed_output is None:
-        raise PlanFehler("Antwort konnte nicht gelesen werden.")
+        raise PlanFehler(T("Antwort konnte nicht gelesen werden."))
     return antwort.parsed_output
 
 

@@ -9,6 +9,7 @@ from datetime import datetime
 from pydantic import ValidationError
 
 from ..modell import Projekt
+from ..sprache import T
 
 FORMAT = "bosch-climate-konfiguration"
 VERSION = 1
@@ -34,24 +35,24 @@ def importieren(daten: bytes | str) -> tuple[Projekt, dict]:
     """JSON-Text prüfen und in ein Projekt umwandeln. Wirft ``LadeFehler`` mit verständlicher Meldung."""
     if isinstance(daten, bytes):
         if len(daten) > MAX_BYTES:
-            raise LadeFehler("Datei ist zu groß für eine Konfiguration.")
+            raise LadeFehler(T("Datei ist zu groß für eine Konfiguration."))
         try:
             daten = daten.decode("utf-8-sig")
         except UnicodeDecodeError as fehler:
-            raise LadeFehler("Datei ist keine Textdatei (UTF-8).") from fehler
+            raise LadeFehler(T("Datei ist keine Textdatei (UTF-8).")) from fehler
     try:
         inhalt = json.loads(daten)
     except json.JSONDecodeError as fehler:
-        raise LadeFehler(f"Kein gültiges JSON (Zeile {fehler.lineno}).") from fehler
+        raise LadeFehler(T("Kein gültiges JSON (Zeile {n}).", n=fehler.lineno)) from fehler
     if not isinstance(inhalt, dict) or inhalt.get("format") != FORMAT:
-        raise LadeFehler("Das ist keine gespeicherte Konfiguration dieses Programms.")
+        raise LadeFehler(T("Das ist keine gespeicherte Konfiguration dieses Programms."))
     if int(inhalt.get("version", 0)) > VERSION:
-        raise LadeFehler("Die Datei stammt aus einer neueren Programmversion – bitte Programm aktualisieren.")
+        raise LadeFehler(T("Die Datei stammt aus einer neueren Programmversion – bitte Programm aktualisieren."))
     try:
         projekt = Projekt.model_validate(inhalt.get("projekt") or {})
     except ValidationError as fehler:
         feld = ".".join(str(x) for x in fehler.errors()[0]["loc"]) if fehler.errors() else "?"
-        raise LadeFehler(f"Konfiguration enthält ungültige Werte (Feld „{feld}“).") from fehler
+        raise LadeFehler(T("Konfiguration enthält ungültige Werte (Feld „{feld}“).", feld=feld)) from fehler
     auswahl = inhalt.get("auswahl") if isinstance(inhalt.get("auswahl"), dict) else {}
     return projekt, auswahl
 

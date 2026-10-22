@@ -14,6 +14,7 @@ from pathlib import Path
 
 from ..modell import Projekt
 from ..preise import fmt_eur
+from ..sprache import N_, T
 from .auswahl import Konzept, ist_large
 from .katalog import Artikel, Katalog
 
@@ -33,18 +34,18 @@ NR_WANDKONSOLE, NR_BODENKONSOLE = "7747222358", "7716161065"
 NR_SOCKEL_450, NR_SOCKEL_600 = "7738347185", "7738347186"
 SOCKEL_600_FUER = ("CL7000M 79/3", "CL5000M 105/4", "CL5000M 125/5")
 ALTERNATIVE = {  # Hinweistext für Artikel, die nicht automatisch vorgeschlagen werden
-    NR_SOCKEL_450: "Alternative zur Bodenkonsole: direkt auf Betonfundament, schallentkoppelt",
-    NR_SOCKEL_600: "Alternative zur Bodenkonsole für CL7000M 79/3, CL5000M 105/4 und 125/5 auf Betonfundament",
-    NR_PUMPE_WAND: "Optional: Kondensatpumpe unter wandhängenden Innengeräten",
-    NR_G10_3: "Optional: Alternative zum G 10-4 – laut aktuellem Katalog bis Q4/2026 verfügbar",
-    NR_G10_4: "Optional: Internet-Gateway für die App-Steuerung",
-    NR_G10_CLC: "Optional: Gateway-Anschluss für Deckenkassetten, zusammen mit G 10-3",
-    "7738345958": "Optional: Alternative zur Silent+ mini – Pumpe mit 800 mm Kabelkanal für Wandgeräte",
-    NR_PUMPE_EINBAU: "Optional: Einbaupumpe für Konsolen und Truhen",
-    NR_WANDKONSOLE: "Optional: Wandmontage der Außeneinheit",
-    NR_BODENKONSOLE: "Optional: Boden- oder Flachdachaufstellung der Außeneinheit",
-    "7733704064": "Optional: Kabelregler; Wandgeräte benötigen zusätzlich das Verbindungsmodul MC R",
-    "7733701597": "Optional: potentialfreier Kontakt, externes Ein/Aus, Alarm (3000i, 3200i, 7000i)",
+    NR_SOCKEL_450: N_("Alternative zur Bodenkonsole: direkt auf Betonfundament, schallentkoppelt"),
+    NR_SOCKEL_600: N_("Alternative zur Bodenkonsole für CL7000M 79/3, CL5000M 105/4 und 125/5 auf Betonfundament"),
+    NR_PUMPE_WAND: N_("Optional: Kondensatpumpe unter wandhängenden Innengeräten"),
+    NR_G10_3: N_("Optional: Alternative zum G 10-4 – laut aktuellem Katalog bis Q4/2026 verfügbar"),
+    NR_G10_4: N_("Optional: Internet-Gateway für die App-Steuerung"),
+    NR_G10_CLC: N_("Optional: Gateway-Anschluss für Deckenkassetten, zusammen mit G 10-3"),
+    "7738345958": N_("Optional: Alternative zur Silent+ mini – Pumpe mit 800 mm Kabelkanal für Wandgeräte"),
+    NR_PUMPE_EINBAU: N_("Optional: Einbaupumpe für Konsolen und Truhen"),
+    NR_WANDKONSOLE: N_("Optional: Wandmontage der Außeneinheit"),
+    NR_BODENKONSOLE: N_("Optional: Boden- oder Flachdachaufstellung der Außeneinheit"),
+    "7733704064": N_("Optional: Kabelregler; Wandgeräte benötigen zusätzlich das Verbindungsmodul MC R"),
+    "7733701597": N_("Optional: potentialfreier Kontakt, externes Ein/Aus, Alarm (3000i, 3200i, 7000i)"),
 }
 # im Ergänzungskatalog 09/2026 ersetzt → nicht mehr anbieten
 ERSETZT = {"7733701903": "7733704064", "7738336975": "7738346711"}
@@ -52,9 +53,9 @@ ERSETZT = {"7733701903": "7733704064", "7738336975": "7738346711"}
 BOPA = {"CL7000i-Set 26 E": {"boden": "7739625892", "wand": "7739624113"},
         "CL3200i-Set 26 WE": {"boden": "7739625891", "wand": "7739625457"}}
 
-G10_3_HINWEIS = ("G 10-3 laut aktuellem Katalog bis Q4/2026 verfügbar. Nachfolgeprodukt für die verbleibenden "
+G10_3_HINWEIS = N_("G 10-3 laut aktuellem Katalog bis Q4/2026 verfügbar. Nachfolgeprodukt für die verbleibenden "
                  "Gerätefamilien derzeit nicht eindeutig dokumentiert.")
-VORKALKULATION = ("Zubehörmengen dienen als automatische Vorkalkulation und müssen projektbezogen geprüft werden.")
+VORKALKULATION = N_("Zubehörmengen dienen als automatische Vorkalkulation und müssen projektbezogen geprüft werden.")
 
 GATEWAYS = {NR_G10_3, NR_G10_4, NR_G10_CLC, NR_G10_CLC1}
 BOPA_NRS = {nr for d in BOPA.values() for nr in d.values()}
@@ -82,8 +83,9 @@ def bild(bestellnr: str) -> Path | None:
     return pfad if pfad and pfad.exists() else None
 
 
-GRUPPEN = ["Aufstellung Außeneinheit", "Kältemittelleitung", "Elektrik und Kommunikation", "Kondensat",
-           "Steuerung und App", "Förderung", "Adapter und Verschraubungen", "Pakete"]
+GRUPPEN = [N_("Aufstellung Außeneinheit"), N_("Kältemittelleitung"), N_("Elektrik und Kommunikation"),
+           N_("Kondensat"), N_("Steuerung und App"), N_("Förderung"), N_("Adapter und Verschraubungen"),
+           N_("Pakete")]  # Anzeige mit T(gruppe)
 GRUPPE = {
     NR_WANDKONSOLE: 0, NR_BODENKONSOLE: 0, NR_SOCKEL_450: 0, NR_SOCKEL_600: 0,
     **{nr: 1 for d in ROHRE.values() for nr in d.values()},
@@ -107,6 +109,7 @@ class ZubehoerZeile:
     menge: int
     grund: str = ""
     gesperrt: str = ""  # Grund, warum der Artikel für dieses Konzept nicht in Frage kommt (z. B. WLAN integriert)
+    wlan_integriert: bool = False  # gesperrt, weil alle Innengeräte WLAN eingebaut haben
 
     @property
     def summe(self) -> float | None:
@@ -170,13 +173,13 @@ def _gateway(ie: _Ie) -> list[tuple[str, str]]:
     if "7000i" in a.linie or "8000i" in a.linie:
         return []  # WLAN integriert
     if a.linie == "Climate 5000i L":
-        extra = [(NR_G10_CLC1, "CF-Gerät: Gateway-Anschluss nötig")] if ie.bauart == "Truhe/Decke" else []
+        extra = [(NR_G10_CLC1, T("CF-Gerät: Gateway-Anschluss nötig"))] if ie.bauart == "Truhe/Decke" else []
         return [(NR_G10_4, "")] + extra
     if typ.startswith("CL5000iM 4CC"):
-        return [(NR_G10_3, G10_3_HINWEIS),
-                (NR_G10_CLC, "Kassette CL5000iM 4CC: Gateway-Anschluss nötig")]
+        return [(NR_G10_3, T(G10_3_HINWEIS)),
+                (NR_G10_CLC, T("Kassette CL5000iM 4CC: Gateway-Anschluss nötig"))]
     if "3000i" in a.linie:
-        return [(NR_G10_3, G10_3_HINWEIS)]
+        return [(NR_G10_3, T(G10_3_HINWEIS))]
     return [(NR_G10_4, "")]
 
 
@@ -222,11 +225,11 @@ def vorschlag(projekt: Projekt, konzept: Konzept, kat: Katalog) -> tuple[dict[st
     # Aufstellung der Außeneinheit
     for ae in aes:
         if projekt.aufstellung == "wand":
-            add(NR_WANDKONSOLE, 1, "Aufstellort Fassade/Wand: 1 je Außeneinheit")
+            add(NR_WANDKONSOLE, 1, T("Aufstellort Fassade/Wand: 1 je Außeneinheit"))
         elif projekt.aufstellung == "flachdach":
-            add(NR_BODENKONSOLE, 1, "Aufstellort Flachdach: 1 je Außeneinheit, aufgeständert über Schnee/Wasser")
+            add(NR_BODENKONSOLE, 1, T("Aufstellort Flachdach: 1 je Außeneinheit, aufgeständert über Schnee/Wasser"))
         elif projekt.aufstellung == "boden":
-            add(NR_BODENKONSOLE, 1, "Aufstellort Boden: 1 je Außeneinheit")
+            add(NR_BODENKONSOLE, 1, T("Aufstellort Boden: 1 je Außeneinheit"))
 
     # Kältemittelleitung, Kommunikationskabel, Klemmringverschraubungen je Innengerät
     ohne_rohr = []
@@ -236,39 +239,41 @@ def vorschlag(projekt: Projekt, konzept: Konzept, kat: Katalog) -> tuple[dict[st
             ohne_rohr.append(ie.raum)
         else:
             for l in rohr_pakete(laenge, kat, klasse):
-                add(ROHRE[klasse][l], 1, f"Grundausstattung: Kältemittelleitung {laenge:g} m je Innengerät")
+                add(ROHRE[klasse][l], 1, T("Grundausstattung: Kältemittelleitung {l} m je Innengerät", l=f"{laenge:g}"))
             if projekt.boerdelfrei:
                 fluessig = '3/8"' if klasse == '5/8"' else '1/4"'
-                add(KLEMMRING[fluessig], 2, "Bördelfrei gewählt: 2 je Leitung und Seite")
-                add(KLEMMRING[klasse], 2, "Bördelfrei gewählt: 2 je Leitung und Seite")
+                add(KLEMMRING[fluessig], 2, T("Bördelfrei gewählt: 2 je Leitung und Seite"))
+                add(KLEMMRING[klasse], 2, T("Bördelfrei gewählt: 2 je Leitung und Seite"))
         if ie.kuehl <= 5.5:
-            add(NR_KABEL_KLEIN, math.ceil(laenge / 5.5), "Grundausstattung: Steuerleitung je Innengerät (5,5 m je Kabel)")
+            add(NR_KABEL_KLEIN, math.ceil(laenge / 5.5),
+                T("Grundausstattung: Steuerleitung je Innengerät (5,5 m je Kabel)"))
         elif ie.kuehl <= 7.5:
-            add(NR_KABEL_GROSS, math.ceil(laenge / 5.5), "Grundausstattung: Steuerleitung 2,5 mm² für 7-kW-Geräte")
+            add(NR_KABEL_GROSS, math.ceil(laenge / 5.5), T("Grundausstattung: Steuerleitung 2,5 mm² für 7-kW-Geräte"))
     if ohne_rohr:
-        hinweise.append("Kältemittelleitung für Geräte über 7 kW (" + ", ".join(sorted(set(ohne_rohr)))
-                        + ") nicht als Paket im Katalog – Kupferrohr und Kabel bauseits nach Montageanleitung.")
+        hinweise.append(T("Kältemittelleitung für Geräte über 7 kW ({raeume}) nicht als Paket im Katalog – Kupferrohr "
+                          "und Kabel bauseits nach Montageanleitung.", raeume=", ".join(sorted(set(ohne_rohr)))))
 
     # Kondensat: Wandgeräte/Konsolen mit 16-mm-Ablauf; Kassetten haben eine integrierte Pumpe
     mit_schlauch = [ie for ie in ies if ie.bauart in ("Wandgerät", "Konsole")]
     if mit_schlauch:
-        add(NR_SPIRALSCHLAUCH, math.ceil(len(mit_schlauch) * 3 / 30), "Grundausstattung: Kondensatablauf Ø 16 mm (Rolle 30 m)")
+        add(NR_SPIRALSCHLAUCH, math.ceil(len(mit_schlauch) * 3 / 30),
+            T("Grundausstattung: Kondensatablauf Ø 16 mm (Rolle 30 m)"))
     if projekt.kondensatpumpe:
         for ie in ies:
             if ie.bauart == "Wandgerät":
-                add(NR_PUMPE_WAND, 1, "Kondensatpumpe gewählt: unter dem Wandgerät")
+                add(NR_PUMPE_WAND, 1, T("Kondensatpumpe gewählt: unter dem Wandgerät"))
             elif ie.bauart in ("Konsole", "Truhe/Decke"):
-                add(NR_PUMPE_EINBAU, 1, "Kondensatpumpe gewählt: Einbau in Konsole/Truhe")
+                add(NR_PUMPE_EINBAU, 1, T("Kondensatpumpe gewählt: Einbau in Konsole/Truhe"))
 
     # App-Steuerung (WLAN)
     if projekt.app_steuerung:
         for ie in ies:
             for nr, text in _gateway(ie):
-                add(nr, 1, "App-Steuerung gewählt" + (f" – {text}" if text else ""))
+                add(nr, 1, T("App-Steuerung gewählt") + (f" – {text}" if text else ""))
 
     # BEG-Förderung: Climate 7000i nur mit Smart-Grid-Modul MSG-1
     add(NR_MSG1, sum(1 for t in konzept.teilsysteme if t.set and t.set.linie == "Climate 7000i"),
-        "BEG-Förderung: netzdienliche Schnittstelle je Climate 7000i Set")
+        T("BEG-Förderung: netzdienliche Schnittstelle je Climate 7000i Set"))
 
     # Basispakete: Set + Montagematerial + Konsole unter einer Bestell-Nr.
     raeume: dict[str, list[str]] = {}
@@ -284,20 +289,21 @@ def vorschlag(projekt: Projekt, konzept: Konzept, kat: Katalog) -> tuple[dict[st
                  NR_WANDKONSOLE if projekt.aufstellung == "wand" else NR_BODENKONSOLE]
         einzeln = s.preis + sum((kat.zubehoer_nr(nr).preis or 0) for nr in teile if kat.zubehoer_nr(nr)) + 2 * sum(
             (kat.zubehoer_nr(KLEMMRING[g]).preis or 0) for g in ('1/4"', '3/8"'))
-        vergleich = (f"{fmt_eur(einzeln - z.preis)} günstiger als einzeln" if einzeln - z.preis > 5
-                     else "preisgleich zu den Einzelteilen, aber nur eine Bestellposition")
-        hinweise.append(f"{typ} ({', '.join(namen)}): auch als {z.name}, Bestell-Nr. {z.bestellnr}, {fmt_eur(z.preis)} "
-                        f"je Raum – Set mit 5 m Leitung, Kabel, Kondensatschlauch, Klemmringen und Konsole; "
-                        f"{vergleich}.")
+        vergleich = (T("{betrag} günstiger als einzeln", betrag=fmt_eur(einzeln - z.preis)) if einzeln - z.preis > 5
+                     else T("preisgleich zu den Einzelteilen, aber nur eine Bestellposition"))
+        hinweise.append(T("{typ} ({raeume}): auch als {name}, Bestell-Nr. {nr}, {preis} je Raum – Set mit 5 m Leitung, "
+                          "Kabel, Kondensatschlauch, Klemmringen und Konsole; {vergleich}.", typ=typ,
+                          raeume=", ".join(T(n) for n in namen), name=T(z.name), nr=z.bestellnr,
+                          preis=fmt_eur(z.preis), vergleich=vergleich))
     return mengen, {nr: "; ".join(t) for nr, t in grund.items()}, hinweise
 
 
 def _optional(passend: str | None) -> str:
     if not passend or passend in ("–", "Split-Klimageräte", "Climate Außeneinheiten"):
-        return "Optional"
+        return T("Optional")
     if "kW" in passend:
-        return f"Optional: für Geräte mit {passend}"
-    return f"Optional: passend für {passend}"
+        return T("Optional: für Geräte mit {p}", p=T(passend))
+    return T("Optional: passend für {p}", p=T(passend))
 
 
 def gateway_bedarf(konzept: Konzept) -> tuple[set[str], int, int]:
@@ -317,23 +323,24 @@ def wlan_uebersicht(konzept: Konzept, kat: Katalog | None = None) -> list[str]:
     namen = {NR_G10_3: "G 10-3", NR_G10_4: "G 10-4", NR_G10_CLC: "G 10 CLC", NR_G10_CLC1: "G 10 CLC-1"}
     zeilen: dict[str, str] = {}
     for ie in _innengeraete(konzept):
-        serie = ie.geraet.linie + (f" {ie.bauart}" if ie.bauart != "Wandgerät" else "")
+        serie = ie.geraet.linie + (f" {T(ie.bauart)}" if ie.bauart != "Wandgerät" else "")
         nrs = [nr for nr, _ in _gateway(ie)]
         alternativ = _gateway_passend(ie) - set(nrs) - {NR_G10_CLC} if nrs else set()
-        zeilen[serie] = ("WLAN integriert" if not nrs
-                         else "kein WLAN eingebaut → " + " + ".join(namen[nr] for nr in nrs)
-                         + (f" (alternativ {', '.join(namen[nr] for nr in sorted(alternativ))})" if alternativ else ""))
+        zeilen[serie] = (T("WLAN integriert") if not nrs
+                         else T("kein WLAN eingebaut →") + " " + " + ".join(namen[nr] for nr in nrs)
+                         + (T(" (alternativ {g})", g=", ".join(namen[nr] for nr in sorted(alternativ)))
+                            if alternativ else ""))
     return [f"{s}: {t}" for s, t in zeilen.items()]
 
 
 def _sperrgrund(nr: str, konzept: Konzept, bedarf: set[str], ohne_wlan: int, bopa: set[str]) -> str:
     if nr in GATEWAYS and nr not in bedarf:
-        return ("WLAN bei allen Innengeräten integriert (Climate 7000i / Class 8000i)" if not ohne_wlan
-                else "passt nicht zu den gewählten Innengeräten")
+        return (T("WLAN bei allen Innengeräten integriert (Climate 7000i / Class 8000i)") if not ohne_wlan
+                else T("passt nicht zu den gewählten Innengeräten"))
     if nr == NR_MSG1 and not any(t.set and t.set.linie == "Climate 7000i" for t in konzept.teilsysteme):
-        return "nur für Climate 7000i Single-Split"
+        return T("nur für Climate 7000i Single-Split")
     if nr in BOPA_NRS and nr not in bopa:
-        return "nur für CL7000i-Set 26 E bzw. CL3200i-Set 26 WE"
+        return T("nur für CL7000i-Set 26 E bzw. CL3200i-Set 26 WE")
     return ""
 
 
@@ -350,8 +357,11 @@ def tabelle(projekt: Projekt, konzept: Konzept, kat: Katalog) -> tuple[list[Zube
         v = mengen.get(z.bestellnr, 0)
         sperre = _sperrgrund(z.bestellnr, konzept, bedarf, ohne_wlan, bopa)
         menge = 0 if sperre else projekt.zubehoer_mengen.get(z.bestellnr, v)
+        grund_text = grund.get(z.bestellnr) or (T(ALTERNATIVE[z.bestellnr]) if z.bestellnr in ALTERNATIVE
+                                                else _optional(z.passend))
         zeilen.append(ZubehoerZeile(GRUPPEN[GRUPPE[z.bestellnr]], z.bestellnr, z.name, z.preis, v, max(int(menge), 0),
-                                    grund.get(z.bestellnr, ALTERNATIVE.get(z.bestellnr, _optional(z.passend))), sperre))
+                                    grund_text, sperre,
+                                    wlan_integriert=bool(sperre) and z.bestellnr in GATEWAYS and not ohne_wlan))
     zeilen.sort(key=lambda x: (GRUPPEN.index(x.gruppe), -x.vorschlag, x.name))
     return zeilen, hinweise
 

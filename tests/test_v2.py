@@ -731,7 +731,7 @@ def test_oberflaeche_assistent_chat_und_rueckgaengig(monkeypatch):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test")
     monkeypatch.delenv("APP_PASSWORT", raising=False)
 
-    def fake(verlauf, text, p, kat, zustand, client=None):
+    def fake(verlauf, text, p, kat, zustand, client=None, sprache="de"):
         vorher = AS.kurzstatus(p, kat)
         p.raeume[0].flaeche = 60.0
         return AS.Antwort("Wohnzimmer auf 60 m² vergrößert.", ["Wohnen/Essen: Fläche 60 m²"], vorher,
@@ -896,3 +896,78 @@ def test_webcam_aufnahme_wird_geprueft_und_wie_datei_behandelt():
                    "kein-url", None, "data:image/jpeg;base64," + "A" * FO.MAX_WEBCAM_BYTES):
         with pytest.raises(FO.FotoFehler):
             FO.aus_data_url(falsch)
+
+
+# ---------------------------------------------------------------------- Englische Oberfläche
+def test_englisch_vollstaendig():
+    """Jeder übersetzbare Text hat eine englische Fassung mit denselben Platzhaltern – auch Katalogtexte."""
+    import re
+    import sys
+
+    sys.path.insert(0, str(WURZEL / "tools"))
+    from sprache_schluessel import sammeln
+
+    from splitklima.sprache_en import EN
+
+    unveraendert = {"Multi-Split", "Single-Split", "Optional", "System"}
+    texte = set(sammeln(WURZEL)) - unveraendert
+    texte |= {z.name for z in KAT.zubehoer} | {z.passend for z in KAT.zubehoer if z.passend not in ("–",)}
+    texte |= set(P.RAUMARTEN) | set(P.RAUMARTEN_GEWERBE) | set(FARBEN) | {f.capitalize() for f in FARBEN}
+    texte |= set(P.NACHDAEMMUNG_V2.values()) | set(P.HAFTUNGSHINWEISE) | {P.HAFTUNG_LANGTEXT, P.GEWERBE_HINWEIS}
+    for d in (P.USTD_LABEL, P.GLAS_LABEL, P.SONNENSCHUTZ_LABEL, P.MODE_LABEL, P.DACHFORM_LABEL):
+        texte |= set(d.values())
+    texte |= {a.datenfehler for a in [*KAT.sets, *KAT.innen, *KAT.aussen] if a.datenfehler}
+    texte |= {KAT.quelle, KAT.preisbasis, "Wandgerät", "Deckenkassette", "Konsole", "Truhe/Decke"}
+    texte -= {"Climate Außeneinheiten", "Split-Klimageräte"}  # nur intern („Optional“ ohne Zusatz)
+    texte = {t for t in texte if re.search(r"[a-zäöüß]{3}", t)}  # Typbezeichnungen wie „CL5000iL CF“ bleiben
+    fehlt = sorted(t for t in texte if t not in EN)
+    assert not fehlt, fehlt[:20]
+    for de_text, en_text in EN.items():
+        assert set(re.findall(r"\{(\w+)\}", de_text)) == set(re.findall(r"\{(\w+)\}", en_text)), de_text
+
+
+def test_englisch_formate_und_hinweise():
+    from splitklima.preise import fmt_eur
+    from splitklima.sprache import T, sprache
+
+    p = beispielprojekt()
+    with sprache("en"):
+        assert fmt_eur(12345.4) == "€12,345" and fmt_eur(None) == "on request"
+        assert T("Raum {n}", n=3) == "Room 3"
+        liste = A.konzepte(p, KAT)
+        assert {k.name for k in liste} >= {"One multi-split system", "Single-split per room"}
+        k = next(k for k in liste if k.empfohlen)
+        zeilen, _ = Z.tabelle(p, k, KAT)
+        assert any(z.grund.startswith("Basic equipment") for z in zeilen)
+        pdf = pdf_angebot_v2(p, k, KAT, "2026-10-01 10:00")
+        assert pdf[:4] == b"%PDF"
+        with pytest.raises(SP.LadeFehler, match="not a configuration"):
+            SP.importieren(b'{"format": "x"}')
+    assert fmt_eur(12345.4) == "12.345 €"  # außerhalb wieder Deutsch
+    assert next(k for k in A.konzepte(p, KAT) if k.key == "single").name == "Single-Split je Raum"
+
+
+def test_oberflaeche_englisch_umschalten(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("APP_PASSWORT", raising=False)
+    at = AppTest.from_file(str(WURZEL / "app_v2.py"), default_timeout=60)
+    at.query_params["lang"] = "en"
+    at.run()
+    assert not at.exception
+    assert at.session_state.v2_sprache == "en"
+    assert any(b.label == "Load example house" for b in at.button)
+    next(b for b in at.button if b.label == "Load example house").click().run()
+    assert not at.exception and at.session_state.v2_seite == "raeume"
+    at.session_state.v2_seite = "ergebnis"
+    at.run()
+    assert not at.exception
+    texte = " ".join(m.value for m in at.markdown)
+    assert "OUR RECOMMENDATION" in texte and "€" in texte
+    assert "UNSERE EMPFEHLUNG" not in texte and "Ihre Geräte" not in texte
+    at.checkbox[0].check().run()
+    assert "Quotation summary (PDF)" in {d.label for d in at.get("download_button")}
+    # zurück auf Deutsch: Planung bleibt erhalten
+    at.segmented_control[0].set_value("🇩🇪 DE").run()
+    assert not at.exception and at.session_state.v2_sprache == "de"
+    assert len(at.session_state.v2_projekt.raeume) == 7
+    assert any("UNSERE EMPFEHLUNG" in m.value for m in at.markdown)
