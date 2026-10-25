@@ -1,4 +1,4 @@
-# Version 2 (Gesamtsortiment, geführte Konfiguration) – läuft parallel zur Version 1.
+# Split-Klima-Konfigurator Version 2 (Gesamtsortiment, geführte Konfiguration) – climate.sommer-nt.de.
 # Gleiches Image, gleiche .env (API-Schlüssel, Passwort), eigener Port und eigenes Compose-Projekt.
 # Die App lauscht nur lokal auf 127.0.0.1:${APP_PORT_V2:-8503}; nginx leitet climate.sommer-nt.de dorthin.
 # Start:  cd deploy && docker compose -p climate -f docker-compose.v2.yml up -d --build
