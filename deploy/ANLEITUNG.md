@@ -16,7 +16,7 @@ Die App läuft im Container und ist nur lokal auf **127.0.0.1:8502** erreichbar
 
 **2. App starten**
 ```bash
-git clone -b claude/stoic-allen-jg56ti https://github.com/sommer-nt/bosch-climate.git
+git clone https://github.com/sommer-nt/bosch-climate.git
 cd bosch-climate/deploy
 cp .env.beispiel .env && nano .env        # API-Schlüssel, Passwort; APP_PORT=8502
 docker compose -f docker-compose.nginx.yml up -d --build
@@ -100,7 +100,7 @@ Prüfen (nach einigen Minuten): `ping klima.sommer-nt.de` zeigt die Server-IP.
 ## 2. Code auf den Server holen
 
 ```bash
-git clone -b claude/stoic-allen-jg56ti https://github.com/sommer-nt/bosch-climate.git
+git clone https://github.com/sommer-nt/bosch-climate.git
 cd bosch-climate/deploy
 ```
 
