@@ -1,8 +1,9 @@
 # Hinweise für Claude Code
 
 ## Git
-- Arbeitszweig ist `version-2`. Änderungen dort committen und pushen, keine anderen Branches anlegen oder
-  pushen, außer Daniel verlangt es ausdrücklich.
+- Arbeitszweig ist `main` (einziger Branch). Änderungen direkt auf `main` committen und pushen – auch wenn die
+  Sitzung einen `claude/…`-Branch vorgibt: Daniel möchte alles auf `main`. Keine weiteren Branches anlegen,
+  außer Daniel verlangt es ausdrücklich.
 - Commits immer als `Daniel Sommer <98900287+sommer-nt@users.noreply.github.com>`
   (vorher `git config user.name/user.email` so setzen).
 - Keine Co-Authored-By-, Claude-Session- oder „Generated with Claude“-Zeilen in Commits und Pull Requests;
