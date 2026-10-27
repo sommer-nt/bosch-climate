@@ -70,7 +70,7 @@ BEISPIELE = [N_("Der Plan hat keinen Nordpfeil – das Wohnzimmer liegt im Norde
              N_("Geht es günstiger? Die Farbe ist mir egal.")]
 RAUMART_KURZ = {"Wohnzimmer": N_("Wohnen"), "Schlafzimmer": N_("Schlafen"), "Büro": N_("Büro"), "Küche": N_("Küche"),
                 "Kinderzimmer": N_("Kinder"), "Badezimmer": N_("Bad"), "Werkstatt": N_("Werkstatt"),
-                "Halle / Lager": N_("Halle / Lager"), "Verkaufsraum": "Laden"}
+                "Halle / Lager": N_("Halle / Lager"), "Verkaufsraum": "Laden", "Seminar / Schulung": N_("Seminar")}
 RAUMART_KURZ_EN = {"Verkaufsraum": "Shop"}  # „Laden“ ist sonst mehrdeutig (Knopf „Laden“ = Load)
 RAUMARTEN_ALLE = [*P.RAUMARTEN, *P.RAUMARTEN_GEWERBE]
 LINIEN_BILD = {"3200i": "set_3200i", "7000i": "set_7000i_weiss", "8000i": "set_8000i_weiss"}
@@ -1027,12 +1027,43 @@ def seite_raeume(p: Projekt) -> None:
             st.markdown(
                 f'<div class="karte klein"><div>{svg(r.raumart, 44)}</div>'
                 f'<div class="titel">{r.name}</div><div class="sub">{r.geschoss or "–"} · {de(r.flaeche)} m² · '
-                f'{de(l.cool, 2)} kW {T("Kühlen")}</div><div class="sub">{status}</div></div>', unsafe_allow_html=True)
+                f'{de(l.cool, 2)} kW {T("Kühlen")}'
+                + (f' · {T("{n} Pers.", n=r.personen)}' if r.personen else "")
+                + f'</div><div class="sub">{status}</div></div>', unsafe_allow_html=True)
             if st.button(T("{name} bearbeiten", name=r.name), key=f"kbtn-{_k('raum')}-{i}"):
                 gehe("raum", raum=i)
     if st.button(T("Raum hinzufügen"), icon=":material/add:"):
         _raum_neu(p)
     _weiter_zurueck(("gebaeude", N_("Gebäude")), ("ergebnis", N_("Zum Ergebnis")) if p.raeume else None, "raeume")
+
+
+def personen_bereich(p: Projekt, r: Raum, i: int) -> None:
+    """Personen gleichzeitig im Raum (z. B. Seminar, Forum, Schulung): Wärme je Person und Frischluft."""
+    c1, c2, c3 = st.columns([1, 1.5, 1.5], vertical_alignment="bottom")
+    r.personen = int(c1.number_input(
+        T("Personen gleichzeitig"), 0, 2000, int(r.personen or 0), 1, key=_k(f"rpers{i}"),
+        help=T("Personen, die sich in der Spitzenzeit gleichzeitig im Raum aufhalten. 0 = übliche Nutzung "
+               "(in der Grundlast enthalten). Je Person 120 W sitzend bzw. 150 W stehend/aktiv, inkl. Feuchte "
+               "(VDI 2078).")))
+    if not r.personen:
+        return
+    r.taetigkeit = c2.selectbox(T("Tätigkeit"), list(P.PERSON_W), index=list(P.PERSON_W).index(r.taetigkeit),
+                                format_func=lambda v: T(P.PERSON_LABEL[v]), key=_k(f"rtaet{i}"),
+                                help=T("Sitzend: Schulung, Seminar, Besprechung. Stehend/aktiv: Empfang, Ausstellung, "
+                                       "Veranstaltung mit Bewegung."))
+    r.lueftung = c3.selectbox(T("Frischluft"), list(P.LUEFTUNG_LABEL), index=list(P.LUEFTUNG_LABEL).index(r.lueftung),
+                              format_func=lambda v: T(P.LUEFTUNG_LABEL[v]), key=_k(f"rlueft{i}"),
+                              help=T("Fensterlüftung: 30 m³/h Außenluft je Person kommen ungekühlt herein und werden "
+                                     "in der Kühllast mitgerechnet. Lüftungsanlage mit Wärmerückgewinnung (WRG): "
+                                     "nur ein Restanteil von etwa 25 % zählt."))
+    l = raum_last(r, p.einstellungen)
+    st.caption(T("Personen: +{w} kW Wärme · Außenluft {q} m³/h ({je} m³/h je Person).", w=de(l.personen_w / 1000, 1),
+                 q=f"{l.luft_m3h:,.0f}".replace(",", "." if not englisch() else ","), je=P.AUSSENLUFT_JE_PERSON))
+    if r.lueftung == "fenster" and r.personen >= 10:
+        st.info(T("Split-Klimageräte kühlen nur die Raumluft und liefern keine Frischluft. Bei {n} Personen wird "
+                  "eine Lüftungsanlage mit Wärmerückgewinnung empfohlen. Die Kühllast enthält hier die Außenluft der "
+                  "Fensterlüftung; im Winter erhöht sie zusätzlich die Heizlast (in der Heizlast nicht enthalten).",
+                  n=r.personen), icon=":material/air:")
 
 
 def seite_raum(p: Projekt, i: int, kat: Katalog | None = None) -> None:
@@ -1048,11 +1079,17 @@ def seite_raum(p: Projekt, i: int, kat: Katalog | None = None) -> None:
     r.geschoss = c2.text_input(T("Geschoss"), r.geschoss, key=_k(f"rg{i}"), placeholder=T("EG, OG, DG …"))
 
     st.markdown("##### " + T("Nutzung"))
+    def raumart_setzen(v: str) -> None:
+        r.raumart = v
+        if v == "Seminar / Schulung" and not r.personen:
+            r.personen = r.personen_vorschlag()
+            _ss().v2_rev += 1
+
     karten(f"ra{i}", [(v, RAUMART_KURZ_EN.get(v, RAUMART_KURZ[v]) if englisch() else RAUMART_KURZ[v], "", v)
-                      for v in RAUMARTEN_ALLE], r.raumart,
-           lambda v: setattr(r, "raumart", v), spalten=5, klein=True, groesse=40)
-    if r.raumart in P.RAUMARTEN_GEWERBE:
+                      for v in RAUMARTEN_ALLE], r.raumart, raumart_setzen, spalten=5, klein=True, groesse=40)
+    if r.raumart in P.RAUMARTEN_GEWERBE and r.raumart != "Seminar / Schulung":
         st.caption(T(P.GEWERBE_HINWEIS))
+    personen_bereich(p, r, i)
 
     st.markdown("##### " + T("Größe"))
     c1, c2, _ = st.columns([1, 1, 1])
@@ -1513,6 +1550,7 @@ def seite_ergebnis(p: Projekt, kat: Katalog) -> None:
         zeilen = []
         for b in A.bedarfe(p):
             zeilen.append({T("Raum"): f"{b.raum.geschoss} {b.raum.name}".strip(), T("Fläche m²"): b.raum.flaeche,
+                           **({T("Personen"): b.raum.personen} if any(r.personen for r in p.raeume) else {}),
                            T("Kühllast kW"): round(b.kuehl, 2), T("Heizlast kW"): round(b.heiz, 2)})
         st.dataframe(pdx.DataFrame(zeilen), hide_index=True, width="stretch")
         st.caption(T("Gebäude gesamt: Kühlen {k} kW · Heizen {h} kW (Rechenkern CALC-0.4, in Anlehnung an "

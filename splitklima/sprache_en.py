@@ -813,6 +813,39 @@ EN: dict[str, str] = {
     "Beispieldaten – Nordpfeil im Lageplan (Plan-Oben = Norden)": "Example data – north arrow in the site plan "
                                                                   "(top of plan = north)",
 
+    # ------------------------------------------------------------------ Personen (Seminar, Forum, Schulung)
+    "Seminar / Schulung": "Seminar / training",
+    "Seminar": "Seminar",
+    "Personen gleichzeitig": "People at the same time",
+    "Personen, die sich in der Spitzenzeit gleichzeitig im Raum aufhalten. 0 = übliche Nutzung (in der Grundlast "
+    "enthalten). Je Person 120 W sitzend bzw. 150 W stehend/aktiv, inkl. Feuchte (VDI 2078).":
+        "People present in the room at the same time at peak. 0 = normal use (included in the base load). 120 W "
+        "per person seated or 150 W standing/active, including moisture (VDI 2078).",
+    "Tätigkeit": "Activity",
+    "Sitzend · 120 W/Person": "Seated · 120 W/person",
+    "Stehend, aktiv · 150 W/Person": "Standing, active · 150 W/person",
+    "Sitzend: Schulung, Seminar, Besprechung. Stehend/aktiv: Empfang, Ausstellung, Veranstaltung mit Bewegung.":
+        "Seated: training, seminar, meeting. Standing/active: reception, exhibition, events with movement.",
+    "Fensterlüftung: 30 m³/h Außenluft je Person kommen ungekühlt herein und werden in der Kühllast mitgerechnet. "
+    "Lüftungsanlage mit Wärmerückgewinnung (WRG): nur ein Restanteil von etwa 25 % zählt.":
+        "Window ventilation: 30 m³/h of uncooled outdoor air per person enters and is included in the cooling "
+        "load. Ventilation system with heat recovery (HR): only a residual share of about 25 % counts.",
+    "Frischluft": "Fresh air",
+    "Fensterlüftung": "Window ventilation",
+    "Lüftungsanlage mit WRG": "Ventilation system with HR",
+    "Personen: +{w} kW Wärme · Außenluft {q} m³/h ({je} m³/h je Person).":
+        "People: +{w} kW heat · outdoor air {q} m³/h ({je} m³/h per person).",
+    "Split-Klimageräte kühlen nur die Raumluft und liefern keine Frischluft. Bei {n} Personen wird eine "
+    "Lüftungsanlage mit Wärmerückgewinnung empfohlen. Die Kühllast enthält hier die Außenluft der Fensterlüftung; "
+    "im Winter erhöht sie zusätzlich die Heizlast (in der Heizlast nicht enthalten).":
+        "Split air conditioners only cool the room air and do not supply fresh air. With {n} people, a "
+        "ventilation system with heat recovery is recommended. The cooling load here includes the outdoor air of "
+        "window ventilation; in winter it also increases the heating load (not included in the heating load).",
+    "Personen": "People",
+    "{n} Pers.": "{n} people",
+    " · {n} Pers.": " · {n} people",
+    "{n} Personen": "{n} people",
+
     # ------------------------------------------------------------------ Laden/Speichern
     "Datei ist zu groß für eine Konfiguration.": "The file is too large for a configuration.",
     "Datei ist keine Textdatei (UTF-8).": "The file is not a text file (UTF-8).",

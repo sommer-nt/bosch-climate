@@ -36,7 +36,7 @@ RICHTUNGEN = P.AUSRICHTUNGEN  # N, NO, O, SO, S, SW, W, NW – im Uhrzeigersinn
 DACH = {"kein": None, "flat": "flat", "saddle_south": "saddle_south", "saddle_north": "saddle_north",
         "saddle_eastwest": "saddle_eastwest"}
 LAGEN = list(P.MODE_LABEL)
-GRENZEN = {"flaeche": (1.0, 500.0), "hoehe": (1.8, 10.0), "laenge": (0.0, 200.0), "fenster": (0.0, 400.0),
+GRENZEN = {"personen": (0, 2000), "flaeche": (1.0, 500.0), "hoehe": (1.8, 10.0), "laenge": (0.0, 200.0), "fenster": (0.0, 400.0),
            "dachfenster_m2": (0.0, 200.0), "leitungslaenge": (1.0, 50.0), "baujahr": (1800, 2030)}
 
 SYSTEM = f"""Du bist der Planungs-Assistent im „Bosch Climate · Split-Klima Konfigurator“ (Version 2).
@@ -67,6 +67,11 @@ Bauphysik (überschlägig)
   Wurde nur das Dach oder die Kellerdecke gedämmt, sag, dass das Programm das nicht getrennt abbildet.
 - Gewerbe-Lasten (Werkstatt 20 W/m², Halle/Lager 6 W/m², Verkaufsraum 25 W/m²) sind überschlägige
   Annahmen; sie ersetzen keine Kühllastberechnung nach VDI 2078 / DIN EN 16798.
+- Personen (z. B. Seminar, Forum, Tagungssaal, Schulung): raum_aendern mit personen (gleichzeitig anwesend),
+  taetigkeit (sitzend = 120 W, stehend = 150 W je Person inkl. Feuchte) und lueftung (fenster = 30 m³/h
+  Außenluft je Person wird mitgerechnet; anlage = Lüftungsanlage mit Wärmerückgewinnung). Für Säle passt die
+  Raumart „Seminar / Schulung“. Ab etwa 10 Personen auf eine Lüftungsanlage hinweisen – Split-Geräte liefern
+  keine Frischluft. personen 0 = übliche Nutzung (in der Grundlast enthalten).
 
 Grenzen
 - Du kannst die App selbst (Aussehen, Funktionen, Katalog, Preise) nicht ändern. Wünsche dazu nimmt der
@@ -112,7 +117,12 @@ TOOLS = [
          "dach": {"type": "string", "enum": list(DACH), "description": "Dach direkt über dem Raum"},
          "dachfenster_m2": {"type": "number"},
          "farbe": {"type": "string", "enum": [*FARBEN, "keine"]},
-         "geraetewunsch": {"type": "string", "enum": [*BAUARTEN, "keine"]}}, ["raum"])},
+         "geraetewunsch": {"type": "string", "enum": [*BAUARTEN, "keine"]},
+         "personen": {"type": "integer", "description": "Gleichzeitig anwesende Personen (0 = übliche Nutzung)"},
+         "taetigkeit": {"type": "string", "enum": ["sitzend", "stehend"]},
+         "lueftung": {"type": "string", "enum": ["fenster", "anlage"],
+                      "description": "Frischluft für die Personen: Fensterlüftung oder Lüftungsanlage mit WRG"}},
+         ["raum"])},
     {"name": "waende_setzen", "description": "Alle Außenwände eines Raums neu setzen (Ausrichtung, Länge, "
      "Fensterfläche). Leere Liste = innenliegender Raum.", "input_schema": _o({
          "raum": _RAUM, "waende": {"type": "array", "items": _WAND}}, ["raum", "waende"])},
@@ -124,6 +134,7 @@ TOOLS = [
          "name": {"type": "string"}, "raumart": {"type": "string", "enum": [*P.RAUMARTEN, *P.RAUMARTEN_GEWERBE]},
          "flaeche": {"type": "number"}, "hoehe": {"type": "number"}, "geschoss": {"type": "string"},
          "lage": {"type": "string", "enum": LAGEN},
+         "personen": {"type": "integer", "description": "Gleichzeitig anwesende Personen (optional)"},
          "waende": {"type": "array", "items": _WAND}}, ["name", "raumart", "flaeche"])},
     {"name": "raum_entfernen", "description": "Raum aus der Planung entfernen.",
      "input_schema": _o({"raum": _RAUM}, ["raum"])},
@@ -240,7 +251,9 @@ def _raum_info(i: int, r: Raum, p: Projekt) -> dict:
             "dach": r.dachform if r.dach else "kein",
             "dachfenster_m2": round(sum(g.flaeche for g in r.fenstergruppen if g.dachfenster), 2),
             "farbe": r.farbe or "keine", "geraetewunsch": A.bauart_wunsch(r) or "keine",
-            "daemmung": r.daemmung, "kuehllast_kw": round(l.cool, 2), "heizlast_kw": round(l.heat, 2)}
+            "daemmung": r.daemmung, "personen": r.personen, "taetigkeit": r.taetigkeit, "lueftung": r.lueftung,
+            "personenlast_kw": round(l.personen_w / 1000, 2), "aussenluft_m3h": round(l.luft_m3h),
+            "kuehllast_kw": round(l.cool, 2), "heizlast_kw": round(l.heat, 2)}
 
 
 def _ergebnis(p: Projekt, kat: Katalog, schluessel: str | None) -> dict:
@@ -345,6 +358,15 @@ class _Werkzeuge:
         if "farbe" in felder:
             r.farbe = "" if felder["farbe"] == "keine" else felder["farbe"]
             teile.append(T("Farbe {f}", f=T(felder["farbe"])))
+        if "personen" in felder:
+            r.personen = int(_zahl("personen", felder["personen"]))
+            teile.append(T("{n} Personen", n=r.personen))
+        if "taetigkeit" in felder:
+            r.taetigkeit = felder["taetigkeit"]
+            teile.append(T(P.PERSON_LABEL.get(r.taetigkeit, r.taetigkeit)))
+        if "lueftung" in felder:
+            r.lueftung = felder["lueftung"]
+            teile.append(T(P.LUEFTUNG_LABEL.get(r.lueftung, r.lueftung)))
         if "geraetewunsch" in felder:
             r.ig_bauart = "auto" if felder["geraetewunsch"] == "keine" else felder["geraetewunsch"]
             teile.append(T("Gerätewunsch {g}", g=T(felder["geraetewunsch"])))
@@ -377,7 +399,8 @@ class _Werkzeuge:
                           b=f"{wand.fenster:g}"))
         return self._status()
 
-    def t_raum_hinzufuegen(self, name, raumart, flaeche, hoehe=2.5, geschoss="", lage="outside", waende=None) -> str:
+    def t_raum_hinzufuegen(self, name, raumart, flaeche, hoehe=2.5, geschoss="", lage="outside", waende=None,
+                           personen=None) -> str:
         if lage not in LAGEN:
             raise _Ungueltig(f"lage muss eine von {', '.join(LAGEN)} sein")
         r = Raum(name=name, raumart=raumart, flaeche=_zahl("flaeche", flaeche), hoehe=_zahl("hoehe", hoehe),
@@ -390,6 +413,10 @@ class _Werkzeuge:
             r.waende, r.waende_auto = [_wand(w) for w in waende], False
         else:
             r.wandlaengen_schaetzen()
+        if personen is not None:
+            r.personen = int(_zahl("personen", personen))
+        elif r.raumart == "Seminar / Schulung":
+            r.personen = r.personen_vorschlag()
         self.p.raeume.append(Raum.model_validate(r.model_dump()))
         self.log.append(T("Raum „{name}“ angelegt ({art}, {a} m²)", name=name, art=T(raumart), a=f"{r.flaeche:g}"))
         return self._status()

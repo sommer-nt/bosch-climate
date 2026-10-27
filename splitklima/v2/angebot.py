@@ -98,7 +98,8 @@ def pdf_angebot_v2(projekt: Projekt, konzept: Konzept, kat: Katalog, bestaetigt_
         for r, u in geraete:
             b = raum_last(r, e)
             flaeche = f"{r.flaeche:.1f} m²"
-            zeilen.append([f"{r.geschoss} {r.name}".strip(), T(r.raumart),
+            nutzung = T(r.raumart) + (T(" · {n} Pers.", n=r.personen) if r.personen else "")
+            zeilen.append([f"{r.geschoss} {r.name}".strip(), nutzung,
                            flaeche if englisch() else flaeche.replace(".", ","),
                            f"{b.cool:.2f} kW", f"{b.heat:.2f} kW",
                            u.typ if u else "-", T(u.bauart or "Wandgerät") if u else "-",

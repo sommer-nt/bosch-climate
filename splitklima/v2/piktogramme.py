@@ -82,6 +82,9 @@ SYMBOLE: dict[str, str] = {
     "Verkaufsraum": '<path d="M10 26h44v28H10z"/><path d="M8 26l4-12h40l4 12"/>'
                     '<path d="M8 26c0 4 6 4 6 0c0 4 6 4 6 0c0 4 6 4 6 0c0 4 6 4 6 0c0 4 6 4 6 0c0 4 6 4 6 0c0 4 6 4 6 0'
                     'c0 4 6 4 6 0"/><path d="M18 54V38h10v16M34 38h12v8H34z"/>',
+    "Seminar / Schulung": '<rect x="12" y="8" width="40" height="22" rx="2"/><path d="M32 30v4"/>'
+                          '<circle cx="18" cy="42" r="4"/><circle cx="32" cy="42" r="4"/><circle cx="46" cy="42" r="4"/>'
+                          '<path d="M10 56a8 8 0 0 1 16 0M24 56a8 8 0 0 1 16 0M38 56a8 8 0 0 1 16 0"/>',
     # ---------------------------------------------------------- Bauart
     "Wandgerät": '<path d="M8 10v44"/><rect x="12" y="20" width="44" height="16" rx="4"/>'
                  '<path d="M18 30h32M22 42l-2 6M34 42v6M46 42l2 6"/>',

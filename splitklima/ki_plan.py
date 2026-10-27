@@ -29,8 +29,10 @@ class KiWand(BaseModel):
 class KiRaum(BaseModel):
     name: str = Field(description="Raumbezeichnung wie im Plan")
     geschoss: str = Field(description="z. B. KG, EG, OG, DG")
-    raumart: Literal["Wohnzimmer", "Schlafzimmer", "Büro", "Küche", "Kinderzimmer", "Badezimmer"] = Field(
-        description="Nächstliegende Raumart (Essen/Wohnen → Wohnzimmer, Arbeiten → Büro, Gäste → Schlafzimmer)"
+    raumart: Literal["Wohnzimmer", "Schlafzimmer", "Büro", "Küche", "Kinderzimmer", "Badezimmer",
+                     "Werkstatt", "Halle / Lager", "Verkaufsraum", "Seminar / Schulung"] = Field(
+        description="Nächstliegende Raumart (Essen/Wohnen → Wohnzimmer, Arbeiten → Büro, Gäste → Schlafzimmer; "
+                    "Seminar-, Schulungs-, Tagungs-, Versammlungsraum, Forum, Saal → Seminar / Schulung)"
     )
     flaeche_m2: float
     raumhoehe_m: float = Field(description="Lichte Raumhöhe; 2.5 wenn unbekannt")
@@ -62,7 +64,7 @@ class KiPlanAnalyse(BaseModel):
 
 SYSTEM_PROMPT = """\
 Du bist ein erfahrener TGA-Planer (Kälte/Klima) und liest Architektenpläne \
-(Grundrisse, Schnitte, Ansichten) deutscher Wohngebäude, um Split-Klimageräte \
+(Grundrisse, Schnitte, Ansichten) deutscher Wohn- und Gewerbegebäude, um Split-Klimageräte \
 auszulegen.
 
 Erfasse alle Aufenthaltsräume (Wohnen, Schlafen, Kind, Arbeiten, Küche, Bad). \
@@ -182,13 +184,16 @@ def in_raeume(analyse: KiPlanAnalyse) -> list[Raum]:
             vertikal = "under_unheated_roof"
         if k.unter_dach:
             vertikal = "above_heated"
-        raeume.append(Raum(
+        raum = Raum(
             name=k.name.strip(), geschoss=k.geschoss.strip().upper(), raumart=k.raumart, flaeche=round(k.flaeche_m2, 1),
             hoehe=round(k.raumhoehe_m or 2.5, 2), lage=lage, waende=waende, dach=k.unter_dach,
             dachform=k.dachform, dachflaeche=0.0, vertikal=vertikal,
             fenstergruppen=([Fenstergruppe(ausrichtung="S", flaeche=round(k.dachfenster_m2, 2), dachfenster=True)]
                             if k.dachfenster_m2 > 0 else []),
-        ))
+        )
+        if raum.raumart == "Seminar / Schulung":
+            raum.personen = raum.personen_vorschlag()
+        raeume.append(raum)
     return raeume
 
 

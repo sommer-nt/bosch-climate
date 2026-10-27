@@ -918,6 +918,7 @@ def test_englisch_vollstaendig():
         texte |= set(d.values())
     texte |= {a.datenfehler for a in [*KAT.sets, *KAT.innen, *KAT.aussen] if a.datenfehler}
     texte |= {KAT.quelle, KAT.preisbasis, "Wandgerät", "Deckenkassette", "Konsole", "Truhe/Decke"}
+    texte |= set(P.PERSON_LABEL.values()) | set(P.LUEFTUNG_LABEL.values())
     texte -= {"Climate Außeneinheiten", "Split-Klimageräte"}  # nur intern („Optional“ ohne Zusatz)
     texte = {t for t in texte if re.search(r"[a-zäöüß]{3}", t)}  # Typbezeichnungen wie „CL5000iL CF“ bleiben
     fehlt = sorted(t for t in texte if t not in EN)
@@ -977,7 +978,7 @@ def test_englisch_ohne_fremde_sonderzeichen():
     """Englische Texte enthalten keine deutschen/französischen Buchstaben (ä, ö, ü, ß, ç …) – Ortsnamen ausgenommen."""
     from splitklima.sprache_en import EN
 
-    erlaubt = set("–“”’≈²°×€θØ≤≥→·…√✓−⋮")
+    erlaubt = set("–“”’≈²³°×€θØ≤≥→·…√✓−⋮")
     for text in EN.values():
         fremd = {c for c in text.replace("Nürtingen", "") if ord(c) > 127 and c not in erlaubt}
         assert not fremd, (fremd, text)
@@ -1020,3 +1021,102 @@ def test_englisch_rechnet_identisch_wie_deutsch():
         with sprache("en"):
             englisch = stand(p)
         assert deutsch == englisch
+
+
+# ---------------------------------------------------------------------- Personen (Seminar, Forum, Schulung)
+def _saal(personen: int = 50, **kw) -> tuple[Projekt, Raum]:
+    p = Projekt(raeume=[])
+    r = Raum(name="Forum", raumart="Seminar / Schulung", flaeche=100, hoehe=3.0, lage="corner",
+             waende=[Wand(ausrichtung="S", laenge=10, fenster=8), Wand(ausrichtung="W", laenge=10, fenster=4)],
+             personen=personen, **kw)
+    p.raeume.append(r)
+    return p, r
+
+
+def test_personen_erhoehen_kuehllast_nach_vdi_ansatz():
+    p, r = _saal(0)
+    e = p.einstellungen
+    ohne = raum_last(r, e)
+    dt = e.sommer - e.soll_kuehlen_wirksam
+    r.personen = 50
+    mit = raum_last(r, e)
+    assert mit.personen_w == 50 * P.PERSON_W["sitzend"] == 6000
+    assert mit.luft_m3h == 50 * P.AUSSENLUFT_JE_PERSON == 1500  # > Grundluftwechsel 0,5 × 300 m³
+    zuwachs = (6000 + 0.34 * (1500 - 0.5 * 300) * dt) * (1 - mit.damp) / 1000
+    assert mit.cool - ohne.cool == pytest.approx(zuwachs, rel=1e-6)
+    assert mit.heat == ohne.heat  # Personen und Fensterlüftung nicht in der Heizlast
+    r.taetigkeit = "stehend"
+    assert raum_last(r, e).personen_w == 7500
+    r.taetigkeit, r.lueftung = "sitzend", "anlage"  # WRG: nur 25 % der Personen-Außenluft
+    anlage = raum_last(r, e)
+    assert anlage.luft_m3h == pytest.approx(150 + 0.25 * 1500)
+    assert ohne.cool < anlage.cool < mit.cool
+
+
+def test_ohne_personen_unveraendert_und_alte_dateien_ladbar():
+    p = beispielprojekt()
+    assert all(r.personen == 0 for r in p.raeume)
+    alt = SP.exportieren(p).replace('"personen": 0,', "").replace('"taetigkeit": "sitzend",', "")
+    geladen, _ = SP.importieren(alt.replace('"lueftung": "fenster",', ""))
+    assert [raum_last(r, geladen.einstellungen).cool for r in geladen.raeume] == \
+        [raum_last(r, p.einstellungen).cool for r in p.raeume]
+
+
+def test_saal_mit_50_personen_bekommt_passende_geraete():
+    p, r = _saal(50)
+    last = raum_last(r, p.einstellungen)
+    assert last.cool > 10  # Saal mit 50 Personen: deutlich über einem Wohnraum
+    liste = A.konzepte(p, KAT)
+    empf = next(k for k in liste if k.empfohlen)
+    assert empf.gedeckt and empf.leistung_kuehl >= last.cool
+    for k in liste:
+        _pruefe_konzept(k, p)
+    from splitklima.sprache import sprache
+
+    with sprache("en"):
+        assert pdf_angebot_v2(p, empf, KAT)[:4] == b"%PDF"
+
+
+def test_personen_vorschlag_bei_seminar_und_planerkennung():
+    from splitklima.ki_plan import KiRaum, KiWand
+
+    assert Raum(raumart="Seminar / Schulung", flaeche=120).personen_vorschlag() == 60
+    k = KiRaum(name="Tagungssaal", geschoss="EG", raumart="Seminar / Schulung", flaeche_m2=80, raumhoehe_m=3,
+               aussenwaende=[KiWand(ausrichtung="S", laenge_m=8, fensterflaeche_m2=6)], unter_dach=False,
+               dachform="flat", dachfenster_m2=0, ueber_unbeheizt="nein", unter_unbeheiztem_dachraum=False)
+    analyse = KiPlanAnalyse(raeume=[k], baujahr=None, nordrichtung="Plan-Oben", aufstellorte_aussengeraet=[],
+                            hinweise=[])
+    assert in_raeume(analyse)[0].personen == 40
+
+
+def test_assistent_setzt_personen():
+    p, w = _werkzeuge()
+    i = 0
+    vorher = raum_last(p.raeume[i], p.einstellungen).cool
+    w.t_raum_aendern(str(i + 1), personen=30, lueftung="anlage")
+    r = p.raeume[i]
+    assert (r.personen, r.lueftung) == (30, "anlage")
+    assert raum_last(r, p.einstellungen).cool > vorher
+    assert "30 Personen" in w.log[-1]
+    w.t_raum_hinzufuegen("Forum", "Seminar / Schulung", 90)
+    assert p.raeume[-1].personen == 45
+    with pytest.raises(Exception):
+        w.t_raum_aendern("1", personen=5000)
+
+
+def test_oberflaeche_personen_im_raum(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("APP_PASSWORT", raising=False)
+    at = AppTest.from_file(str(WURZEL / "app_v2.py"), default_timeout=60).run()
+    next(b for b in at.button if b.label == "Beispielhaus laden").click().run()
+    at.session_state.v2_seite, at.session_state.v2_raum = "raum", 0
+    at.run()
+    next(b for b in at.button if b.label == "Seminar").click().run()
+    assert not at.exception, at.exception
+    r = at.session_state.v2_projekt.raeume[0]
+    assert r.raumart == "Seminar / Schulung" and r.personen == r.personen_vorschlag()
+    feld = next(n for n in at.number_input if n.label == "Personen gleichzeitig")
+    feld.set_value(50).run()
+    assert at.session_state.v2_projekt.raeume[0].personen == 50
+    assert {s.label for s in at.selectbox} >= {"Tätigkeit", "Frischluft"}
+    assert any("Lüftungsanlage mit Wärmerückgewinnung empfohlen" in i.value for i in at.info)

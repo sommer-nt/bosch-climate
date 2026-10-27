@@ -150,6 +150,12 @@ Das PDF enthält Schriften ohne Zeichentabelle; das Werkzeug liest den Text übe
   Zonen mit je einem Innengerät aufgeteilt; Multi-Split-Gruppen beachten die Leistung der Außeneinheit.
 - **Bevorzugte Gerätelinie** (Climate 3200i, 7000i, Class 8000i): geht in der Empfehlung vor dem Preis;
   ist sie für einen Raum nicht möglich, wird eine andere Linie gewählt und darauf hingewiesen.
+- **Personen (Seminar, Forum, Schulung):** Raumart *Seminar / Schulung* (schlägt 1 Person je 2 m² vor) und
+  für jeden Raum das Feld „Personen gleichzeitig“. Je Person 120 W sitzend bzw. 150 W stehend/aktiv, jeweils
+  sensibel + latent nach VDI 2078 (Gerätekühlleistung gilt inkl. Entfeuchtung). Frischluft 30 m³/h je Person:
+  bei *Fensterlüftung* voll in der Kühllast, bei *Lüftungsanlage mit WRG* nur 25 %. Die Heizlast bleibt beim
+  Grundluftwechsel (Personen werden nicht gutgeschrieben). Beispiel 100 m², 50 Personen: Kühllast 4,4 → 13,3 kW
+  (Fensterlüftung) bzw. 10,7 kW (Lüftungsanlage). Standard 0 Personen – bestehende Planungen rechnen unverändert.
 
 ### Norm-Außentemperatur über die PLZ (Version 2)
 

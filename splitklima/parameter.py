@@ -153,6 +153,21 @@ GEWERBE_HINWEIS = ("Gewerbe-Raumarten: innere Lasten als überschlägige Auslegu
                    "Geräten). Diese Werte ersetzen keine detaillierte Kühllastberechnung nach VDI 2078 oder "
                    "DIN EN 16798. Maschinenabwärme, Tore und Hallenhöhe (Temperaturschichtung) gesondert prüfen.")
 
+# Personen (Version 2): Seminar-/Schulungs-/Versammlungsräume, aber auch jeder andere Raum.
+# Wärmeabgabe je Person inkl. Feuchte (sensibel + latent) nach VDI 2078 bei ca. 26 °C Raumtemperatur:
+# sitzend/leichte Tätigkeit ≈ 75 W sensibel + 45 W latent, stehend/aktiv ≈ 90 W + 60 W.
+# Die Kühlleistung der Geräte gilt als Gesamtleistung (inkl. Entfeuchtung) – daher wird die Summe angesetzt.
+RAUMARTEN_GEWERBE.append("Seminar / Schulung")
+LUFTWECHSEL["Seminar / Schulung"] = 0.5
+INTERN_GRUND["Seminar / Schulung"] = 200  # Beamer, Technik
+INTERN_W_M2_RAUMART["Seminar / Schulung"] = 8  # Beleuchtung; Personen separat
+PERSON_W = {"sitzend": 120, "stehend": 150}
+PERSON_LABEL = {"sitzend": "Sitzend · 120 W/Person", "stehend": "Stehend, aktiv · 150 W/Person"}
+AUSSENLUFT_JE_PERSON = 30  # m³/h Außenluft je Person (DIN EN 16798-1, Kategorie II, Größenordnung)
+WRG_RESTANTEIL = 0.25  # Lüftungsanlage mit Wärmerückgewinnung (≈ 75 %): verbleibender Anteil der Außenluftlast
+LUEFTUNG_LABEL = {"fenster": "Fensterlüftung", "anlage": "Lüftungsanlage mit WRG"}
+PERSONEN_JE_M2_SEMINAR = 0.5  # Vorschlag bei Raumart Seminar: 1 Person je 2 m²
+
 IG_BAUARTEN = ["auto", "Wandgerät", "Truhengerät", "Kassettengerät", "Kanalgerät"]
 
 FORMELN = {

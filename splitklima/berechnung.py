@@ -40,6 +40,8 @@ class RaumLast:
     trans_c: float  # W
     vent_c: float  # W
     internal: float  # W
+    personen_w: float = 0.0  # W, in ``internal`` enthalten
+    luft_m3h: float = 0.0  # Außenluft für die Kühllast (m³/h)
 
 
 @dataclass
@@ -110,9 +112,16 @@ def raum_last(raum: Raum, e: Einstellungen) -> RaumLast:
     trans_c = (opaque * u + win * g["u"] + roof_a * u_roof) * dtC + vertical_c
     V = A * h
     n = luftwechsel(raum)
-    vent_c = 0.34 * n * V * dtC
+    # Außenluft: Grundluftwechsel; bei Personen mindestens 30 m³/h je Person (Fensterlüftung) bzw. nur der
+    # Restanteil nach Wärmerückgewinnung (Lüftungsanlage). Heizlast bleibt beim Grundluftwechsel.
+    luft = n * V
+    luft_pers = (raum.personen or 0) * P.AUSSENLUFT_JE_PERSON
+    if luft_pers:
+        luft = max(luft, luft_pers) if raum.lueftung == "fenster" else luft + luft_pers * P.WRG_RESTANTEIL
+    vent_c = 0.34 * luft * dtC
+    personen_w = (raum.personen or 0) * P.PERSON_W.get(raum.taetigkeit, P.PERSON_W["sitzend"])
     internal = (A * P.INTERN_W_M2_RAUMART.get(raum.raumart, P.INTERN_W_M2)
-                + P.INTERN_GRUND.get(raum.raumart, P.INTERN_GRUND_DEFAULT))
+                + P.INTERN_GRUND.get(raum.raumart, P.INTERN_GRUND_DEFAULT) + personen_w)
     solar = solar_win + solar_roof
     cool_gross = solar + trans_c + vent_c + internal
     damp = speicher_daempfung(raum, e)
@@ -136,7 +145,7 @@ def raum_last(raum: Raum, e: Einstellungen) -> RaumLast:
         heat_vent=phi_vent / 1000, heat_reheat=phi_reheat / 1000, HT=HT, HV=HV, dUwb=dUwb,
         reheat_f=reheat_f, wall_gross=wg, win=win, roof_a=roof_a, floor_a=floor_a, ceil_a=ceil_a,
         u_wall=u, u_win=g["u"], g_val=g["g"], n=n, solar=solar, trans_c=trans_c, vent_c=vent_c,
-        internal=internal,
+        internal=internal, personen_w=personen_w, luft_m3h=luft,
     )
 
 

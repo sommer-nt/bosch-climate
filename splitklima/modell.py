@@ -16,7 +16,7 @@ from .parameter import MODE_WALLS
 
 Ausrichtung = Literal["N", "NO", "O", "SO", "S", "SW", "W", "NW"]
 Raumart = Literal["Wohnzimmer", "Schlafzimmer", "Büro", "Küche", "Kinderzimmer", "Badezimmer",
-                  "Werkstatt", "Halle / Lager", "Verkaufsraum"]  # die letzten drei: Version 2 (Gewerbe)
+                  "Werkstatt", "Halle / Lager", "Verkaufsraum", "Seminar / Schulung"]  # ab Werkstatt: Version 2
 Lage = Literal["inside", "outside", "corner", "three", "attic", "attic_corner", "basement"]
 Dachform = Literal["flat", "saddle_south", "saddle_north", "saddle_eastwest"]
 Vertikal = Literal[
@@ -61,6 +61,15 @@ class Raum(BaseModel):
     ig_manuell: bool = False
     farbe: str = ""  # Version 2: Farbwunsch Inneneinheit ("" = keine Präferenz)
     waende_auto: bool = False  # Version 2: Wandlängen aus der Grundfläche schätzen, bis sie bearbeitet werden
+    personen: int = Field(0, ge=0, le=2000)  # Version 2: gleichzeitig anwesende Personen (0 = in Grundlast enthalten)
+    taetigkeit: Literal["sitzend", "stehend"] = "sitzend"
+    lueftung: Literal["fenster", "anlage"] = "fenster"  # Frischluft für die Personen
+
+    def personen_vorschlag(self) -> int:
+        """Personenzahl, die bei Raumart Seminar/Schulung vorgeschlagen wird (1 Person je 2 m²)."""
+        from .parameter import PERSONEN_JE_M2_SEMINAR
+
+        return max(1, round((self.flaeche or 0) * PERSONEN_JE_M2_SEMINAR))
 
     def wandlaengen_schaetzen(self) -> None:
         """Außenwandlängen aus der Grundfläche schätzen (quadratischer Grundriss: Seite ≈ √Fläche)."""
