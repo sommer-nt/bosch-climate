@@ -846,6 +846,138 @@ EN: dict[str, str] = {
     " · {n} Pers.": " · {n} people",
     "{n} Personen": "{n} people",
 
+    # ------------------------------------------------------------------ Lastenheft: Preisausweis, Status, Annahmen
+    "Preisausweis": "Price statement",
+    "Inbetriebnahme durch den Bosch-Kundendienst einrechnen": "Include commissioning by Bosch customer service",
+    "Aus: Kapitel 4 wird als Bedarfsposition bepreist, aber nicht summiert.":
+        "Off: chapter 4 is priced as an optional item but not added to the total.",
+    "Kapitel {n}: {t}": "Chapter {n}: {t}",
+    "Inneneinheiten": "Indoor units",
+    "Außeneinheiten und Komplett-Sets": "Outdoor units and complete sets",
+    "Inbetriebnahme / Service": "Commissioning / service",
+    "In den Komplett-Sets (Kapitel 2) enthalten.": "Included in the complete sets (chapter 2).",
+    "keine Positionen": "no items",
+    "Zwischensumme Kapitel {n}": "Subtotal chapter {n}",
+    "Pos.": "Item",
+    "Art": "Type",
+    "Bedarfsposition": "Optional item",
+    "Normalposition": "Standard item",
+    "(Bedarfsposition, nicht in der Summe)": "(optional item, not in total)",
+    "Nettowert": "Net value",
+    "zzgl. MwSt. {p} %": "plus VAT {p} %",
+    "Endbetrag": "Total amount",
+    "Bedarfspositionen (nicht in der Summe): {s}": "Optional items (not in total): {s}",
+    "Unverbindliche Preisinformation auf Basis der Netto-Listenpreise – kein verbindliches Angebot. "
+    "Kundenindividuelle Konditionen sind nicht berücksichtigt.":
+        "Non-binding price information based on net list prices – not a binding quotation. Customer-specific "
+        "conditions are not taken into account.",
+    "Konfiguration technisch plausibel": "Configuration technically plausible",
+    "Konfiguration mit Hinweisen": "Configuration with notes",
+    "Konfiguration unvollständig": "Configuration incomplete",
+    "Konfiguration technisch nicht zulässig": "Configuration technically not permissible",
+    "Noch keine Räume erfasst.": "No rooms entered yet.",
+    "Für diese Räume gibt es mit dem gewählten System keine zulässige Gerätekombination im Sortiment.":
+        "There is no permissible unit combination in the range for these rooms with the selected system.",
+    "Für mindestens einen Artikel ist kein Preis hinterlegt („auf Anfrage“).":
+        "No price is stored for at least one item (“on request”).",
+    "Mindestens ein Raum hat keine gültige Fläche oder Höhe.": "At least one room has no valid area or height.",
+    "{n} Räume noch nicht geprüft (Raum öffnen, Werte kontrollieren).":
+        "{n} rooms not yet checked (open the room, check the values).",
+    "Aufstellort der Außeneinheit noch offen – Konsolen und Montagehinweise fehlen.":
+        "Outdoor unit location not decided yet – brackets and installation notes are missing.",
+    "Lieferhinweise zu {n} Artikel(n) beachten.": "Note the delivery information for {n} item(s).",
+    "{n} Hinweise zur Geräteauswahl.": "{n} notes on the unit selection.",
+    "Räume mit vielen Personen ohne Lüftungsanlage – Frischluft gesondert planen.":
+        "Rooms with many people without a ventilation system – plan fresh air separately.",
+    "Mindestens ein Raum ohne Last – Eingaben prüfen.": "At least one room without load – check the inputs.",
+    "Hinweise zur Auslegung – bitte vor dem Export bestätigen": "Notes on the sizing – please confirm before export",
+    "Ich habe die Hinweise gelesen und bestätige sie.": "I have read and confirm these notes.",
+    "Inhalt des PDF": "PDF content",
+    "Auslegungsdokumentation mit Stückliste": "Design documentation with parts list",
+    "Nur Stückliste": "Parts list only",
+    "PDF herunterladen": "Download PDF",
+    "Climate · Split-Klima Stückliste": "Climate · Split AC parts list",
+    "Lösung: {name}": "Solution: {name}",
+    "Technische Hinweise": "Technical notes",
+    "{typ}: Elektrischer Anschluss {art}": "{typ}: electrical connection {art}",
+    "400 V, 3-phasig (Drehstrom)": "400 V, three-phase",
+    "230 V, 1-phasig": "230 V, single-phase",
+    "Absicherung und Leitungsquerschnitt laut Montageanleitung des Herstellers; eine elektrische Anschlussplanung "
+    "erfolgt nicht.": "Fuse protection and cable cross-section according to the manufacturer's installation "
+                      "instructions; no electrical connection planning is carried out.",
+    "Versionsstände: {v} · Katalog {k} · Klimadaten {q} · Berechnung vom {d}.":
+        "Versions: {v} · catalogue {k} · climate data {q} · calculated on {d}.",
+    "Berechnungsannahmen": "Calculation assumptions",
+    "{n} individuell angepasst": "{n} individually adjusted",
+    "Kühl-Solltemperatur": "Cooling set-point temperature",
+    "Heiz-Solltemperatur": "Heating set-point temperature",
+    "Tägliche Kühlbetriebsdauer": "Daily cooling operating time",
+    "Kühlbetriebsdauer": "Cooling operating time",
+    "Bauart / Speichermasse": "Construction / thermal mass",
+    "Längerer Betrieb nutzt die Speichermasse weniger – die Kühllast steigt.":
+        "Longer operation makes less use of the thermal mass – the cooling load increases.",
+    "Schwere Bauweise puffert Wärme und senkt die Kühllastspitze.":
+        "Heavy construction buffers heat and lowers the peak cooling load.",
+    "Leichte Bauweise / Holz": "Lightweight / timber construction",
+    "Massiv, geringe Bauteildicke": "Solid, thin components",
+    "Massiv, hohe Bauteildicke": "Solid, thick components",
+    "bis 6 h (kurzer Betrieb)": "up to 6 h (short operation)",
+    "ca. 12 h": "approx. 12 h",
+    "ca. 18 h": "approx. 18 h",
+    "Dauerbetrieb": "Continuous operation",
+    "Personenbelegung je Raum unter „Räume → Nutzung“; Luftwechsel, Geräte und Beleuchtung sind nach Raumart "
+    "hinterlegt (Wohnräume: Grundlast + 12 W/m²; Gewerbe nach Raumart). Abweichungen vom Standard werden im PDF als "
+    "„individuell angepasst“ ausgewiesen.": "Occupancy per room under “Rooms → Use”; air change, equipment and "
+                                           "lighting are stored per room type (residential: base load + 12 W/m²; "
+                                           "commercial per room type). Deviations from the defaults are marked as "
+                                           "“individually adjusted” in the PDF.",
+    "Auf Standardwerte zurücksetzen": "Reset to default values",
+    "Berechnungsannahmen: Kühl-Solltemperatur {k} °C · Heiz-Solltemperatur {h} °C · tägliche Kühlbetriebsdauer {d} h "
+    "· Bauart: {b}.": "Calculation assumptions: cooling set point {k} °C · heating set point {h} °C · daily cooling "
+                      "operating time {d} h · construction: {b}.",
+    "Individuell angepasst: {liste}.": "Individually adjusted: {liste}.",
+    "Alle Annahmen auf Standardwerten.": "All assumptions at default values.",
+    "Die Berechnung stellt weder eine Kühllastberechnung nach VDI 2078 noch eine Norm-Heizlastberechnung nach "
+    "DIN EN 12831-1 dar. Sie ersetzt keine fachtechnische Planung nach den anerkannten Regeln der Technik oder "
+    "Prüfung am Gebäude.": "The calculation is neither a cooling load calculation according to VDI 2078 nor a "
+                           "standard heating load calculation according to DIN EN 12831-1. It does not replace "
+                           "professional planning according to the generally accepted rules of technology or an "
+                           "inspection of the building.",
+    "Die tatsächliche Leistung kann insbesondere durch Bauausführung, Verschattung, Nutzung, Lüftungsverhalten, "
+    "Feuchtelasten, Leitungsführung, Aufstellbedingungen und gleichzeitig betriebene Innengeräte abweichen.":
+        "Actual performance may deviate in particular due to construction, shading, use, ventilation behaviour, "
+        "moisture loads, pipe routing, installation conditions and indoor units operated simultaneously.",
+    "Die endgültige Prüfung, Auswahl, Installation und Inbetriebnahme muss durch einen qualifizierten Fachbetrieb "
+    "erfolgen.": "Final checking, selection, installation and commissioning must be carried out by a qualified "
+                 "specialist contractor.",
+    "Schall-, Elektro-, Kältemittel-, Kondensat-, Brandschutz- und Genehmigungsanforderungen sind gesondert zu "
+    "prüfen.": "Noise, electrical, refrigerant, condensate, fire protection and permit requirements must be checked "
+               "separately.",
+    "Für die Richtigkeit aller Auslegungswerte ist der Anwender selbst verantwortlich.":
+        "The user is responsible for the correctness of all design values.",
+    "Die angezeigten Heiz- und Kühllasten sind überschlägige Schätzwerte auf Basis vereinfachter Gebäude-, Klima- "
+    "und Nutzungsannahmen.": "The heating and cooling loads shown are rough estimates based on simplified building, "
+                             "climate and usage assumptions.",
+    "Die angezeigten Heiz- und Kühllasten sind überschlägige Schätzwerte auf Basis vereinfachter Gebäude-, Klima- "
+    "und Nutzungsannahmen. Die Berechnung stellt weder eine Kühllastberechnung nach VDI 2078 noch eine "
+    "Norm-Heizlastberechnung nach DIN EN 12831-1 dar. Sie ersetzt keine fachtechnische Planung nach den anerkannten "
+    "Regeln der Technik oder Prüfung am Gebäude. Die tatsächliche Leistung kann insbesondere durch Bauausführung, "
+    "Verschattung, Nutzung, Lüftungsverhalten, Feuchtelasten, Leitungsführung, Aufstellbedingungen und gleichzeitig "
+    "betriebene Innengeräte abweichen. Die endgültige Prüfung, Auswahl, Installation und Inbetriebnahme muss durch "
+    "einen qualifizierten Fachbetrieb erfolgen. Schall-, Elektro-, Kältemittel-, Kondensat-, Brandschutz- und "
+    "Genehmigungsanforderungen sind gesondert zu prüfen. Eine dargestellte Förderfähigkeit ist keine Förderzusage. "
+    "Für die Richtigkeit aller Auslegungswerte ist der Anwender selbst verantwortlich.":
+        "The heating and cooling loads shown are rough estimates based on simplified building, climate and usage "
+        "assumptions. The calculation is neither a cooling load calculation according to VDI 2078 nor a standard "
+        "heating load calculation according to DIN EN 12831-1. It does not replace professional planning according "
+        "to the generally accepted rules of technology or an inspection of the building. Actual performance may "
+        "deviate in particular due to construction, shading, use, ventilation behaviour, moisture loads, pipe "
+        "routing, installation conditions and indoor units operated simultaneously. Final checking, selection, "
+        "installation and commissioning must be carried out by a qualified specialist contractor. Noise, "
+        "electrical, refrigerant, condensate, fire protection and permit requirements must be checked separately. "
+        "Eligibility for funding shown is no funding commitment. The user is responsible for the correctness of all "
+        "design values.",
+
     # ------------------------------------------------------------------ Laden/Speichern
     "Datei ist zu groß für eine Konfiguration.": "The file is too large for a configuration.",
     "Datei ist keine Textdatei (UTF-8).": "The file is not a text file (UTF-8).",

@@ -26,12 +26,13 @@ from splitklima.ki_plan import (
     KiPlanAnalyse, PlanFehler, analysiere, baualter_aus_baujahr, in_raeume, schluessel_vorhanden,
 )
 from splitklima.modell import Fenstergruppe, Projekt, Raum, Wand
-from splitklima.preise import fmt_eur, gesamtpreis
+from splitklima.preise import fmt_eur
 from splitklima import klima_plz as KP
 from splitklima import klimadaten as KD
 from splitklima.standort import klimaregion
 from splitklima.v2 import auswahl as A
-from splitklima.v2.angebot import pdf_angebot_v2
+from splitklima.v2.angebot import UMFANG, annahmen_abweichungen, pdf_angebot_v2
+from splitklima.v2 import preisausweis as PA
 from splitklima.v2.bilder import bild, bild_innen_set
 from splitklima.v2 import assistent as AS
 from splitklima.v2 import fotos as FO
@@ -990,7 +991,43 @@ def seite_gebaeude(p: Projekt) -> None:
         e.sonnenschutz = "0.45"
     st.markdown("#### " + T("Sonnenschutz"))
     karten("shade", SONNENSCHUTZ, e.sonnenschutz, lambda v: setattr(e, "sonnenschutz", v), klein=True, groesse=44)
+    berechnungsannahmen(p)
     _weiter_zurueck(("system", N_("System")), ("raeume", N_("Weiter zu den Räumen")), "gebaeude")
+
+
+def berechnungsannahmen(p: Projekt) -> None:
+    """Aufklappbereich „Berechnungsannahmen“ (Lastenheft F-013, F-015): Standardwerte sichtbar und änderbar."""
+    e = p.einstellungen
+    abw = annahmen_abweichungen(p)
+    titel = T("Berechnungsannahmen") + (" · " + T("{n} individuell angepasst", n=len(abw)) if abw else "")
+    with st.expander(titel, icon=":material/tune:", key="annahmen-fenster"):
+        c1, c2 = st.columns(2)
+        e.soll_kuehlen = zahl(c1, T("Kühl-Solltemperatur"), "°C", e.soll_kuehlen_wirksam, 18.0, 28.0, 0.5, "a_sk")
+        e.soll_heizen = zahl(c2, T("Heiz-Solltemperatur"), "°C", e.soll_heizen_wirksam, 16.0, 26.0, 0.5, "a_sh")
+        c1, c2 = st.columns(2)
+        stunden = list(P.KUEHLBETRIEB_LABEL)
+        e.kuehlbetrieb_h = c1.selectbox(T("Tägliche Kühlbetriebsdauer"), stunden,
+                                        index=stunden.index(e.kuehlbetrieb_h) if e.kuehlbetrieb_h in stunden else 1,
+                                        format_func=lambda v: T(P.KUEHLBETRIEB_LABEL[v]), key=_k("a_kb"),
+                                        help=T("Längerer Betrieb nutzt die Speichermasse weniger – die Kühllast "
+                                               "steigt."))
+        arten = list(P.SPEICHER_LABEL)
+        p.speicher = c2.selectbox(T("Bauart / Speichermasse"), arten, index=arten.index(p.speicher),
+                                  format_func=lambda v: T(P.SPEICHER_LABEL[v]), key=_k("a_sp"),
+                                  help=T("Schwere Bauweise puffert Wärme und senkt die Kühllastspitze."))
+        for r in p.raeume:
+            r.speicher = p.speicher
+        st.caption(T("Personenbelegung je Raum unter „Räume → Nutzung“; Luftwechsel, Geräte und Beleuchtung sind "
+                     "nach Raumart hinterlegt (Wohnräume: Grundlast + 12 W/m²; Gewerbe nach Raumart). Abweichungen "
+                     "vom Standard werden im PDF als „individuell angepasst“ ausgewiesen."))
+        if abw and st.button(T("Auf Standardwerte zurücksetzen"), icon=":material/restart_alt:", type="tertiary"):
+            std = P.ANNAHMEN_STANDARD
+            e.soll_kuehlen, e.soll_heizen, e.kuehlbetrieb_h = std["soll_kuehlen"], std["soll_heizen"], std["kuehlbetrieb_h"]
+            p.speicher = std["speicher"]
+            for r in p.raeume:
+                r.speicher = p.speicher
+            _ss().v2_rev += 1
+            st.rerun()
 
 
 def _raum_neu(p: Projekt) -> None:
@@ -1463,9 +1500,56 @@ def planungs_assistent(p: Projekt, kat: Katalog) -> None:
                      "übertragen – keine personenbezogenen Kundendaten eingeben."))
 
 
+def status_anzeigen(p: Projekt, gewaehlt: A.Konzept | None, kat: Katalog) -> None:
+    """Technischer Gesamtstatus der Konfiguration (Lastenheft S-005) als Ampel oben auf der Ergebnisseite."""
+    ungeprueft = len(set(range(len(p.raeume))) - _ss().v2_geprueft)
+    s = PA.gesamtstatus(p, gewaehlt, kat, ungeprueft)
+    anzeige, icon = {"ok": (st.success, ":material/check_circle:"), "hinweise": (st.info, ":material/info:"),
+                     "unvollstaendig": (st.warning, ":material/pending:"),
+                     "unzulaessig": (st.error, ":material/block:")}[s.stufe]
+    anzeige(f"**{s.titel}**" + "".join(f"\n- {g}" for g in s.gruende), icon=icon)
+
+
+def preisausweis_bereich(p: Projekt, k: A.Konzept, kat: Katalog) -> None:
+    """Preisausweis in Kapiteln mit Zwischensummen, Nettowert, MwSt. und Endbetrag (Lastenheft S-020 bis S-024)."""
+    eur = lambda b: fmt_eur2(b)  # noqa: E731
+    with st.expander(T("Preisausweis"), icon=":material/receipt_long:", key="preisausweis-fenster"):
+        ein = st.toggle(T("Inbetriebnahme durch den Bosch-Kundendienst einrechnen"), p.inbetriebnahme_einrechnen,
+                        key=_k("ibn"), help=T("Aus: Kapitel 4 wird als Bedarfsposition bepreist, aber nicht summiert."))
+        if ein != p.inbetriebnahme_einrechnen:
+            p.inbetriebnahme_einrechnen = ein
+            st.rerun()
+        pa = PA.erstellen(p, k, kat)
+        for kap in pa.kapitel:
+            st.markdown(f'<div class="zub-gruppe">{T("Kapitel {n}: {t}", n=kap.nr, t=T(kap.titel))}</div>',
+                        unsafe_allow_html=True)
+            if not kap.posten:
+                st.caption(T("In den Komplett-Sets (Kapitel 2) enthalten.") if kap.nr == 1 else T("keine Positionen"))
+                continue
+            st.dataframe(pdx.DataFrame([{
+                T("Pos."): f"{kap.nr}.{j}", T("Artikel"): T(x.name), T("Bestell-Nr."): x.bestellnr,
+                T("Menge"): x.menge, T("Einzelpreis"): eur(x.einzelpreis),
+                T("Summe"): f"({eur(x.summe)})" if x.bedarf else eur(x.summe),
+                T("Art"): T("Bedarfsposition") if x.bedarf else T("Normalposition")}
+                for j, x in enumerate(kap.posten, 1)]), hide_index=True, width="stretch")
+            st.markdown(f'<div class="zs-zeile"><span>{T("Zwischensumme Kapitel {n}", n=kap.nr)}</span>'
+                        f'<span>{eur(kap.zwischensumme)}</span></div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div style="height:.6rem"></div>'
+            f'<div class="zs-zeile"><span>{T("Nettowert")}</span><span><b>{eur(pa.netto)}</b></span></div>'
+            f'<div class="zs-zeile"><span>{T("zzgl. MwSt. {p} %", p=f"{pa.mwst_satz * 100:g}")}</span>'
+            f'<span>{eur(pa.mwst)}</span></div>'
+            f'<div class="zs-zeile"><span><b>{T("Endbetrag")}</b></span><span><b>{eur(pa.brutto)}</b></span></div>',
+            unsafe_allow_html=True)
+        if pa.bedarf_summe:
+            st.caption(T("Bedarfspositionen (nicht in der Summe): {s}", s=eur(pa.bedarf_summe)))
+        st.caption(f"{T(P.PREIS_HINWEIS)} {T(kat.preisbasis)}.")
+
+
 def seite_ergebnis(p: Projekt, kat: Katalog) -> None:
     liste = _konzepte(p, kat)
     gewaehlt = _gewaehlt(liste)
+    status_anzeigen(p, gewaehlt, kat)
     if gewaehlt is None:
         st.error(T("Für diese Räume gibt es mit dem gewählten System keine passende Lösung im Sortiment. "
                    "Bitte ein anderes System oder eine andere Bauart wählen oder große Räume aufteilen."))
@@ -1529,23 +1613,8 @@ def seite_ergebnis(p: Projekt, kat: Katalog) -> None:
             _teilsystem_karte(t, p)
 
     # ------------------------------------------------------------ Details (eingeklappt)
-    with st.expander(T("Stückliste mit Preisen"), icon=":material/receipt_long:"):
-        st.dataframe(pdx.DataFrame([{
-            T("Artikel"): x.name, T("Bestell-Nr."): x.artikel, T("Menge"): x.menge,
-            T("Einzelpreis"): fmt_eur(x.einzelpreis), T("Summe"): fmt_eur(x.summe)} for x in gewaehlt.stueckliste()]),
-            hide_index=True, width="stretch")
-        st.markdown("**" + T("Summe Geräte: {s}", s=fmt_eur(preis)) + "**")
-        st.caption(f"{T(kat.preisbasis)} · {T(kat.quelle)}")
     zubehoer_bereich(p, gewaehlt, kat)
-    optional = A.optionale_leistungen(gewaehlt, kat)
-    if optional:
-        with st.expander(T("Optional: Inbetriebnahme durch den Bosch-Kundendienst"), icon=":material/build:"):
-            st.dataframe(pdx.DataFrame([{
-                T("Leistung"): T(x.name), T("Bestell-Nr."): x.artikel, T("Menge"): x.menge,
-                T("Einzelpreis"): fmt_eur(x.einzelpreis), T("Summe"): fmt_eur(x.summe)} for x in optional]),
-                hide_index=True, width="stretch")
-            st.markdown(T("**Summe optional: {s}** – nicht im Gerätepreis enthalten.",
-                          s=fmt_eur(gesamtpreis(optional))))
+    preisausweis_bereich(p, gewaehlt, kat)
     with st.expander(T("Räume und Lasten"), icon=":material/thermostat:"):
         zeilen = []
         for b in A.bedarfe(p):
@@ -1570,23 +1639,25 @@ def seite_ergebnis(p: Projekt, kat: Katalog) -> None:
     # ------------------------------------------------------------ Abschluss
     st.write("")
     with st.container(border=True):
+        st.markdown("**" + T("Hinweise zur Auslegung – bitte vor dem Export bestätigen") + "**")
+        st.markdown("".join(f"- {T(h)}\n" for h in P.HAFTUNGSHINWEISE))
         c1, c2 = st.columns([3, 2], vertical_alignment="center")
         with c1:
-            ok = st.checkbox(T("Ich habe die Hinweise zur überschlägigen Auslegung gelesen."), key=_k("ack"))
-            with st.popover(T("Hinweise anzeigen")):
-                for h in P.HAFTUNGSHINWEISE:
-                    st.markdown(f"- {T(h)}")
+            ok = st.checkbox(T("Ich habe die Hinweise gelesen und bestätige sie."), key=_k("ack"))
+            beschriftung = {T(text): wert for wert, text in UMFANG.items()}  # Beschriftung direkt als Option
+            umfang = beschriftung[st.radio(T("Inhalt des PDF"), list(beschriftung), horizontal=True,
+                                           key=f"v2_pdf_umfang_{'en' if englisch() else 'de'}")]
         with c2:
             if ok:
                 _ss().setdefault("v2_ack_zeit", datetime.now().strftime("%d.%m.%Y %H:%M"))
-                st.download_button(T("Angebotsübersicht (PDF)"), width="stretch", type="primary",
+                name = ("Split_AC_" + ("Parts_List" if umfang == "stueckliste" else "Design")) if englisch() else \
+                    ("Split_Klima_" + ("Stueckliste" if umfang == "stueckliste" else "Auslegung"))
+                st.download_button(T("PDF herunterladen"), width="stretch", type="primary",
                                    icon=":material/picture_as_pdf:",
-                                   data=pdf_angebot_v2(p, gewaehlt, kat, _ss().v2_ack_zeit),
-                                   file_name=(f"Split_AC_Quote_{p.config_id}.pdf" if englisch()
-                                              else f"Split_Klima_Angebot_{p.config_id}.pdf"),
-                                   mime="application/pdf")
+                                   data=pdf_angebot_v2(p, gewaehlt, kat, _ss().v2_ack_zeit, umfang),
+                                   file_name=f"{name}_{p.config_id}.pdf", mime="application/pdf")
             else:
-                st.button(T("Angebotsübersicht (PDF)"), width="stretch", disabled=True,
+                st.button(T("PDF herunterladen"), width="stretch", disabled=True,
                           icon=":material/picture_as_pdf:", help=T("Bitte zuerst die Hinweise bestätigen."))
     c1, c2, _ = st.columns([1, 1, 2])
     if c1.button(T("Zurück"), icon=":material/arrow_back:", width="stretch"):
@@ -1827,6 +1898,8 @@ def app_v2(kat: Katalog) -> None:
     p: Projekt = _ss().v2_projekt
     klimadaten_start()
     klima_synchronisieren(p)
+    for r in p.raeume:  # Bauart/Speichermasse gilt für das ganze Gebäude (F-013)
+        r.speicher = p.speicher
     _nach_oben()
     if msg := _ss().pop("v2_toast", None):
         st.toast(msg, icon="✅")

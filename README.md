@@ -103,6 +103,19 @@ Rechenkern und derselben KI-Planerkennung:
   deutsch: PLZ, Orte, Klimadaten (DIN/TS 12831-1), Normen, Katalog, Bestellnummern, Euro. Die Planung bleibt beim
   Umschalten erhalten. Texte: `splitklima/sprache_en.py` (Schlüssel = deutscher Text); fehlende Übersetzungen
   findet `python tools/sprache_schluessel.py .` bzw. der Test `test_englisch_vollstaendig`.
+- **Lastenheft v0.7 – Abschluss und Export:**
+  - **Gesamtstatus** (S-005) oben auf der Ergebnisseite: technisch plausibel / mit Hinweisen / unvollständig /
+    nicht zulässig, mit Gründen (z. B. ungeprüfte Räume, offener Aufstellort, Lieferhinweise).
+  - **Preisausweis** (S-020 bis S-024) in Kapiteln mit Zwischensummen: Inneneinheiten, Außeneinheiten und
+    Komplett-Sets, Zubehör, Inbetriebnahme/Service; Nettowert, MwSt. (`MWST_SATZ` = 19 %) und Endbetrag.
+    Inbetriebnahme ist standardmäßig Bedarfsposition (bepreist, nicht summiert) und per Schalter einrechenbar.
+    Hinweis „unverbindliche Preisinformation“.
+  - **PDF wahlweise** als Auslegungsdokumentation mit Stückliste oder nur Stückliste (S-010), mit
+    Elektro-Anschlussdaten der Außeneinheiten, Versionsständen und Disclaimer.
+  - **Disclaimer** mit dem Mindestinhalt aus Kapitel 13.1; aktive Bestätigung vor dem Export (D-001).
+  - **Berechnungsannahmen** (F-013, F-015) aufklappbar auf der Gebäudeseite: Kühl-/Heiz-Solltemperatur,
+    tägliche Kühlbetriebsdauer, Bauart/Speichermasse. Abweichungen vom Standard stehen im PDF als
+    „individuell angepasst“.
 - **Planungs-Assistent (Beta):** Chat-Blase unten rechts (Smartphone: Panel von unten). Änderungen an der Planung
   per Text, z. B. „Der Plan hat keinen Nordpfeil – das Wohnzimmer liegt im Norden“ (dreht den ganzen Grundriss) oder
   „Haus von 1958, Fassade 1990 gedämmt“. Claude Haiku 5.5 (`ASSISTENT_MODELL`, Denktiefe `ASSISTENT_EFFORT`=low; Grundriss-Erkennung weiter Opus 5.5) arbeitet nur über feste Werkzeuge auf der

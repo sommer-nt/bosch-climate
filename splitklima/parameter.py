@@ -178,20 +178,40 @@ FORMELN = {
     "storage": "Q_speichereffekt = Q_brutto * Daempfung(Speicherklasse, Kuehlbetriebsdauer)",
 }
 
+# Disclaimer nach Lastenheft v0.7, Kapitel 13.1 (Mindestinhalt; muss vor dem Export bestätigt werden, D-001)
 HAFTUNGSHINWEISE = [
-    "Heiz- und Kühllasten sind überschlägige Schätzwerte.",
-    "Vereinfachte Kühllastabschätzung in Anlehnung an VDI 2078, keine vollständige VDI-2078-Fachberechnung.",
-    "Vereinfachte Heizlastabschätzung in Anlehnung an DIN EN 12831-1, keine vollständige Norm-Heizlastberechnung.",
-    "Die Konfiguration ersetzt keine Fachplanung.",
-    "Schall-, Elektro-, Kältemittel-, Kondensat- und Genehmigungsanforderungen sind gesondert zu prüfen.",
+    "Die angezeigten Heiz- und Kühllasten sind überschlägige Schätzwerte auf Basis vereinfachter Gebäude-, "
+    "Klima- und Nutzungsannahmen.",
+    "Die Berechnung stellt weder eine Kühllastberechnung nach VDI 2078 noch eine Norm-Heizlastberechnung nach "
+    "DIN EN 12831-1 dar. Sie ersetzt keine fachtechnische Planung nach den anerkannten Regeln der Technik oder "
+    "Prüfung am Gebäude.",
+    "Die tatsächliche Leistung kann insbesondere durch Bauausführung, Verschattung, Nutzung, Lüftungsverhalten, "
+    "Feuchtelasten, Leitungsführung, Aufstellbedingungen und gleichzeitig betriebene Innengeräte abweichen.",
+    "Die endgültige Prüfung, Auswahl, Installation und Inbetriebnahme muss durch einen qualifizierten Fachbetrieb "
+    "erfolgen.",
+    "Schall-, Elektro-, Kältemittel-, Kondensat-, Brandschutz- und Genehmigungsanforderungen sind gesondert zu "
+    "prüfen.",
     "Eine dargestellte Förderfähigkeit ist keine Förderzusage.",
+    "Für die Richtigkeit aller Auslegungswerte ist der Anwender selbst verantwortlich.",
 ]
 HAFTUNG_LANGTEXT = (
-    "Die angezeigten Heiz- und Kühllasten sind überschlägige Schätzwerte auf Basis vereinfachter "
-    "Gebäude-, Klima- und Nutzungsannahmen. Die Berechnung erfolgt vereinfacht in Anlehnung an die "
-    "Methodik der VDI 2078 bzw. DIN EN 12831-1, stellt jedoch keine vollständige normgerechte "
-    "Fachberechnung dar. Sie ersetzt keine fachtechnische Planung oder Prüfung am Gebäude. Die "
-    "endgültige Auswahl, Installation und Inbetriebnahme muss durch einen qualifizierten Fachbetrieb "
-    "erfolgen. Schall-, Elektro-, Kältemittel-, Kondensat-, Brandschutz- und Genehmigungsanforderungen "
-    "sind gesondert zu prüfen. Eine dargestellte Förderfähigkeit ist keine Förderzusage."
+    "Die angezeigten Heiz- und Kühllasten sind überschlägige Schätzwerte auf Basis vereinfachter Gebäude-, Klima- "
+    "und Nutzungsannahmen. Die Berechnung stellt weder eine Kühllastberechnung nach VDI 2078 noch eine "
+    "Norm-Heizlastberechnung nach DIN EN 12831-1 dar. Sie ersetzt keine fachtechnische Planung nach den anerkannten "
+    "Regeln der Technik oder Prüfung am Gebäude. Die tatsächliche Leistung kann insbesondere durch Bauausführung, "
+    "Verschattung, Nutzung, Lüftungsverhalten, Feuchtelasten, Leitungsführung, Aufstellbedingungen und gleichzeitig "
+    "betriebene Innengeräte abweichen. Die endgültige Prüfung, Auswahl, Installation und Inbetriebnahme muss durch "
+    "einen qualifizierten Fachbetrieb erfolgen. Schall-, Elektro-, Kältemittel-, Kondensat-, Brandschutz- und "
+    "Genehmigungsanforderungen sind gesondert zu prüfen. Eine dargestellte Förderfähigkeit ist keine Förderzusage. "
+    "Für die Richtigkeit aller Auslegungswerte ist der Anwender selbst verantwortlich."
 )
+
+# Preisausweis (Lastenheft S-020 bis S-024)
+MWST_SATZ = 0.19  # administrierbar
+PREIS_HINWEIS = ("Unverbindliche Preisinformation auf Basis der Netto-Listenpreise – kein verbindliches Angebot. "
+                 "Kundenindividuelle Konditionen sind nicht berücksichtigt.")
+
+# Berechnungsannahmen (Lastenheft F-015) – Standardwerte; Abweichungen werden als „individuell angepasst“ ausgewiesen
+ANNAHMEN_STANDARD = {"soll_kuehlen": 24.0, "soll_heizen": 20.0, "kuehlbetrieb_h": 12, "speicher": "mid"}
+SPEICHER_LABEL = {"light": "Leichte Bauweise / Holz", "mid": "Massiv, geringe Bauteildicke",
+                  "heavy": "Massiv, hohe Bauteildicke"}

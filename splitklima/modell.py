@@ -155,3 +155,7 @@ class Projekt(BaseModel):
     boerdelfrei: bool = False  # SAE-Klemmringverschraubungen statt Bördeln
     kondensatpumpe: bool = False  # Kondensat ohne natürliches Gefälle
     zubehoer_mengen: dict[str, int] = Field(default_factory=dict)  # manuelle Mengen je Bestell-Nr.
+    # Version 2: Bauart/Speichermasse des Gebäudes (F-013) – gilt für alle Räume
+    speicher: Literal["light", "mid", "heavy"] = "mid"
+    # Version 2: Inbetriebnahme durch den Bosch-Kundendienst in die Summe des Preisausweises aufnehmen
+    inbetriebnahme_einrechnen: bool = False

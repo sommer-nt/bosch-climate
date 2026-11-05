@@ -151,7 +151,7 @@ def test_oberflaeche_v2_durchlauf(monkeypatch):
     assert any("preis" in m.value and "€" in m.value for m in at.markdown)
     at.checkbox[0].check().run()
     # Speichern gibt es mehrfach: Desktop-Navigation, Smartphone-Schrittleiste, „Neu beginnen“-Abfrage
-    assert {d.label for d in at.get("download_button")} == {"Angebotsübersicht (PDF)", "Speichern (JSON)",
+    assert {d.label for d in at.get("download_button")} == {"PDF herunterladen", "Speichern (JSON)",
                                                             "Vorher speichern (JSON)"}
     for seite in ("system", "gebaeude", "raeume"):
         at.session_state.v2_seite = seite
@@ -919,6 +919,7 @@ def test_englisch_vollstaendig():
     texte |= {a.datenfehler for a in [*KAT.sets, *KAT.innen, *KAT.aussen] if a.datenfehler}
     texte |= {KAT.quelle, KAT.preisbasis, "Wandgerät", "Deckenkassette", "Konsole", "Truhe/Decke"}
     texte |= set(P.PERSON_LABEL.values()) | set(P.LUEFTUNG_LABEL.values())
+    texte |= set(P.SPEICHER_LABEL.values()) | set(P.KUEHLBETRIEB_LABEL.values()) | {P.PREIS_HINWEIS}
     texte -= {"Climate Außeneinheiten", "Split-Klimageräte"}  # nur intern („Optional“ ohne Zusatz)
     texte = {t for t in texte if re.search(r"[a-zäöüß]{3}", t)}  # Typbezeichnungen wie „CL5000iL CF“ bleiben
     fehlt = sorted(t for t in texte if t not in EN)
@@ -966,7 +967,7 @@ def test_oberflaeche_englisch_umschalten(monkeypatch):
     assert "OUR RECOMMENDATION" in texte and "€" in texte
     assert "UNSERE EMPFEHLUNG" not in texte and "Ihre Geräte" not in texte
     at.checkbox[0].check().run()
-    assert "Quotation summary (PDF)" in {d.label for d in at.get("download_button")}
+    assert "Download PDF" in {d.label for d in at.get("download_button")}
     # zurück auf Deutsch: Planung bleibt erhalten
     at.segmented_control[0].set_value("🇩🇪 DE").run()
     assert not at.exception and at.session_state.v2_sprache == "de"
@@ -1120,3 +1121,84 @@ def test_oberflaeche_personen_im_raum(monkeypatch):
     assert at.session_state.v2_projekt.raeume[0].personen == 50
     assert {s.label for s in at.selectbox} >= {"Tätigkeit", "Frischluft"}
     assert any("Lüftungsanlage mit Wärmerückgewinnung empfohlen" in i.value for i in at.info)
+
+
+# ---------------------------------------------------------------------- Lastenheft: Preisausweis, Status, Annahmen
+def test_preisausweis_kapitel_mwst_und_bedarfspositionen():
+    from splitklima.v2 import preisausweis as PA
+
+    p = beispielprojekt()
+    for k in A.konzepte(p, KAT):
+        pa = PA.erstellen(p, k, KAT)
+        assert [kap.nr for kap in pa.kapitel] == [1, 2, 3, 4]
+        assert pa.kapitel[0].zwischensumme + pa.kapitel[1].zwischensumme == pytest.approx(k.preis)
+        assert pa.kapitel[2].zwischensumme == pytest.approx(Z.summe(Z.gewaehlt(p, k, KAT)))
+        assert all(x.bedarf for x in pa.kapitel[3].posten) and pa.kapitel[3].zwischensumme == 0
+        assert pa.mwst == pytest.approx(round(pa.netto * 0.19, 2)) and pa.brutto == pytest.approx(pa.netto + pa.mwst)
+        if k.key == "single":  # Komplett-Sets: Kapitel 1 leer, alles in Kapitel 2
+            assert not pa.kapitel[0].posten
+    p.inbetriebnahme_einrechnen = True
+    k = next(k for k in A.konzepte(p, KAT) if k.empfohlen)
+    pa = PA.erstellen(p, k, KAT)
+    assert pa.bedarf_summe == 0 and pa.kapitel[3].zwischensumme > 0
+
+
+def test_gesamtstatus_stufen():
+    from splitklima.v2 import preisausweis as PA
+
+    p = beispielprojekt()
+    k = next(k for k in A.konzepte(p, KAT) if k.empfohlen)
+    assert PA.gesamtstatus(p, None, KAT).stufe == "unzulaessig"
+    assert PA.gesamtstatus(Projekt(raeume=[]), None, KAT).stufe == "unvollstaendig"
+    s = PA.gesamtstatus(p, k, KAT, ungeprueft=3)
+    assert s.stufe == "hinweise" and any("3 Räume" in g for g in s.gruende)
+    p2 = beispielprojekt()
+    p2.aufstellung, p2.geraetelinie = "wand", "7000i"
+    k2 = next(k for k in A.konzepte(p2, KAT.ohne_auslauf()) if k.empfohlen)
+    s2 = PA.gesamtstatus(p2, k2, KAT.ohne_auslauf())
+    assert s2.stufe in ("ok", "hinweise") and not any("Aufstellort" in g for g in s2.gruende)
+
+
+def test_berechnungsannahmen_wirken_und_werden_ausgewiesen():
+    from splitklima.sprache import sprache
+    from splitklima.v2.angebot import annahmen_abweichungen
+
+    p = beispielprojekt()
+    r, e = p.raeume[0], p.einstellungen
+    basis = raum_last(r, e).cool
+    assert annahmen_abweichungen(p) == []
+    e.soll_kuehlen = 26.0
+    assert raum_last(r, e).cool < basis
+    e.soll_kuehlen, e.kuehlbetrieb_h = 24.0, 24
+    assert raum_last(r, e).cool > basis
+    e.kuehlbetrieb_h = 12
+    r.speicher = p.speicher = "heavy"
+    assert raum_last(r, e).cool < basis
+    assert annahmen_abweichungen(p) == ["Bauart / Speichermasse"]
+    k = next(k for k in A.konzepte(p, KAT) if k.empfohlen)
+    for sp in ("de", "en"):
+        with sprache(sp):
+            for umfang in ("auslegung", "stueckliste"):
+                assert pdf_angebot_v2(p, k, KAT, "05.11.2026 18:00", umfang)[:4] == b"%PDF"
+
+
+def test_oberflaeche_status_preisausweis_und_annahmen(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("APP_PASSWORT", raising=False)
+    at = AppTest.from_file(str(WURZEL / "app_v2.py"), default_timeout=60).run()
+    next(b for b in at.button if b.label == "Beispielhaus laden").click().run()
+    at.session_state.v2_seite = "ergebnis"
+    at.run()
+    assert not at.exception, at.exception
+    assert any("Konfiguration mit Hinweisen" in i.value for i in at.info)
+    texte = " ".join(m.value for m in at.markdown)
+    assert "Endbetrag" in texte and "Kapitel 2: Außeneinheiten und Komplett-Sets" in texte
+    assert "Für die Richtigkeit aller Auslegungswerte ist der Anwender selbst verantwortlich." in texte
+    at.checkbox[0].check().run()
+    at.radio[0].set_value("Nur Stückliste").run()
+    assert not at.exception and "PDF herunterladen" in {d.label for d in at.get("download_button")}
+    at.session_state.v2_seite = "gebaeude"
+    at.run()
+    assert not at.exception
+    assert {"Kühl-Solltemperatur", "Heiz-Solltemperatur"} <= {n.label for n in at.number_input}
+    assert {"Tägliche Kühlbetriebsdauer", "Bauart / Speichermasse"} <= {s.label for s in at.selectbox}
