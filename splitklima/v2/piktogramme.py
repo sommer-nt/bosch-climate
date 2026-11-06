@@ -85,6 +85,8 @@ SYMBOLE: dict[str, str] = {
     "Seminar / Schulung": '<rect x="12" y="8" width="40" height="22" rx="2"/><path d="M32 30v4"/>'
                           '<circle cx="18" cy="42" r="4"/><circle cx="32" cy="42" r="4"/><circle cx="46" cy="42" r="4"/>'
                           '<path d="M10 56a8 8 0 0 1 16 0M24 56a8 8 0 0 1 16 0M38 56a8 8 0 0 1 16 0"/>',
+    "Foyer / Empfang": '<path d="M6 56h52M10 56V14h44v42"/><path d="M10 14l22-6 22 6"/>'
+                       '<path d="M20 56V30h24v26M32 30v26"/><path d="M14 46h10v10M40 46h10v10"/>',
     # ---------------------------------------------------------- Bauart
     "Wandgerät": '<path d="M8 10v44"/><rect x="12" y="20" width="44" height="16" rx="4"/>'
                  '<path d="M18 30h32M22 42l-2 6M34 42v6M46 42l2 6"/>',

@@ -4,7 +4,7 @@ import ast, sys, pathlib
 DATEIEN = ["ui_v2.py", "app_v2.py", "splitklima/v2/auswahl.py", "splitklima/v2/zubehoer.py", "splitklima/v2/katalog.py",
            "splitklima/v2/angebot.py", "splitklima/v2/assistent.py", "splitklima/v2/fotos.py",
            "splitklima/v2/speichern.py", "splitklima/ki_plan.py", "splitklima/sprache.py",
-           "splitklima/v2/preisausweis.py"]
+           "splitklima/v2/preisausweis.py", "splitklima/v2/plausibel.py"]
 def sammeln(wurzel):
     out = {}
     for d in DATEIEN:

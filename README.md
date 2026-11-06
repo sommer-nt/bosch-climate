@@ -116,6 +116,12 @@ Rechenkern und derselben KI-Planerkennung:
   - **Berechnungsannahmen** (F-013, F-015) aufklappbar auf der Gebäudeseite: Kühl-/Heiz-Solltemperatur,
     tägliche Kühlbetriebsdauer, Bauart/Speichermasse. Abweichungen vom Standard stehen im PDF als
     „individuell angepasst“.
+- **Foyer / Empfang und Plausibilitätsprüfung (F-028):** Raumart *Foyer / Empfang* (Luftwechsel 0,7, Beleuchtung
+  15 W/m², Grundlast 300 W, Vorschlag 1 Person je 10 m² stehend – wächst mit der Fläche, solange nicht geändert).
+  Je Raum Warnungen bei zu wenig Fensterfläche (< 5 % der Grundfläche ab 30 m²), fehlenden Außenflächen,
+  ungewöhnlich großen Räumen und ungewöhnlicher spezifischer Kühllast (Wohnen < 20, Gewerbe < 40, alle > 200 W/m²);
+  Fehler bei mehr Fenster- als Wandfläche. Raumkarten zeigen „⚠ Werte prüfen“, der Gesamtstatus nennt die Räume.
+  Grenzen in `parameter.PLAUSI`.
 - **Planungs-Assistent (Beta):** Chat-Blase unten rechts (Smartphone: Panel von unten). Änderungen an der Planung
   per Text, z. B. „Der Plan hat keinen Nordpfeil – das Wohnzimmer liegt im Norden“ (dreht den ganzen Grundriss) oder
   „Haus von 1958, Fassade 1990 gedämmt“. Claude Haiku 5.5 (`ASSISTENT_MODELL`, Denktiefe `ASSISTENT_EFFORT`=low; Grundriss-Erkennung weiter Opus 5.5) arbeitet nur über feste Werkzeuge auf der

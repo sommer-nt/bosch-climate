@@ -978,6 +978,28 @@ EN: dict[str, str] = {
         "Eligibility for funding shown is no funding commitment. The user is responsible for the correctness of all "
         "design values.",
 
+    # ------------------------------------------------------------------ Foyer, Plausibilitätsprüfung (F-028)
+    "Foyer / Empfang": "Foyer / reception",
+    "Foyer": "Foyer",
+    "Werte prüfen": "check values",
+    "Fensterfläche {f} m² nach {r} ist größer als die Wandfläche ({w} m²).":
+        "Window area {f} m² facing {r} is larger than the wall area ({w} m²).",
+    "Nur {f} m² Fenster bei {a} m² Grundfläche ({p} %) – üblich sind 10–25 %. Fensterflächen in der Wandtabelle "
+    "prüfen.": "Only {f} m² of windows for {a} m² floor area ({p} %) – 10–25 % is typical. Check the window areas "
+              "in the wall table.",
+    "Keine Außenflächen erfasst – nur innere Lasten. Lage im Gebäude prüfen.":
+        "No exterior surfaces entered – internal loads only. Check the position in the building.",
+    "Ungewöhnlich großer Raum ({a} m²) – Fläche prüfen.": "Unusually large room ({a} m²) – check the area.",
+    "Spezifische Kühllast nur {x} W/m² – für „{art}“ ungewöhnlich niedrig (üblich ab etwa {m} W/m²). "
+    "Fensterflächen, Nutzung und Personen prüfen.": "Specific cooling load only {x} W/m² – unusually low for "
+                                                   "“{art}” (typically from about {m} W/m²). Check window areas, use "
+                                                   "and people.",
+    "Spezifische Kühllast {x} W/m² – ungewöhnlich hoch. Eingaben prüfen.":
+        "Specific cooling load {x} W/m² – unusually high. Check the inputs.",
+    "Unmögliche Eingaben in: {raeume}.": "Impossible inputs in: {raeume}.",
+    "Plausibilitätswarnungen in: {raeume} – Raum öffnen und Werte prüfen.":
+        "Plausibility warnings in: {raeume} – open the room and check the values.",
+
     # ------------------------------------------------------------------ Laden/Speichern
     "Datei ist zu groß für eine Konfiguration.": "The file is too large for a configuration.",
     "Datei ist keine Textdatei (UTF-8).": "The file is not a text file (UTF-8).",

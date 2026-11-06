@@ -168,6 +168,24 @@ WRG_RESTANTEIL = 0.25  # Lüftungsanlage mit Wärmerückgewinnung (≈ 75 %): ve
 LUEFTUNG_LABEL = {"fenster": "Fensterlüftung", "anlage": "Lüftungsanlage mit WRG"}
 PERSONEN_JE_M2_SEMINAR = 0.5  # Vorschlag bei Raumart Seminar: 1 Person je 2 m²
 
+# Foyer / Empfang (Version 2): Glasfronten, Beleuchtung, Empfangstechnik, wechselnder Personenverkehr
+RAUMARTEN_GEWERBE.append("Foyer / Empfang")
+LUFTWECHSEL["Foyer / Empfang"] = 0.7  # Türöffnungen
+INTERN_GRUND["Foyer / Empfang"] = 300  # Empfangstresen, Bildschirme
+INTERN_W_M2_RAUMART["Foyer / Empfang"] = 15  # Beleuchtung; Personen separat
+# Personenvorschlag je Raumart: (Personen je m², Tätigkeit)
+PERSONEN_VORSCHLAG = {"Seminar / Schulung": (PERSONEN_JE_M2_SEMINAR, "sitzend"), "Foyer / Empfang": (0.1, "stehend")}
+
+# Plausibilitätsprüfung (Lastenheft F-028) – administrierbare Grenzen
+PLAUSI = {
+    "fensteranteil_min": 0.05,  # Fensterfläche / Grundfläche, darunter Warnung (ab Mindestfläche)
+    "flaeche_fensterpruefung": 30.0,  # m²
+    "kuehllast_min_wohnen": 20.0,  # W/m²
+    "kuehllast_min_gewerbe": 40.0,  # W/m² (Gewerbe, Seminar, Foyer)
+    "kuehllast_max": 200.0,  # W/m²
+    "flaeche_gross": 300.0,  # m², darüber Hinweis „ungewöhnlich groß“
+}
+
 IG_BAUARTEN = ["auto", "Wandgerät", "Truhengerät", "Kassettengerät", "Kanalgerät"]
 
 FORMELN = {

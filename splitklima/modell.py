@@ -16,7 +16,8 @@ from .parameter import MODE_WALLS
 
 Ausrichtung = Literal["N", "NO", "O", "SO", "S", "SW", "W", "NW"]
 Raumart = Literal["Wohnzimmer", "Schlafzimmer", "Büro", "Küche", "Kinderzimmer", "Badezimmer",
-                  "Werkstatt", "Halle / Lager", "Verkaufsraum", "Seminar / Schulung"]  # ab Werkstatt: Version 2
+                  "Werkstatt", "Halle / Lager", "Verkaufsraum", "Seminar / Schulung",
+                  "Foyer / Empfang"]  # ab Werkstatt: Version 2
 Lage = Literal["inside", "outside", "corner", "three", "attic", "attic_corner", "basement"]
 Dachform = Literal["flat", "saddle_south", "saddle_north", "saddle_eastwest"]
 Vertikal = Literal[
@@ -66,10 +67,19 @@ class Raum(BaseModel):
     lueftung: Literal["fenster", "anlage"] = "fenster"  # Frischluft für die Personen
 
     def personen_vorschlag(self) -> int:
-        """Personenzahl, die bei Raumart Seminar/Schulung vorgeschlagen wird (1 Person je 2 m²)."""
-        from .parameter import PERSONEN_JE_M2_SEMINAR
+        """Vorgeschlagene Personenzahl je Raumart (Seminar 1 je 2 m², Foyer 1 je 10 m²; sonst 0)."""
+        from .parameter import PERSONEN_VORSCHLAG
 
-        return max(1, round((self.flaeche or 0) * PERSONEN_JE_M2_SEMINAR))
+        je_m2 = PERSONEN_VORSCHLAG.get(self.raumart, (0.5, "sitzend"))[0]
+        return max(1, round((self.flaeche or 0) * je_m2))
+
+    def personen_vorbelegen(self) -> None:
+        """Bei Raumarten mit Personenvorschlag: Personen und Tätigkeit setzen, wenn noch keine erfasst sind."""
+        from .parameter import PERSONEN_VORSCHLAG
+
+        if self.raumart in PERSONEN_VORSCHLAG and not self.personen:
+            self.personen = self.personen_vorschlag()
+            self.taetigkeit = PERSONEN_VORSCHLAG[self.raumart][1]
 
     def wandlaengen_schaetzen(self) -> None:
         """Außenwandlängen aus der Grundfläche schätzen (quadratischer Grundriss: Seite ≈ √Fläche)."""

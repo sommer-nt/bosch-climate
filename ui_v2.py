@@ -32,6 +32,7 @@ from splitklima import klimadaten as KD
 from splitklima.standort import klimaregion
 from splitklima.v2 import auswahl as A
 from splitklima.v2.angebot import UMFANG, annahmen_abweichungen, pdf_angebot_v2
+from splitklima.v2 import plausibel as PL
 from splitklima.v2 import preisausweis as PA
 from splitklima.v2.bilder import bild, bild_innen_set
 from splitklima.v2 import assistent as AS
@@ -71,7 +72,8 @@ BEISPIELE = [N_("Der Plan hat keinen Nordpfeil – das Wohnzimmer liegt im Norde
              N_("Geht es günstiger? Die Farbe ist mir egal.")]
 RAUMART_KURZ = {"Wohnzimmer": N_("Wohnen"), "Schlafzimmer": N_("Schlafen"), "Büro": N_("Büro"), "Küche": N_("Küche"),
                 "Kinderzimmer": N_("Kinder"), "Badezimmer": N_("Bad"), "Werkstatt": N_("Werkstatt"),
-                "Halle / Lager": N_("Halle / Lager"), "Verkaufsraum": "Laden", "Seminar / Schulung": N_("Seminar")}
+                "Halle / Lager": N_("Halle / Lager"), "Verkaufsraum": "Laden", "Seminar / Schulung": N_("Seminar"),
+                "Foyer / Empfang": N_("Foyer")}
 RAUMART_KURZ_EN = {"Verkaufsraum": "Shop"}  # „Laden“ ist sonst mehrdeutig (Knopf „Laden“ = Load)
 RAUMARTEN_ALLE = [*P.RAUMARTEN, *P.RAUMARTEN_GEWERBE]
 LINIEN_BILD = {"3200i": "set_3200i", "7000i": "set_7000i_weiss", "8000i": "set_8000i_weiss"}
@@ -1060,6 +1062,8 @@ def seite_raeume(p: Projekt) -> None:
     for i, r in enumerate(p.raeume):
         l = raum_last(r, p.einstellungen)
         status = T("✓ geprüft") if i in geprueft else T("bitte prüfen")
+        if PL.pruefen(r, p.einstellungen):
+            status = "⚠ " + T("Werte prüfen")
         with spalten[i % 3].container(border=True, key=f"karte-raum-{i}"):
             st.markdown(
                 f'<div class="karte klein"><div>{svg(r.raumart, 44)}</div>'
@@ -1118,13 +1122,13 @@ def seite_raum(p: Projekt, i: int, kat: Katalog | None = None) -> None:
     st.markdown("##### " + T("Nutzung"))
     def raumart_setzen(v: str) -> None:
         r.raumart = v
-        if v == "Seminar / Schulung" and not r.personen:
-            r.personen = r.personen_vorschlag()
+        if v in P.PERSONEN_VORSCHLAG and not r.personen:
+            r.personen_vorbelegen()
             _ss().v2_rev += 1
 
     karten(f"ra{i}", [(v, RAUMART_KURZ_EN.get(v, RAUMART_KURZ[v]) if englisch() else RAUMART_KURZ[v], "", v)
                       for v in RAUMARTEN_ALLE], r.raumart, raumart_setzen, spalten=5, klein=True, groesse=40)
-    if r.raumart in P.RAUMARTEN_GEWERBE and r.raumart != "Seminar / Schulung":
+    if r.raumart in P.RAUMARTEN_GEWERBE and r.raumart not in P.PERSONEN_VORSCHLAG:
         st.caption(T(P.GEWERBE_HINWEIS))
     personen_bereich(p, r, i)
 
@@ -1132,9 +1136,14 @@ def seite_raum(p: Projekt, i: int, kat: Katalog | None = None) -> None:
     c1, c2, _ = st.columns([1, 1, 1])
     flaeche = zahl(c1, T("Grundfläche"), "m²", r.flaeche or 1, 1.0, 500.0, 0.5, f"rf{i}")
     if flaeche != r.flaeche:
+        vorschlag_alt = r.personen_vorschlag() if r.raumart in P.PERSONEN_VORSCHLAG else None
         r.flaeche = flaeche
         if r.waende_auto:
             r.wandlaengen_schaetzen()
+        if vorschlag_alt is not None and r.personen == vorschlag_alt:  # Vorschlag wächst mit, solange unverändert
+            r.personen = r.personen_vorschlag()
+            _ss().v2_rev += 1
+            st.rerun()
     r.hoehe = zahl(c2, T("Raumhöhe"), "m", r.hoehe or 2.5, 1.8, 10.0, 0.05, f"rh{i}", "%.2f")
 
     st.markdown("##### " + T("Lage im Gebäude"))
@@ -1202,6 +1211,9 @@ def seite_raum(p: Projekt, i: int, kat: Katalog | None = None) -> None:
             r.fenstergruppen = [g for g in r.fenstergruppen if not g.dachfenster]
             if neu > 0:
                 r.fenstergruppen.append(Fenstergruppe(ausrichtung="S", flaeche=neu, dachfenster=True))
+
+    for m in PL.pruefen(r, p.einstellungen):  # Plausibilitätsprüfung (F-028)
+        (st.error if m.stufe == "fehler" else st.warning)(m.text, icon=":material/rule:")
 
     st.markdown("##### " + T("Gerätewunsch"))
     wunsch = A.bauart_wunsch(r)

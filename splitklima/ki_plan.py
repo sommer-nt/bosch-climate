@@ -30,9 +30,10 @@ class KiRaum(BaseModel):
     name: str = Field(description="Raumbezeichnung wie im Plan")
     geschoss: str = Field(description="z. B. KG, EG, OG, DG")
     raumart: Literal["Wohnzimmer", "Schlafzimmer", "Büro", "Küche", "Kinderzimmer", "Badezimmer",
-                     "Werkstatt", "Halle / Lager", "Verkaufsraum", "Seminar / Schulung"] = Field(
+                     "Werkstatt", "Halle / Lager", "Verkaufsraum", "Seminar / Schulung", "Foyer / Empfang"] = Field(
         description="Nächstliegende Raumart (Essen/Wohnen → Wohnzimmer, Arbeiten → Büro, Gäste → Schlafzimmer; "
-                    "Seminar-, Schulungs-, Tagungs-, Versammlungsraum, Forum, Saal → Seminar / Schulung)"
+                    "Seminar-, Schulungs-, Tagungs-, Versammlungsraum, Forum, Saal → Seminar / Schulung; Foyer, "
+                    "Eingangshalle, Empfang, Lobby → Foyer / Empfang)"
     )
     flaeche_m2: float
     raumhoehe_m: float = Field(description="Lichte Raumhöhe; 2.5 wenn unbekannt")
@@ -191,8 +192,7 @@ def in_raeume(analyse: KiPlanAnalyse) -> list[Raum]:
             fenstergruppen=([Fenstergruppe(ausrichtung="S", flaeche=round(k.dachfenster_m2, 2), dachfenster=True)]
                             if k.dachfenster_m2 > 0 else []),
         )
-        if raum.raumart == "Seminar / Schulung":
-            raum.personen = raum.personen_vorschlag()
+        raum.personen_vorbelegen()
         raeume.append(raum)
     return raeume
 

@@ -131,9 +131,19 @@ def gesamtstatus(projekt: Projekt, konzept: A.Konzept | None, kat: Katalog,
         gruende_unvollst.append(T("Für mindestens einen Artikel ist kein Preis hinterlegt („auf Anfrage“)."))
     if any((r.flaeche or 0) <= 0 or (r.hoehe or 0) <= 0 for r in projekt.raeume):
         gruende_unvollst.append(T("Mindestens ein Raum hat keine gültige Fläche oder Höhe."))
+    from .plausibel import pruefen
+
+    meldungen = {r.name: pruefen(r, projekt.einstellungen) for r in projekt.raeume}
+    fehlerhaft = [n for n, ms in meldungen.items() if any(m.stufe == "fehler" for m in ms)]
+    if fehlerhaft:
+        gruende_unvollst.append(T("Unmögliche Eingaben in: {raeume}.", raeume=", ".join(fehlerhaft)))
     if gruende_unvollst:
         return Status("unvollstaendig", gruende_unvollst)
     gruende: list[str] = []
+    gewarnt = [n for n, ms in meldungen.items() if ms]
+    if gewarnt:
+        gruende.append(T("Plausibilitätswarnungen in: {raeume} – Raum öffnen und Werte prüfen.",
+                         raeume=", ".join(gewarnt)))
     if ungeprueft:
         gruende.append(T("{n} Räume noch nicht geprüft (Raum öffnen, Werte kontrollieren).", n=ungeprueft))
     if not projekt.aufstellung:

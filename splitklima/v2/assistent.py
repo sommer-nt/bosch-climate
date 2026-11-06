@@ -70,7 +70,7 @@ Bauphysik (überschlägig)
 - Personen (z. B. Seminar, Forum, Tagungssaal, Schulung): raum_aendern mit personen (gleichzeitig anwesend),
   taetigkeit (sitzend = 120 W, stehend = 150 W je Person inkl. Feuchte) und lueftung (fenster = 30 m³/h
   Außenluft je Person wird mitgerechnet; anlage = Lüftungsanlage mit Wärmerückgewinnung). Für Säle passt die
-  Raumart „Seminar / Schulung“. Ab etwa 10 Personen auf eine Lüftungsanlage hinweisen – Split-Geräte liefern
+  Raumart „Seminar / Schulung“, für Eingangshallen „Foyer / Empfang“. Ab etwa 10 Personen auf eine Lüftungsanlage hinweisen – Split-Geräte liefern
   keine Frischluft. personen 0 = übliche Nutzung (in der Grundlast enthalten).
 
 Grenzen
@@ -415,8 +415,8 @@ class _Werkzeuge:
             r.wandlaengen_schaetzen()
         if personen is not None:
             r.personen = int(_zahl("personen", personen))
-        elif r.raumart == "Seminar / Schulung":
-            r.personen = r.personen_vorschlag()
+        else:
+            r.personen_vorbelegen()
         self.p.raeume.append(Raum.model_validate(r.model_dump()))
         self.log.append(T("Raum „{name}“ angelegt ({art}, {a} m²)", name=name, art=T(raumart), a=f"{r.flaeche:g}"))
         return self._status()

@@ -1202,3 +1202,34 @@ def test_oberflaeche_status_preisausweis_und_annahmen(monkeypatch):
     assert not at.exception
     assert {"Kühl-Solltemperatur", "Heiz-Solltemperatur"} <= {n.label for n in at.number_input}
     assert {"Tägliche Kühlbetriebsdauer", "Bauart / Speichermasse"} <= {s.label for s in at.selectbox}
+
+
+# ---------------------------------------------------------------------- Foyer und Plausibilitätsprüfung (F-028)
+def test_foyer_mit_wenig_glas_wird_gewarnt_und_mit_glasfront_plausibel():
+    from splitklima.v2.plausibel import pruefen
+
+    p = Projekt(raeume=[])
+    p.einstellungen.daemmstandard = "new"
+    r = Raum(name="Empfang Foyer", raumart="Foyer / Empfang", flaeche=81.6, lage="outside",
+             waende=[Wand(ausrichtung="S", laenge=9, fenster=2)])
+    r.personen_vorbelegen()
+    assert (r.personen, r.taetigkeit) == (8, "stehend")
+    texte = [m.text for m in pruefen(r, p.einstellungen)]
+    assert any("Nur 2" in t and "Fenster" in t for t in texte)
+    r.lage, r.waende = "corner", [Wand(ausrichtung="S", laenge=9, fenster=20), Wand(ausrichtung="W", laenge=9, fenster=8)]
+    assert pruefen(r, p.einstellungen) == []
+    assert raum_last(r, p.einstellungen).cool * 1000 / r.flaeche > 80
+
+
+def test_plausibilitaet_fehler_und_gesamtstatus():
+    from splitklima.v2 import preisausweis as PA
+    from splitklima.v2.plausibel import pruefen
+
+    p = beispielprojekt()
+    assert all(pruefen(r, p.einstellungen) == [] for r in p.raeume)  # Beispielhaus ohne Fehlalarm
+    r = p.raeume[0]
+    r.waende[0].fenster = r.waende[0].laenge * r.hoehe + 5  # mehr Fenster als Wand
+    assert any(m.stufe == "fehler" for m in pruefen(r, p.einstellungen))
+    k = next(k for k in A.konzepte(p, KAT) if k.empfohlen)
+    s = PA.gesamtstatus(p, k, KAT)
+    assert s.stufe == "unvollstaendig" and any(r.name in g for g in s.gruende)
